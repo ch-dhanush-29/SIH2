@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Waste Saathi (ई-वेस्ट साथी) — SIH26229</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap');
+    
+    body { font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif; transition: background-color 0.3s, color 0.3s; }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .font-mono-data { font-family: 'JetBrains Mono', monospace; }
+    
+    /* 3D Canvas Centering and Responsiveness */
+    .canvas-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .canvas-container canvas {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      outline: none;
+    }
+
+    /* Light Theme Styling Overrides */
+    .light {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --card-alt: #f1f5f9;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    .light body {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    .light header {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .light .bg-slate-900 {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .light .bg-slate-950 {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    .light .bg-slate-800 {
+      background-color: #e2e8f0 !important;
+      color: #1e293b !important;
+    }
+    .light .bg-slate-850 {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    .light .border-slate-800, 
+    .light .border-slate-700, 
+    .light .border-slate-850 {
+      border-color: #cbd5e1 !important;
+    }
+    .light .text-white {
+      color: #0f172a !important;
+    }
+    .light .text-slate-100 {
+      color: #0f172a !important;
+    }
+    .light .text-slate-200 {
+      color: #1e293b !important;
+    }
+    .light .text-slate-300 {
+      color: #334155 !important;
+    }
+    .light .text-slate-400 {
+      color: #64748b !important;
+    }
+    .light .text-slate-500 {
+      color: #64748b !important;
+    }
+    .light .mat-chip:not(.active) {
+      background-color: #e2e8f0 !important;
+      color: #334155 !important;
+    }
+    .light .mat-chip.active {
+      background-color: #10b981 !important;
+      color: #ffffff !important;
+    }
+    
+    /* Indian Flag (Tiranga) Tricolor Accents */
+    .tiranga-bar {
+      height: 3.5px;
+      background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%, #138808 100%);
+      width: 100%;
+    }
+    .tiranga-glow {
+      box-shadow: 0 0 15px rgba(255, 153, 51, 0.25), 0 0 15px rgba(19, 136, 8, 0.25);
+    }
+    .text-tiranga-saffron { color: #FF9933; }
+    .text-tiranga-green { color: #138808; }
+    .text-tiranga-chakra { color: #000080; }
+    .bg-tiranga-saffron { background-color: #FF9933; }
+    .bg-tiranga-green { background-color: #138808; }
+    .border-tiranga-saffron { border-color: #FF9933; }
+    .border-tiranga-green { border-color: #138808; }
+    
+    /* Splash Screen Animations */
+    #splash-screen {
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #splash-screen.hidden-splash {
+      opacity: 0;
+      transform: scale(1.08);
+      pointer-events: none;
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <!-- National Tiranga Flag Ribbon Top Border -->
+  <div class="tiranga-bar"></div>
+
+  <!-- ======================================================== -->
+  <!-- 3D LOGO & KINETIC SPLASH SCREEN (COMPLETE 3D INTRO)      -->
+  <!-- ======================================================== -->
+  <div id="splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 text-white select-none">
+    
+    <!-- Top Tiranga bar in splash -->
+    <div class="absolute top-0 left-0 right-0 tiranga-bar"></div>
+
+    <!-- Background dynamic gradient orb with Indian flag hues -->
+    <div class="absolute w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none animate-pulse -top-10 -left-10"></div>
+    <div class="absolute w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none -bottom-10 -right-10"></div>
+    <div class="absolute w-60 h-60 bg-blue-600/10 rounded-full blur-2xl pointer-events-none"></div>
+
+    <!-- 3D Splash Interactive Logo Canvas -->
+    <div class="relative z-10 flex flex-col items-center text-center px-4 max-w-xl w-full">
+      <div id="splash-3d-canvas" class="w-72 h-72 sm:w-80 sm:h-80 mx-auto cursor-grab active:cursor-grabbing flex items-center justify-center"></div>
+
+      <div class="space-y-3 mt-4">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-xs font-mono-data">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          <span class="text-slate-200">Government of India &bull; Ministry of Mines (MoM)</span>
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl font-black font-display tracking-tight text-white flex items-center justify-center gap-2">
+          <span>E-Waste Saathi</span>
+          <span class="text-xs px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-500 via-white to-emerald-600 text-slate-950 font-black tracking-widest uppercase">🇮🇳 INDIA</span>
+        </h1>
+        <p class="text-sm sm:text-base text-slate-400 font-medium">
+          National AI-Powered Formalization & Circular Economy Infrastructure
+        </p>
+      </div>
+
+      <!-- Action Button to Navigate to Home & Auto Progress Bar -->
+      <div class="mt-8 w-full max-w-xs flex flex-col items-center space-y-4">
+        <button onclick="enterPlatform()" class="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500 via-teal-400 to-emerald-500 hover:opacity-90 text-slate-950 font-black rounded-2xl shadow-xl shadow-emerald-500/25 transition-all transform hover:scale-105 flex items-center justify-center space-x-2 text-sm">
+          <span>Enter Platform (पोर्टल प्रवेश)</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+          <div id="splash-progress" class="bg-gradient-to-r from-amber-500 via-slate-100 to-emerald-500 h-full w-0 transition-all duration-300"></div>
+        </div>
+        <span id="splash-status-text" class="text-[11px] text-slate-500 font-mono-data">Initializing 3D Shaders & AI Registry...</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Real-time Live Ticker Bar -->
+  <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border-b border-slate-800 py-1.5 px-4 text-xs">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="relative flex h-2 w-2">
+          <span id="realtime-pulse-dot" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span id="realtime-ticker-text" class="text-slate-300 font-medium">
+          <span class="text-emerald-400 font-bold">⚡ Live Feed:</span> Connecting to E-Waste Saathi Realtime Stream...
+        </span>
+      </div>
+      <div class="flex items-center space-x-3 text-[11px] text-slate-400">
+        <span>CPCB &bull; MPCB &bull; EPR 2022 Verified</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-slate-100 to-emerald-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
+          <i class="fa-solid fa-recycle text-emerald-950"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-black text-emerald-400 leading-tight">E-Waste Saathi</h1>
+            <span class="text-[10px] bg-gradient-to-r from-amber-500 via-white to-emerald-500 text-slate-950 font-bold px-1.5 py-0.5 rounded shadow-sm">🇮🇳 भारत सरकार</span>
+          </div>
+          <p class="text-xs text-slate-400">SIH26229 — Ministry of Mines (MoM) &bull; Circular Economy</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Light / Dark Theme Toggle Button -->
+        <button onclick="ThemeManager.toggleTheme()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Toggle Light/Dark Theme">
+          <i class="fa-solid fa-sun text-amber-400 theme-toggle-icon"></i>
+        </button>
+
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">
+          <span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+          Pilot System Active
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section with 3D Floating Ecosystem -->
+  <main class="max-w-7xl mx-auto px-6 py-10 flex-1 space-y-16">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Left Column: Display Typography & CTA -->
+      <div class="lg:col-span-7 space-y-5 text-left">
+        <div class="inline-flex items-center space-x-2 bg-slate-900 border border-slate-800 rounded-full px-4 py-1.5 text-xs text-slate-300 font-mono-data">
+          <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+          <i class="fa-solid fa-cube text-emerald-400"></i>
+          <span>3D-First AI Formalization Infrastructure &bull; Digital India</span>
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+        </div>
+        
+        <h2 class="font-display text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
+          <span class="text-amber-400">Collect Better.</span> <br/>
+          <span class="text-slate-100">Earn Fairly.</span> <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300">Recycle Safely.</span>
+        </h2>
+        
+        <p class="text-slate-400 text-base sm:text-lg leading-relaxed">
+          Bridging India's 1.5M+ informal scrap collectors with accredited recyclers through <strong>Computer Vision Grading</strong>, <strong>Fair Price Intelligence</strong>, <strong>SHA-256 Digital Passports</strong>, and <strong>Interactive 3D Strategic Minerals Analytics</strong>.
+        </p>
+
+        <div class="flex flex-wrap gap-3 pt-2">
+          <a href="/admin" class="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-xl text-sm transition flex items-center border border-amber-400/40 shadow-xl shadow-amber-500/20">
+            <i class="fa-solid fa-shield-halved mr-2 text-slate-950"></i> Ministry Dashboard (राष्ट्रीय पोर्टल)
+          </a>
+          <a href="/recycler" class="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-sm shadow-xl shadow-blue-500/20 transition flex items-center border border-blue-400/30">
+            <i class="fa-solid fa-industry mr-2"></i> Recycler Portal
+          </a>
+          <a href="/collector" class="px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black rounded-xl text-sm shadow-xl shadow-emerald-500/20 transition flex items-center border border-emerald-400/30">
+            <i class="fa-solid fa-mobile-screen mr-2"></i> Start Collecting (कबाड़ी साथी)
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive 3D Floating Ecosystem Scene -->
+      <div class="lg:col-span-5 relative">
+        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-3xl p-4 shadow-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between px-2 pt-1 pb-2 border-b border-slate-800">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center">
+              <i class="fa-solid fa-cubes mr-1.5"></i> 3D E-Waste Particle Extraction
+            </span>
+            <span class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded font-mono-data">Hover & Tilt 3D</span>
+          </div>
+
+          <!-- 3D Canvas Mount Point (Centered) -->
+          <div class="canvas-container w-full h-80 cursor-grab active:cursor-grabbing">
+            <div id="hero-3d-canvas" class="w-full h-full flex items-center justify-center"></div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-2 text-center text-xs font-mono-data">
+            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-amber-400 block font-bold">Gold (Au)</span>
+              <strong class="text-white">250 ppm</strong>
+            </div>
+            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-orange-400 block font-bold">Copper (Cu)</span>
+              <strong class="text-white">22.4%</strong>
+            </div>
+            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-emerald-400 block font-bold">Neodymium</span>
+              <strong class="text-white">80 ppm</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 2: 3D INTERACTIVE MATERIAL SHOWCASE -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <span class="text-xs uppercase font-extrabold text-amber-400 tracking-wider font-mono-data">Interactive 3D Material Library</span>
+          <h3 class="font-display text-2xl sm:text-3xl font-bold text-white mt-1">Explore Strategic Mineral Recovery</h3>
+          <p class="text-xs text-slate-400">Select any e-waste category to inspect 3D geometry, AI confidence bounds, and precious metal recovery.</p>
+        </div>
+        
+        <!-- Category Selector Chips (Orange First, Green Last) -->
+        <div class="flex flex-wrap gap-2 text-xs font-bold">
+          <button onclick="changeShowcaseMaterial('PCB')" class="mat-chip active px-3.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black shadow">PCB</button>
+          <button onclick="changeShowcaseMaterial('CABLE')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Cable</button>
+          <button onclick="changeShowcaseMaterial('BATTERY')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Battery</button>
+          <button onclick="changeShowcaseMaterial('PHONE')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Phone</button>
+          <button onclick="changeShowcaseMaterial('LCD')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">LCD</button>
+          <button onclick="changeShowcaseMaterial('CRT')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">CRT</button>
+          <button onclick="changeShowcaseMaterial('MOTOR')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Motor</button>
+          <button onclick="changeShowcaseMaterial('MAGNET')" class="mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700">Magnet</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- 3D Viewer Canvas (Centered) -->
+        <div class="lg:col-span-6 bg-slate-950 border border-slate-800 rounded-2xl p-4 relative">
+          <div class="canvas-container w-full h-72 cursor-grab active:cursor-grabbing">
+            <div id="material-showcase-canvas" class="w-full h-full flex items-center justify-center"></div>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4 flex justify-between text-[10px] text-slate-400 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg">
+            <span>Drag to rotate 3D object</span>
+            <span class="text-amber-400 font-mono-data">WebGL Accelerated</span>
+          </div>
+        </div>
+
+        <!-- Material Details Card -->
+        <div class="lg:col-span-6 space-y-4 text-left">
+          <div class="flex items-center justify-between">
+            <h4 id="mat-title" class="text-xl font-black text-white">Server / Telecom High-Grade PCB</h4>
+            <span id="mat-ai-conf" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-950 text-amber-300 border border-amber-800 font-mono-data">
+              AI Confidence: 94.7%
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 block font-mono-data">Typical Lot Weight</span>
+              <strong id="mat-weight" class="text-white text-base">1.8 – 25.0 kg</strong>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 block font-mono-data">Estimated Market Value</span>
+              <strong id="mat-val" class="text-amber-400 text-base">₹620 – ₹750 / kg</strong>
+            </div>
+          </div>
+
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block font-mono-data">Recoverable Strategic Materials</span>
+            <div id="mat-metals" class="grid grid-cols-2 gap-2 text-slate-300">
+              <div>&bull; Copper: <strong class="text-amber-400">20-28%</strong></div>
+              <div>&bull; Gold: <strong class="text-amber-300">250-450 ppm</strong></div>
+              <div>&bull; Silver: <strong class="text-slate-200">800-1400 ppm</strong></div>
+              <div>&bull; Rare Earths: <strong class="text-teal-300">Gallium, Tantalum</strong></div>
+            </div>
+          </div>
+
+          <p id="mat-warning" class="text-xs text-rose-300 bg-rose-950/30 p-2.5 rounded-lg border border-rose-800/40">
+            <strong>⚠ Safe Handling Mandate:</strong> Do not open-air burn or use nitric acid baths. Formal hydrometallurgy achieves 98% purity with zero emissions.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: 3 ROLES ACTION PORTALS (TRICOLOR ORDER: ORANGE FIRST, BLUE/WHITE MIDDLE, GREEN LAST) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Role 1: Admin Intelligence Portal Card (ORANGE / SAFFRON FIRST) -->
+      <a href="/admin" class="group relative bg-slate-900 hover:bg-slate-850 border border-amber-500/30 hover:border-amber-400 rounded-3xl p-7 transition-all duration-300 shadow-xl hover:shadow-amber-500/10 flex flex-col justify-between text-left">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <span class="text-xs font-black uppercase tracking-wider text-amber-500 font-mono-data">Role 1: Ministry & Audit (केसरिया)</span>
+          <h3 class="text-xl font-black text-white mt-1 mb-2">Admin & Intelligence Hub</h3>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+            Regulatory authority dashboard for EPR compliance, anomaly detection alerts, dispute resolution, critical mineral tracking, and unit economics.
+          </p>
+        </div>
+        <div class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-center text-sm shadow-md transition">
+          Launch Admin Dashboard <i class="fa-solid fa-arrow-right ml-1"></i>
+        </div>
+      </a>
+
+      <!-- Role 2: Recycler Portal Card (BLUE / WHITE MIDDLE) -->
+      <a href="/recycler" class="group relative bg-slate-900 hover:bg-slate-850 border border-blue-500/30 hover:border-blue-400 rounded-3xl p-7 transition-all duration-300 shadow-xl hover:shadow-blue-500/10 flex flex-col justify-between text-left">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            <i class="fa-solid fa-industry"></i>
+          </div>
+          <span class="text-xs font-black uppercase tracking-wider text-blue-400 font-mono-data">Role 2: Formal Industry (सफेद / चक्र)</span>
+          <h3 class="text-xl font-black text-white mt-1 mb-2">Authorized Recycler Portal</h3>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+            Industrial interface for quoting on incoming digital lots, scanning QR passports, calibrated scale weighing, and batch pickup route optimization.
+          </p>
+        </div>
+        <div class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl text-center text-sm shadow-md transition">
+          Launch Recycler Portal <i class="fa-solid fa-arrow-right ml-1"></i>
+        </div>
+      </a>
+
+      <!-- Role 3: Collector App Card (INDIA GREEN LAST) -->
+      <a href="/collector" class="group relative bg-slate-900 hover:bg-slate-850 border border-emerald-500/30 hover:border-emerald-400 rounded-3xl p-7 transition-all duration-300 shadow-xl hover:shadow-emerald-500/10 flex flex-col justify-between text-left">
+        <div>
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform">
+            <i class="fa-solid fa-mobile-screen"></i>
+          </div>
+          <span class="text-xs font-black uppercase tracking-wider text-emerald-400 font-mono-data">Role 3: Informal Sector (हरा)</span>
+          <h3 class="text-xl font-black text-white mt-1 mb-2">Collector Mobile App (कबाड़ी साथी)</h3>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">
+            Low-literacy, voice-first (Hindi/Marathi/English), offline-ready app for taking photos, AI material grading, fair price discovery, and QR passports.
+          </p>
+        </div>
+        <div class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-center text-sm shadow-md transition">
+          Launch Collector App <i class="fa-solid fa-arrow-right ml-1"></i>
+        </div>
+      </a>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto w-full font-mono-data">
+    <span>E-Waste Saathi • Smart India Hackathon 2026 (SIH26229)</span>
+    <span class="text-slate-400 mt-2 sm:mt-0">Live 3D WebGL Engine Active</span>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/realtime.js"></script>
+  <script src="/static/js/three_visualizer.js"></script>
+  <script>
+    const materialDataCatalog = {
+      PCB: {
+        title: "Server / Telecom High-Grade PCB",
+        conf: "94.7%", weight: "1.8 – 25.0 kg", val: "₹620 – ₹750 / kg",
+        metals: "<div>&bull; Copper: <strong class='text-amber-400'>20-28%</strong></div><div>&bull; Gold: <strong class='text-amber-300'>250-450 ppm</strong></div><div>&bull; Silver: <strong class='text-slate-200'>800-1400 ppm</strong></div><div>&bull; Rare Earths: <strong class='text-teal-300'>Gallium, Tantalum</strong></div>",
+        warning: "Do not open-air burn or use nitric acid baths. Formal hydrometallurgy achieves 98% purity with zero emissions."
+      },
+      CABLE: {
+        title: "Heavy Gauge Copper Wiring",
+        conf: "96.2%", weight: "5.0 – 60.0 kg", val: "₹480 – ₹560 / kg",
+        metals: "<div>&bull; Pure Copper: <strong class='text-amber-400'>65-75%</strong></div><div>&bull; Aluminum: <strong class='text-slate-300'>10-15%</strong></div><div>&bull; PVC Polymers: <strong class='text-slate-400'>15-20%</strong></div><div>&bull; No Burning: <strong class='text-emerald-400'>Mechanical Strip</strong></div>",
+        warning: "Never burn cables in open air. Open burning produces cancer-causing dioxins and furans."
+      },
+      BATTERY: {
+        title: "Lithium-Ion & Lead Storage Cells",
+        conf: "91.8%", weight: "2.0 – 40.0 kg", val: "₹125 – ₹165 / kg",
+        metals: "<div>&bull; Lithium: <strong class='text-teal-300'>2-4%</strong></div><div>&bull; Cobalt: <strong class='text-blue-400'>15-20%</strong></div><div>&bull; Nickel: <strong class='text-slate-200'>10-14%</strong></div><div>&bull; Toxic Lead: <strong class='text-rose-400'>Captured TSDF</strong></div>",
+        warning: "CRITICAL HAZARD: Do not puncture, crush or expose to water. Taped terminals prevent catastrophic short-circuit fire."
+      },
+      PHONE: {
+        title: "Smartphones & Feature Devices",
+        conf: "93.4%", weight: "1.0 – 15.0 kg", val: "₹420 – ₹550 / kg",
+        metals: "<div>&bull; Gold: <strong class='text-amber-300'>200-350 ppm</strong></div><div>&bull; Silver: <strong class='text-slate-200'>600-1100 ppm</strong></div><div>&bull; Neodymium: <strong class='text-teal-300'>Magnets</strong></div><div>&bull; Indium: <strong class='text-sky-300'>Touch Screen</strong></div>",
+        warning: "Dismantle intact without cracking displays to prevent mercury and volatile organic dispersion."
+      },
+      LCD: {
+        title: "LCD / LED Display Panels",
+        conf: "89.5%", weight: "4.0 – 30.0 kg", val: "₹45 – ₹68 / kg",
+        metals: "<div>&bull; Indium Tin Oxide: <strong class='text-teal-300'>ITO Layer</strong></div><div>&bull; PMMA Acrylic: <strong class='text-slate-300'>Light Guides</strong></div><div>&bull; Circuit Edge: <strong class='text-amber-400'>Copper Pins</strong></div><div>&bull; Mercury: <strong class='text-rose-400'>Zero-Emission</strong></div>",
+        warning: "Leaded funnel and CCFL backlight tubes must be depolluted in compliant negative-pressure chambers."
+      },
+      CRT: {
+        title: "CRT Television & Monitor Tube",
+        conf: "95.0%", weight: "10.0 – 50.0 kg", val: "₹12 – ₹24 / kg",
+        metals: "<div>&bull; Funnel Glass: <strong class='text-rose-300'>15% Leaded</strong></div><div>&bull; Strontium/Barium: <strong class='text-slate-300'>Panel</strong></div><div>&bull; Deflection Yoke: <strong class='text-amber-400'>Copper 1.2kg</strong></div><div>&bull; TSDF Safe: <strong class='text-emerald-400'>Immobilized</strong></div>",
+        warning: "High explosion and vacuum implosion hazard. Do not break funnel glass outdoors."
+      },
+      MOTOR: {
+        title: "Appliance Electric Copper Motor",
+        conf: "92.1%", weight: "5.0 – 45.0 kg", val: "₹95 – ₹125 / kg",
+        metals: "<div>&bull; Copper Winding: <strong class='text-amber-400'>18-28%</strong></div><div>&bull; Electrical Steel: <strong class='text-slate-300'>60-70%</strong></div><div>&bull; Cast Aluminum: <strong class='text-slate-200'>8-12%</strong></div><div>&bull; Recovery Yield: <strong class='text-emerald-400'>99%</strong></div>",
+        warning: "Mechanical separation preserves steel laminations and copper coils without thermal pollution."
+      },
+      MAGNET: {
+        title: "Neodymium Actuator Magnet Assembly",
+        conf: "90.6%", weight: "0.5 – 10.0 kg", val: "₹140 – ₹185 / kg",
+        metals: "<div>&bull; Neodymium (Nd): <strong class='text-teal-300'>28-32%</strong></div><div>&bull; Iron (Fe): <strong class='text-slate-300'>64-68%</strong></div><div>&bull; Boron (B): <strong class='text-amber-300'>1%</strong></div><div>&bull; Strategic: <strong class='text-emerald-400'>EV & Wind Supply</strong></div>",
+        warning: "Rare earth magnets are crucial for domestic electric vehicles and wind turbine manufacturing."
+      }
+    };
+
+    function changeShowcaseMaterial(code) {
+      document.querySelectorAll('.mat-chip').forEach(c => {
+        c.className = "mat-chip px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700";
+      });
+      if (event && event.target) {
+        event.target.className = "mat-chip active px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black shadow";
+      }
+
+      const data = materialDataCatalog[code] || materialDataCatalog.PCB;
+      document.getElementById('mat-title').innerText = data.title;
+      document.getElementById('mat-ai-conf').innerText = `AI Confidence: ${data.conf}`;
+      document.getElementById('mat-weight').innerText = data.weight;
+      document.getElementById('mat-val').innerText = data.val;
+      document.getElementById('mat-metals').innerHTML = data.metals;
+      document.getElementById('mat-warning').innerHTML = `<strong>⚠ Safe Handling Mandate:</strong> ${data.warning}`;
+
+      ThreeVisualizer.initMaterialShowcase("material-showcase-canvas", code);
+    }
+
+    function enterPlatform() {
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.classList.add('hidden-splash');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Splash 3D Logo Scene
+      ThreeVisualizer.initSplashScene("splash-3d-canvas");
+
+      // Progress animation for splash screen
+      let progress = 0;
+      const progEl = document.getElementById('splash-progress');
+      const statusEl = document.getElementById('splash-status-text');
+      
+      const interval = setInterval(() => {
+        progress += 25;
+        if (progEl) progEl.style.width = progress + '%';
+        if (progress === 50 && statusEl) statusEl.innerText = "Loading WebGL 3D Geometry Models...";
+        if (progress === 75 && statusEl) statusEl.innerText = "Connecting Realtime Data Feed...";
+        if (progress >= 100) {
+          clearInterval(interval);
+          if (statusEl) statusEl.innerText = "Ready • Welcome to E-Waste Saathi";
+          setTimeout(() => {
+            enterPlatform();
+          }, 1200);
+        }
+      }, 400);
+
+      // 2. Initialize Main Scenes
+      ThreeVisualizer.initHeroScene("hero-3d-canvas");
+      ThreeVisualizer.initMaterialShowcase("material-showcase-canvas", "PCB");
+    });
+  </script>
+</body>
+</html>
