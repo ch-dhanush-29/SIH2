@@ -145,6 +145,229 @@ const ThreeVisualizer = {
     animate();
   },
 
+  // =========================================================================
+  // CINEMATIC SCROLL JOURNEY SYSTEM (Continuous WebGL Camera Pipeline)
+  // Maps scroll progress [0.00 -> 1.00] directly to seamless 3D camera transforms
+  // Waste -> AI Scan -> Fair Price -> Recycler Network -> Lot Passport -> Recovery
+  // =========================================================================
+  initCinematicJourney(canvasId = "cinematic-3d-canvas") {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    if (!this.isWebGLAvailable() || typeof THREE === "undefined") {
+      return;
+    }
+
+    const parent = canvas.parentElement;
+    const width = parent.clientWidth || window.innerWidth;
+    const height = parent.clientHeight || window.innerHeight;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020617, 0.04);
+
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(0, 1.8, 8.5);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Studio Ambient & Dramatic Directional Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambientLight);
+
+    const saffronKey = new THREE.PointLight(0xff9933, 3.5, 45);
+    saffronKey.position.set(6, 8, 8);
+    scene.add(saffronKey);
+
+    const emeraldFill = new THREE.PointLight(0x10b981, 3.0, 45);
+    emeraldFill.position.set(-6, -3, 6);
+    scene.add(emeraldFill);
+
+    const chakraBack = new THREE.PointLight(0x38bdf8, 2.5, 45);
+    chakraBack.position.set(0, 10, -8);
+    scene.add(chakraBack);
+
+    // Primary World Group
+    const worldGroup = new THREE.Group();
+    scene.add(worldGroup);
+
+    // Object 1: High-Precision Discarded Smartphone & Telecom PCB
+    const heroPCB = this.createPCBModel();
+    heroPCB.position.set(0, 0, 0);
+    worldGroup.add(heroPCB);
+
+    // Laser AI Scanning Holographic Plane
+    const scanGeo = new THREE.PlaneGeometry(6.2, 0.08);
+    const scanMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      transparent: true,
+      opacity: 0.85,
+      side: THREE.DoubleSide
+    });
+    const scanLaser = new THREE.Mesh(scanGeo, scanMat);
+    scanLaser.rotation.x = Math.PI / 2;
+    scanLaser.position.set(0, 0.25, 0);
+    worldGroup.add(scanLaser);
+
+    // Object 2: Satellite Recycler Node Network (Mesh Cluster)
+    const networkGroup = new THREE.Group();
+    const nodeGeo = new THREE.SphereGeometry(0.18, 16, 16);
+    const nodeMatVerified = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x065f46, emissiveIntensity: 0.5 });
+    const nodeMatHub = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0369a1, emissiveIntensity: 0.5 });
+
+    for (let i = 0; i < 18; i++) {
+      const angle = (i / 18) * Math.PI * 2;
+      const radius = 4.2 + (i % 3) * 0.8;
+      const node = new THREE.Mesh(nodeGeo, i % 2 === 0 ? nodeMatVerified : nodeMatHub);
+      node.position.set(Math.cos(angle) * radius, (Math.sin(i * 1.5) * 1.2), Math.sin(angle) * radius);
+      networkGroup.add(node);
+    }
+    worldGroup.add(networkGroup);
+
+    // Object 3: Swarm Particle Recovery Matrix
+    const particles = this.createMineralParticleSwarm(220);
+    worldGroup.add(particles);
+
+    // Object 4: Exploded Material Substrates (Visible on Deep Scroll)
+    const explodedGroup = new THREE.Group();
+    explodedGroup.position.set(0, 0, 0);
+    
+    // Top Au Contacts
+    const goldPlate = new THREE.Mesh(
+      new THREE.BoxGeometry(4.2, 0.05, 0.8),
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.95, roughness: 0.1 })
+    );
+    goldPlate.position.set(0, 1.6, 0.8);
+    explodedGroup.add(goldPlate);
+
+    // Copper Traces
+    const copperPlate = new THREE.Mesh(
+      new THREE.BoxGeometry(4.4, 0.06, 3.2),
+      new THREE.MeshStandardMaterial({ color: 0xf97316, metalness: 0.9, roughness: 0.15 })
+    );
+    copperPlate.position.set(0, 0.8, 0);
+    explodedGroup.add(copperPlate);
+
+    explodedGroup.visible = false;
+    worldGroup.add(explodedGroup);
+
+    // Scroll Interpolation Target State
+    let scrollProgress = 0;
+    let targetCameraPos = new THREE.Vector3(0, 1.8, 8.5);
+    let targetCameraLook = new THREE.Vector3(0, 0, 0);
+    let targetWorldRotY = 0;
+    let targetWorldRotX = 0.25;
+
+    // Smooth scroll event hook
+    window.addEventListener("scroll", () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      scrollProgress = docHeight > 0 ? Math.min(Math.max(window.scrollY / docHeight, 0), 1) : 0;
+
+      // Update HUD progress indicator
+      const hudProgress = document.getElementById("scroll-journey-percent");
+      if (hudProgress) hudProgress.innerText = Math.round(scrollProgress * 100) + "%";
+
+      const hudStage = document.getElementById("scroll-journey-stage");
+      if (hudStage) {
+        if (scrollProgress < 0.18) hudStage.innerText = "01. Discarded E-Waste Discovery";
+        else if (scrollProgress < 0.36) hudStage.innerText = "02. AI Vision Classification (94.7%)";
+        else if (scrollProgress < 0.54) hudStage.innerText = "03. Realtime Fair Price Intelligence";
+        else if (scrollProgress < 0.72) hudStage.innerText = "04. Recycler MCDA Geospatial Match";
+        else if (scrollProgress < 0.90) hudStage.innerText = "05. Cryptographic SHA-256 Passport";
+        else hudStage.innerText = "06. Circular Economy Mineral Recovery";
+      }
+    });
+
+    // Handle Window Resize
+    window.addEventListener("resize", () => {
+      const newW = parent.clientWidth || window.innerWidth;
+      const newH = parent.clientHeight || window.innerHeight;
+      camera.aspect = newW / newH;
+      camera.updateProjectionMatrix();
+      renderer.setSize(newW, newH);
+    });
+
+    // Animation Render Loop
+    const clock = new THREE.Clock();
+    const animate = () => {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // Continuous Cinematic Camera Keyframe Curves based on Scroll
+      if (scrollProgress < 0.20) {
+        // Stage 1: Close inspection of discarded device
+        targetCameraPos.set(Math.sin(t * 0.3) * 0.5, 1.5, 7.5 - scrollProgress * 5.0);
+        targetCameraLook.set(0, 0, 0);
+        targetWorldRotY = scrollProgress * 2.0;
+        targetWorldRotX = 0.25;
+        scanLaser.visible = false;
+        explodedGroup.visible = false;
+        heroPCB.visible = true;
+      } else if (scrollProgress < 0.40) {
+        // Stage 2: Laser AI Scanning & Classification
+        const stageProgress = (scrollProgress - 0.20) / 0.20;
+        targetCameraPos.set(0, 3.2, 5.2);
+        targetCameraLook.set(0, 0.2, 0);
+        targetWorldRotY = 0.4 + stageProgress * 0.5;
+        targetWorldRotX = 0.65;
+        scanLaser.visible = true;
+        scanLaser.position.z = Math.sin(t * 4.0) * 1.6;
+        scanLaser.material.opacity = 0.6 + Math.sin(t * 8.0) * 0.3;
+        explodedGroup.visible = false;
+        heroPCB.visible = true;
+      } else if (scrollProgress < 0.60) {
+        // Stage 3: Fair Price Matrix & Financial Landscape
+        const stageProgress = (scrollProgress - 0.40) / 0.20;
+        targetCameraPos.set(3.5, 2.2, 6.0);
+        targetCameraLook.set(0, 0, 0);
+        targetWorldRotY = 1.0 + stageProgress * 1.5;
+        targetWorldRotX = 0.3;
+        scanLaser.visible = false;
+        explodedGroup.visible = false;
+        heroPCB.visible = true;
+      } else if (scrollProgress < 0.80) {
+        // Stage 4: Recycler Network Node Pullback
+        const stageProgress = (scrollProgress - 0.60) / 0.20;
+        targetCameraPos.set(0, 5.0, 11.0);
+        targetCameraLook.set(0, 0, 0);
+        targetWorldRotY = 2.5 + stageProgress * 2.0;
+        targetWorldRotX = 0.45;
+        scanLaser.visible = false;
+        networkGroup.rotation.y = t * 0.4;
+        explodedGroup.visible = false;
+        heroPCB.visible = true;
+      } else {
+        // Stage 5: Exploded View Mineral Recovery (Gold, Copper, Rare Earths)
+        targetCameraPos.set(-2.5, 3.0, 7.0);
+        targetCameraLook.set(0, 0.5, 0);
+        targetWorldRotY = 4.5 + (scrollProgress - 0.80) * 2.0;
+        targetWorldRotX = 0.4;
+        scanLaser.visible = false;
+        heroPCB.visible = false;
+        explodedGroup.visible = true;
+        explodedGroup.rotation.y = t * 0.5;
+      }
+
+      // Smooth Camera & Object Inertia (Lerp)
+      camera.position.lerp(targetCameraPos, 0.06);
+      camera.lookAt(targetCameraLook);
+      worldGroup.rotation.y += (targetWorldRotY - worldGroup.rotation.y) * 0.06;
+      worldGroup.rotation.x += (targetWorldRotX - worldGroup.rotation.x) * 0.06;
+
+      // Float particles continuously
+      const posArr = particles.geometry.attributes.position.array;
+      for (let i = 0; i < 220; i++) {
+        posArr[i * 3 + 1] += 0.015;
+        if (posArr[i * 3 + 1] > 5.0) posArr[i * 3 + 1] = -2.0;
+      }
+      particles.geometry.attributes.position.needsUpdate = true;
+
+      renderer.render(scene, camera);
+    };
+    animate();
+  },
+
   // 1. Hero 3D Multi-Object Floating Ecosystem
   initHeroScene(containerId = "hero-3d-canvas") {
     const container = document.getElementById(containerId);
