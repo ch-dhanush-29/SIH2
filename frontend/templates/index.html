@@ -11,10 +11,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap');
     
     :root {
-      --bg-dark: #020617;
+      --bg-dark: #030712;
       --graphite: #0f172a;
       --saffron: #ff9933;
       --india-green: #138808;
@@ -22,15 +22,42 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
+      font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-dark);
       color: #f8fafc;
       overflow-x: hidden;
       scroll-behavior: smooth;
     }
 
-    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    .font-display { font-family: 'Syne', 'Space Grotesk', sans-serif; }
     .font-mono-data { font-family: 'JetBrains Mono', monospace; }
+
+    /* Animated Holographic Background Grid & Orb */
+    .hero-mesh-bg {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(19, 136, 8, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(2, 132, 199, 0.08) 0px, transparent 50%);
+    }
+
+    /* Laser Scanner Beam Keyframes */
+    @keyframes scanBeam {
+      0% { top: 0%; opacity: 0.2; }
+      50% { top: 95%; opacity: 0.9; }
+      100% { top: 0%; opacity: 0.2; }
+    }
+    .animate-scan-beam {
+      animation: scanBeam 3s ease-in-out infinite;
+    }
+
+    /* Floating Data Pulse */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(0.5deg); }
+    }
+    .animate-float-slow {
+      animation: floatSlow 6s ease-in-out infinite;
+    }
 
     /* Indian National Flag (Tiranga) Top Ribbon */
     .tiranga-bar {
@@ -71,8 +98,9 @@
 
     .story-card {
       pointer-events: auto;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
     }
 
     /* Light Theme Styling Overrides */
@@ -84,14 +112,19 @@
       background-color: #f8fafc !important;
       color: #0f172a !important;
     }
+    .light .hero-mesh-bg {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(19, 136, 8, 0.08) 0px, transparent 50%);
+    }
     .light .cinematic-stage {
-      opacity: 0.92;
+      opacity: 0.95;
     }
     .light .story-card {
-      background-color: rgba(255, 255, 255, 0.88) !important;
-      border-color: #e2e8f0 !important;
+      background-color: rgba(255, 255, 255, 0.92) !important;
+      border-color: #cbd5e1 !important;
       color: #0f172a !important;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
     }
     .light .bg-slate-900 { background-color: #ffffff !important; color: #0f172a !important; }
     .light .bg-slate-950 { background-color: #f1f5f9 !important; color: #0f172a !important; }
@@ -104,7 +137,7 @@
     .light .text-slate-400 { color: #64748b !important; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950">
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950 hero-mesh-bg">
 
   <!-- National Tiranga Flag Ribbon Top Border -->
   <div class="fixed top-0 left-0 right-0 z-50">
@@ -227,116 +260,207 @@
 
     <!-- SCENE 2 & 3: COMPUTER VISION SCANNING -->
     <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl story-card bg-slate-900/70 border border-emerald-500/40 p-8 rounded-3xl space-y-4">
-        <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase tracking-widest">02 / Material Intelligence</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
+      <div class="max-w-xl story-card bg-slate-900/80 border border-emerald-500/50 p-8 sm:p-10 rounded-3xl space-y-5 relative overflow-hidden">
+        
+        <!-- Holographic Scanning Laser Line (Animated) -->
+        <div class="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-scan-beam pointer-events-none"></div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            02 / Material Intelligence
+          </span>
+          <span class="text-[10px] font-mono-data bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">
+            CV-MODEL-V3
+          </span>
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
           YOUR PHONE DOES.
         </h2>
         
-        <!-- Interactive AI Inspection HUD -->
-        <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-2xl font-mono-data text-xs space-y-2">
-          <div class="flex justify-between text-slate-400">
-            <span>MATERIAL DETECTED:</span>
-            <strong class="text-emerald-400 font-bold">Server / Telecom PCB (High Grade)</strong>
+        <!-- Interactive AI Inspection HUD with Animated Laser Target -->
+        <div class="relative p-5 bg-slate-950/90 border border-emerald-500/30 rounded-2xl font-mono-data text-xs space-y-3 shadow-inner">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-slate-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-microchip text-emerald-400"></i> MATERIAL DETECTED:
+            </span>
+            <strong class="text-emerald-400 font-bold text-sm">Server / Telecom High-Grade PCB</strong>
           </div>
-          <div class="flex justify-between text-slate-400">
-            <span>AI CONFIDENCE:</span>
-            <strong class="text-white font-bold">94.7% (MobileNet-V3 Gated)</strong>
+          
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <div class="space-y-1">
+              <span class="text-slate-500 block text-[10px]">AI CONFIDENCE SCORE</span>
+              <div class="flex items-center space-x-2">
+                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[94.7%] animate-pulse"></div>
+                </div>
+                <strong class="text-white text-xs">94.7%</strong>
+              </div>
+            </div>
+            
+            <div class="space-y-1">
+              <span class="text-slate-500 block text-[10px]">ESTIMATED NET WEIGHT</span>
+              <strong class="text-white text-xs block">1.8 kg (Intact Board)</strong>
+            </div>
           </div>
-          <div class="flex justify-between text-slate-400">
-            <span>ESTIMATED WEIGHT:</span>
-            <strong class="text-white">1.8 kg</strong>
+
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Hazard Level: <strong class="text-amber-400 font-semibold">Leaded Solder (Low)</strong></span>
+            <span class="text-emerald-400">✓ TSDF Mandate Compliant</span>
           </div>
         </div>
 
-        <p class="text-slate-400 text-sm">
-          Computer vision running on-device evaluates physical condition, component density, and hazard category in under 400ms.
+        <p class="text-slate-400 text-sm leading-relaxed">
+          On-device edge inference evaluates physical wear, component density, and hazard category within 400ms without internet dependency.
         </p>
       </div>
     </section>
 
     <!-- SCENE 4 & 5: FAIR PRICE INTELLIGENCE -->
     <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl ml-auto story-card bg-slate-900/70 border border-amber-500/40 p-8 rounded-3xl space-y-4">
-        <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest">03 / Fair Valuation</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
+      <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-amber-500/50 p-8 sm:p-10 rounded-3xl space-y-5 relative">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+            03 / Fair Valuation
+          </span>
+          <span class="text-[10px] font-mono-data bg-amber-950/80 text-amber-300 border border-amber-800 px-2 py-0.5 rounded">
+            MANDI-REGRESSION
+          </span>
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
           NOW YOU KNOW WHAT IT'S WORTH.
         </h2>
 
-        <div class="p-5 bg-gradient-to-br from-slate-950 to-amber-950/30 border border-amber-500/30 rounded-2xl space-y-3 font-mono-data">
-          <span class="text-xs text-slate-400 uppercase">Estimated Fair Market Range</span>
-          <div class="text-3xl sm:text-4xl font-black text-amber-400">
-            ₹540 — ₹620 <span class="text-base text-slate-300 font-normal">/ kg</span>
+        <div class="p-6 bg-gradient-to-br from-slate-950 to-amber-950/40 border border-amber-500/40 rounded-2xl space-y-4 font-mono-data shadow-2xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400 uppercase tracking-wider">Estimated Fair Market Range</span>
+            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">
+              +62.4% vs Aggregator
+            </span>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-800 text-slate-300">
-            <div>&bull; Mandi Benchmark: <strong class="text-white">₹580</strong></div>
-            <div>&bull; Recycler Demand: <strong class="text-emerald-400">High (86%)</strong></div>
+          
+          <div class="text-4xl sm:text-5xl font-black text-amber-400 tracking-tight flex items-baseline gap-2">
+            <span>₹540 — ₹620</span>
+            <span class="text-base text-slate-400 font-normal">/ kg</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800 text-xs text-slate-300">
+            <div class="p-2 bg-slate-900/80 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 block">APMC Mandi Base</span>
+              <strong class="text-white text-sm">₹580 / kg</strong>
+            </div>
+            <div class="p-2 bg-slate-900/80 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-500 block">Recycler Demand</span>
+              <strong class="text-emerald-400 text-sm">High (86%)</strong>
+            </div>
           </div>
         </div>
 
-        <!-- Why This Price Collapsible Trigger -->
-        <button onclick="document.getElementById('why-price-modal').classList.toggle('hidden')" class="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1">
-          <span><i class="fa-solid fa-circle-question mr-1"></i> Why this price?</span>
+        <!-- Why This Price Interactive Explainability HUD -->
+        <button onclick="document.getElementById('why-price-modal').classList.toggle('hidden')" class="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1.5 transition">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Inspect Explainable Pricing Factors</span>
+          <i class="fa-solid fa-chevron-down text-[10px]"></i>
         </button>
 
-        <div id="why-price-modal" class="hidden p-4 bg-slate-950 border border-slate-800 rounded-2xl font-mono-data text-xs space-y-2">
-          <div class="flex justify-between"><span>LOCAL MARKET:</span><span class="text-amber-400">86%</span></div>
-          <div class="w-full bg-slate-800 h-1 rounded"><div class="bg-amber-400 h-1 w-[86%]"></div></div>
-          <div class="flex justify-between"><span>RECENT TRANSACTIONS:</span><span class="text-emerald-400">74%</span></div>
-          <div class="w-full bg-slate-800 h-1 rounded"><div class="bg-emerald-400 h-1 w-[74%]"></div></div>
-          <p class="text-[10px] text-slate-400 pt-1">Combines live market observations, material category, condition multiplier, and verified recycler bids.</p>
+        <div id="why-price-modal" class="hidden p-5 bg-slate-950 border border-slate-800 rounded-2xl font-mono-data text-xs space-y-3">
+          <div class="flex justify-between"><span>LOCAL MARKET DEPTH:</span><span class="text-amber-400 font-bold">86%</span></div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full"><div class="bg-amber-400 h-full w-[86%] rounded-full"></div></div>
+          
+          <div class="flex justify-between"><span>RECENT SETTLED TRADES:</span><span class="text-emerald-400 font-bold">74%</span></div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full"><div class="bg-emerald-400 h-full w-[74%] rounded-full"></div></div>
+
+          <div class="flex justify-between"><span>RECYCLER BID COMPETITION:</span><span class="text-blue-400 font-bold">91%</span></div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full"><div class="bg-blue-400 h-full w-[91%] rounded-full"></div></div>
+          
+          <p class="text-[10px] text-slate-400 pt-2 border-t border-slate-800/80">
+            Formula dynamically weights verified trade history, CPCB regulatory scrap quotas, and physical board grading.
+          </p>
         </div>
       </div>
     </section>
 
     <!-- SCENE 6: RECYCLER MATCHING NETWORK -->
     <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl story-card bg-slate-900/70 border border-blue-500/40 p-8 rounded-3xl space-y-4">
-        <span class="text-xs font-mono-data text-blue-400 font-bold uppercase tracking-widest">04 / Recycler Matching</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
+      <div class="max-w-xl story-card bg-slate-900/80 border border-blue-500/50 p-8 sm:p-10 rounded-3xl space-y-5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono-data text-blue-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+            04 / Recycler Matching
+          </span>
+          <span class="text-[10px] font-mono-data bg-blue-950/80 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">
+            MCDA-HAVERSINE
+          </span>
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
           NOW FIND WHO WILL BUY IT.
         </h2>
 
-        <!-- Best Match Recycler Badge -->
-        <div class="p-4 bg-slate-950 border border-blue-500/30 rounded-2xl space-y-2">
+        <!-- Best Match Recycler Badge with Verified Trust -->
+        <div class="p-5 bg-slate-950 border border-blue-500/40 rounded-2xl space-y-3 shadow-2xl">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white text-sm">EcoGreen Recyclers Pvt Ltd</h4>
-            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono-data font-bold">✓ CPCB Verified</span>
+            <div class="flex items-center space-x-2">
+              <div class="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-industry"></i>
+              </div>
+              <h4 class="font-bold text-white text-sm">EcoGreen Recyclers Pvt Ltd</h4>
+            </div>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono-data font-bold flex items-center gap-1">
+              <i class="fa-solid fa-circle-check"></i> CPCB Verified
+            </span>
           </div>
-          <div class="grid grid-cols-3 gap-2 text-xs font-mono-data text-slate-300">
-            <div><span class="text-[10px] text-slate-500 block">DISTANCE</span><strong>3.2 km</strong></div>
-            <div><span class="text-[10px] text-slate-500 block">OFFER</span><strong class="text-amber-400">₹610/kg</strong></div>
-            <div><span class="text-[10px] text-slate-500 block">TRUST SCORE</span><strong class="text-emerald-400">94.8 / 100</strong></div>
+          
+          <div class="grid grid-cols-3 gap-2 text-xs font-mono-data text-slate-300 pt-1">
+            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800"><span class="text-[10px] text-slate-500 block">DISTANCE</span><strong>3.2 km</strong></div>
+            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800"><span class="text-[10px] text-slate-500 block">TOP OFFER</span><strong class="text-amber-400">₹610/kg</strong></div>
+            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800"><span class="text-[10px] text-slate-500 block">TRUST SCORE</span><strong class="text-emerald-400">94.8 / 100</strong></div>
           </div>
         </div>
 
-        <p class="text-slate-400 text-sm">
-          Multi-Criteria Decision Analysis (MCDA) ranks authorized recyclers by distance, indicative price, and verified payment history.
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Multi-Criteria Decision Analysis (MCDA) pairs scrap collectors with accredited regional recyclers, optimizing route pickups and eliminating middleman exploitation.
         </p>
       </div>
     </section>
 
     <!-- SCENE 7 & 8: LOT PASSPORT & CRYPTOGRAPHIC HANDOVER -->
     <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl ml-auto story-card bg-slate-900/70 border border-purple-500/40 p-8 rounded-3xl space-y-4">
-        <span class="text-xs font-mono-data text-purple-400 font-bold uppercase tracking-widest">05 / Digital Identity</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
+      <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-purple-500/50 p-8 sm:p-10 rounded-3xl space-y-5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono-data text-purple-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+            05 / Digital Identity
+          </span>
+          <span class="text-[10px] font-mono-data bg-purple-950/80 text-purple-300 border border-purple-800 px-2 py-0.5 rounded">
+            SHA-256 PASSPORT
+          </span>
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
           A PHYSICAL OBJECT BECOMES A DIGITAL RECORD.
         </h2>
 
-        <div class="p-5 bg-slate-950 border border-purple-500/30 rounded-2xl space-y-3 font-mono-data text-xs">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="text-slate-400">LOT PASSPORT:</span>
-            <strong class="text-purple-400 text-sm">EW-2026-004821</strong>
+        <div class="p-6 bg-slate-950 border border-purple-500/40 rounded-2xl space-y-3 font-mono-data text-xs shadow-2xl">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+            <span class="text-slate-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-passport text-purple-400"></i> LOT PASSPORT ID:
+            </span>
+            <strong class="text-purple-300 font-black text-sm tracking-wider">EW-2026-004821</strong>
           </div>
-          <div class="space-y-1.5 text-slate-300">
-            <div class="flex justify-between"><span>1. Collected & Graded:</span><span class="text-emerald-400">✓ AI Verified</span></div>
-            <div class="flex justify-between"><span>2. Recycler Matched:</span><span class="text-emerald-400">✓ EcoGreen</span></div>
-            <div class="flex justify-between"><span>3. Scale Pan Handover:</span><span class="text-emerald-400">✓ 17.6 kg Tare Match</span></div>
-            <div class="flex justify-between"><span>4. Payment Settled:</span><span class="text-amber-400 font-bold">₹10,736 (Cash/UPI)</span></div>
+          
+          <div class="space-y-2 text-slate-300 pt-1">
+            <div class="flex justify-between items-center"><span class="text-slate-400">1. AI Vision Grading:</span><span class="text-emerald-400 font-bold">✓ 94.7% High-Grade PCB</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">2. Recycler Matching:</span><span class="text-emerald-400 font-bold">✓ EcoGreen Recyclers</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">3. Calibrated Scale Weighing:</span><span class="text-emerald-400 font-bold">✓ 17.6 kg (0.0% Discrepancy)</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">4. Settlement Completed:</span><span class="text-amber-400 font-black text-sm">₹10,736 (Cash/UPI)</span></div>
           </div>
-          <div class="pt-2 text-[10px] text-slate-500 truncate">
-            SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+          <div class="pt-2.5 border-t border-slate-800 text-[10px] text-slate-500 truncate">
+            IMMUTABLE HASH: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
           </div>
         </div>
       </div>
