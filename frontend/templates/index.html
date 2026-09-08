@@ -59,6 +59,32 @@
       animation: floatSlow 6s ease-in-out infinite;
     }
 
+    /* 3D Interactive Card Tilt & Glass Hover */
+    .visual-3d-card {
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+    .visual-3d-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.25);
+    }
+    .visual-3d-card img {
+      transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .visual-3d-card:hover img {
+      transform: scale(1.06);
+    }
+
+    /* Holographic Edge Pulse */
+    @keyframes borderGlow {
+      0%, 100% { border-color: rgba(16, 185, 129, 0.3); }
+      50% { border-color: rgba(245, 158, 11, 0.6); }
+    }
+    .holo-glow-border {
+      animation: borderGlow 4s ease-in-out infinite;
+    }
+
     /* Indian National Flag (Tiranga) Top Ribbon */
     .tiranga-bar {
       height: 3.5px;
@@ -247,8 +273,23 @@
 
     <!-- SCENE 1: THE DISCARDED PIECE OF E-WASTE -->
     <section id="scene-1" class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl ml-auto story-card bg-slate-900/70 border border-slate-800 p-8 rounded-3xl space-y-4">
-        <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest">01 / The Origin</span>
+      <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-slate-800 p-8 sm:p-10 rounded-3xl space-y-5 holo-glow-border">
+        <!-- 3D Interactive Story Visual Card #1 -->
+        <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-slate-700/60 shadow-2xl group">
+          <img src="/static/images/gallery/story_1_discarded_device.jpg" alt="A Discarded Device" class="w-full h-52 object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-mono-data">
+            <span class="bg-slate-900/90 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg backdrop-blur">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i> Informal Dump Yard
+            </span>
+            <span class="text-slate-300 bg-slate-950/80 px-2 py-0.5 rounded">Pune Mandi</span>
+          </div>
+        </div>
+
+        <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          01 / The Origin
+        </span>
         <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
           YOU DON'T NEED TO KNOW WHAT IT IS.
         </h2>
@@ -258,12 +299,28 @@
       </div>
     </section>
 
-    <!-- SCENE 2 & 3: COMPUTER VISION SCANNING -->
+    <!-- SCENE 2: COMPUTER VISION SCANNING -->
     <section class="story-step max-w-7xl mx-auto">
       <div class="max-w-xl story-card bg-slate-900/80 border border-emerald-500/50 p-8 sm:p-10 rounded-3xl space-y-5 relative overflow-hidden">
         
         <!-- Holographic Scanning Laser Line (Animated) -->
         <div class="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-scan-beam pointer-events-none"></div>
+
+        <!-- 3D Interactive Story Visual Grid #2 & #3 -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
+            <img src="/static/images/gallery/story_2_collector_capture.jpg" alt="Collector Camera Capture" class="w-full h-36 object-cover" />
+            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 px-2 py-0.5 rounded">
+              📸 Collector Camera
+            </div>
+          </div>
+          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
+            <img src="/static/images/gallery/story_3_ai_pcb_vision.jpg" alt="AI PCB Vision Matrix" class="w-full h-36 object-cover" />
+            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 px-2 py-0.5 rounded">
+              🧠 Vision Overlay
+            </div>
+          </div>
+        </div>
 
         <div class="flex items-center justify-between">
           <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
@@ -317,9 +374,18 @@
       </div>
     </section>
 
-    <!-- SCENE 4 & 5: FAIR PRICE INTELLIGENCE -->
+    <!-- SCENE 3: FAIR PRICE INTELLIGENCE -->
     <section class="story-step max-w-7xl mx-auto">
       <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-amber-500/50 p-8 sm:p-10 rounded-3xl space-y-5 relative">
+        <!-- 3D Interactive Story Visual Card #4 -->
+        <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-amber-500/40 shadow-2xl group">
+          <img src="/static/images/gallery/story_4_fair_price_graph.jpg" alt="Fair Price Intelligence Graph" class="w-full h-48 object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 bg-slate-950/90 text-amber-400 border border-amber-500/40 px-3 py-1 rounded-lg text-xs font-mono-data backdrop-blur">
+            📈 Real-Time APMC Mandi Benchmark
+          </div>
+        </div>
+
         <div class="flex items-center justify-between">
           <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
@@ -383,9 +449,18 @@
       </div>
     </section>
 
-    <!-- SCENE 6: RECYCLER MATCHING NETWORK -->
+    <!-- SCENE 4: RECYCLER MATCHING NETWORK -->
     <section class="story-step max-w-7xl mx-auto">
       <div class="max-w-xl story-card bg-slate-900/80 border border-blue-500/50 p-8 sm:p-10 rounded-3xl space-y-5">
+        <!-- 3D Interactive Story Visual Card #5 -->
+        <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-blue-500/40 shadow-2xl group">
+          <img src="/static/images/gallery/story_5_recycler_map.jpg" alt="Nearby Recyclers Spatial Map" class="w-full h-48 object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 bg-slate-950/90 text-blue-400 border border-blue-500/40 px-3 py-1 rounded-lg text-xs font-mono-data backdrop-blur">
+            🗺️ Haversine Proximity Routing
+          </div>
+        </div>
+
         <div class="flex items-center justify-between">
           <span class="text-xs font-mono-data text-blue-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
@@ -427,13 +502,30 @@
       </div>
     </section>
 
-    <!-- SCENE 7 & 8: LOT PASSPORT & CRYPTOGRAPHIC HANDOVER -->
+    <!-- SCENE 5: LOT PASSPORT & HANDOVER VERIFICATION -->
     <section class="story-step max-w-7xl mx-auto">
       <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-purple-500/50 p-8 sm:p-10 rounded-3xl space-y-5">
+        
+        <!-- 3D Interactive Story Visual Grid #6 & #7 -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-xl group">
+            <img src="/static/images/gallery/story_6_handover_verified.jpg" alt="Handover Scale Verification" class="w-full h-36 object-cover" />
+            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-purple-300 px-2 py-0.5 rounded">
+              ⚖️ Verified Tare Handover
+            </div>
+          </div>
+          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
+            <img src="/static/images/gallery/story_7_payment_received.jpg" alt="Direct Fair Payment Settled" class="w-full h-36 object-cover" />
+            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 px-2 py-0.5 rounded">
+              💵 ₹10,850 Instant Settlement
+            </div>
+          </div>
+        </div>
+
         <div class="flex items-center justify-between">
           <span class="text-xs font-mono-data text-purple-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
-            05 / Digital Identity
+            05 / Digital Identity & Settlement
           </span>
           <span class="text-[10px] font-mono-data bg-purple-950/80 text-purple-300 border border-purple-800 px-2 py-0.5 rounded">
             SHA-256 PASSPORT
@@ -466,9 +558,26 @@
       </div>
     </section>
 
-    <!-- SCENE 9 & 10: CIRCULAR RECOVERY -->
+    <!-- SCENE 6: CIRCULAR RECOVERY & NATIONAL IMPACT -->
     <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-2xl mx-auto text-center story-card bg-slate-900/80 border border-emerald-500/40 p-8 sm:p-12 rounded-3xl space-y-6">
+      <div class="max-w-3xl mx-auto text-center story-card bg-slate-900/85 border border-emerald-500/40 p-8 sm:p-12 rounded-3xl space-y-6">
+        
+        <!-- 3D Interactive Story Visual Grid #8 & #9 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
+            <img src="/static/images/gallery/story_8_mineral_recovery.jpg" alt="Strategic Mineral Hydrometallurgy" class="w-full h-44 object-cover" />
+            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 px-2 py-0.5 rounded">
+              ⚡ Hydrometallurgical Refining
+            </div>
+          </div>
+          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-blue-500/40 shadow-xl group">
+            <img src="/static/images/gallery/story_9_circular_india.jpg" alt="Circular Economy India" class="w-full h-44 object-cover" />
+            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-blue-300 px-2 py-0.5 rounded">
+              🇮🇳 National Circular Sovereign Supply
+            </div>
+          </div>
+        </div>
+
         <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase tracking-widest">06 / Strategic Recovery</span>
         <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
           WHAT LOOKS LIKE WASTE IS A RESOURCE WAITING FOR THE RIGHT SYSTEM.
@@ -492,6 +601,202 @@
         <p class="text-slate-400 text-sm max-w-lg mx-auto leading-relaxed">
           From informal street collection to accredited zero-emission hydrometallurgical refining — powering India's domestic electronics supply chain.
         </p>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- BENTO UI MASTER SUITE (ALL 9 CORE APPLICATION PANELS)                     -->
+    <!-- ========================================================================= -->
+    <section class="max-w-7xl mx-auto px-6 py-20 space-y-12">
+      <div class="border-b border-slate-800 pb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div class="space-y-2">
+          <span class="text-xs font-mono-data text-amber-400 uppercase tracking-widest font-bold">Interactive Platform Modules</span>
+          <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">
+            E-WASTE SAATHI CORE INTERFACE SUITE
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Explore the 9 operational touchpoints connecting collectors, recyclers, and regulatory authorities.
+          </p>
+        </div>
+        <span class="text-xs px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full font-mono-data font-bold">
+          9-Panel Production UI
+        </span>
+      </div>
+
+      <!-- 9 Interactive Bento Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Bento 1: Hero Mission -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_1_hero_mission.jpg" alt="Mission Overview" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded">
+                01 • Platform Mission
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">From E-Waste to Better Tomorrow</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Connecting 1.5M+ informal workers with fair pricing, certified formal recyclers, and clean circular supply chains.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-amber-400 pt-2 border-t border-slate-800/80">
+            • Trusted Recyclers • Safer Communities
+          </div>
+        </div>
+
+        <!-- Bento 2: AI Material ID -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_2_ai_material_id.jpg" alt="AI Material Identification" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
+                02 • CV Gating
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">AI Material Identification</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Instant snapshot identification of telecom PCBs, server boards, and batteries with 94.7% confidence rating.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-emerald-400 pt-2 border-t border-slate-800/80">
+            • ₹540–₹620/kg Range • 1.8kg Net Est.
+          </div>
+        </div>
+
+        <!-- Bento 3: Fair Price Intelligence -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_3_fair_price_intel.jpg" alt="Fair Price Intelligence" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded">
+                03 • Price Discovery
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Fair Price Intelligence</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Historical 30-day market trends and APMC mandi dynamic benchmarks to protect collectors from arbitrary lowballs.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-amber-400 pt-2 border-t border-slate-800/80">
+            • +12% Growth (30D) • Pune Mandi
+          </div>
+        </div>
+
+        <!-- Bento 4: Nearby Authorized Recyclers -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_4_nearby_recyclers.jpg" alt="Nearby Recyclers" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-blue-400 border border-blue-500/40 px-2 py-0.5 rounded">
+                04 • MCDA Matching
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Nearby Authorized Recyclers</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Real-time radar radar map locating CPCB-verified formal recycling facilities offering top transparent quotes.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-blue-400 pt-2 border-t border-slate-800/80">
+            • GreenEarth (₹600) • EcoCycle (₹580)
+          </div>
+        </div>
+
+        <!-- Bento 5: Lot Passport QR -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_5_lot_passport_qr.jpg" alt="Digital Lot Passport" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-purple-400 border border-purple-500/40 px-2 py-0.5 rounded">
+                05 • Chain of Custody
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Digital Lot Passport</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Every scrap bag receives a cryptographic QR code passport tracing grading, weigh-in, transit, and final smelting.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-purple-400 pt-2 border-t border-slate-800/80">
+            • EW-2026-004821 • SHA-256 Validated
+          </div>
+        </div>
+
+        <!-- Bento 6: Earnings Made Simple -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_6_earnings_simple.jpg" alt="Collector Earnings Ledger" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
+                06 • Financial Ledger
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Earnings Made Simple</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Transparent monthly ledger tracking daily weights, unit prices, UPI transfers, and cumulative earnings.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-emerald-400 pt-2 border-t border-slate-800/80">
+            • ₹12,450 Total Income • 100% Direct Payout
+          </div>
+        </div>
+
+        <!-- Bento 7: Safety First Vernacular -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_7_safety_first_vernacular.jpg" alt="Safety First Protocols" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded">
+                07 • Health & Vernacular
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Safety First Voice Guide</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Voice-assisted hazard instructions in Hindi (हिंदी में सुनें), Marathi, and English to eliminate open toxic burning.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-amber-400 pt-2 border-t border-slate-800/80">
+            • Avoid Burning • Battery Safety Alerts
+          </div>
+        </div>
+
+        <!-- Bento 8: Works Offline -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-teal-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_8_works_offline.jpg" alt="Offline Sync Engine" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-teal-400 border border-teal-500/40 px-2 py-0.5 rounded">
+                08 • Offline First
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Works Offline Everywhere</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Zero connectivity? No problem. Photos save locally and sync seamlessly to the national ledger when reconnected.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-teal-400 pt-2 border-t border-slate-800/80">
+            • IndexedDB Cache • Conflict-Free Sync
+          </div>
+        </div>
+
+        <!-- Bento 9: Waste to Resources -->
+        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+              <img src="/static/images/gallery/bento_9_waste_to_resources.jpg" alt="Strategic Critical Minerals" class="w-full h-44 object-cover" />
+              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
+                09 • Sovereign Minerals
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-white">From Waste to Resources</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              High-value mineral recovery extracting Copper, Gold, Cobalt, and Rare Earths for India's self-reliant green future.
+            </p>
+          </div>
+          <div class="text-[11px] font-mono-data text-emerald-400 pt-2 border-t border-slate-800/80">
+            • Cu • Au • Co • Nd Rare Earths
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -704,6 +1009,24 @@
           }
         });
       }
+
+      // 4. Interactive 3D Card Parallax Tilt on Pointer Move
+      const cards = document.querySelectorAll('.visual-3d-card');
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -7;
+          const rotateY = ((x - centerX) / centerX) * 7;
+          card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-6px) scale(1.02)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)';
+        });
+      });
     });
   </script>
 </body>
