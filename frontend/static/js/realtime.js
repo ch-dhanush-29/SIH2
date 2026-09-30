@@ -2,7 +2,7 @@
  * E-Waste Saathi — Unified Real-Time WebSocket Client
  * Canonical Endpoint: /ws/live
  * Provides connection state monitoring, automatic exponential reconnect,
- * heartbeat keepalive, event deduplication, and initial history hydration.
+ * heartbeat keepalive, Set/Map duplicate listener protection, and initial history hydration.
  */
 
 const RealtimeStream = {
@@ -11,12 +11,13 @@ const RealtimeStream = {
   maxReconnectDelay: 10000,
   reconnectTimer: null,
   heartbeatTimer: null,
-  listeners: {}, // eventName -> Array<callback>
-  categoryListeners: {}, // categoryName -> Array<callback>
-  allListeners: [], // Array<callback>
+  anyListeners: new Set(),
+  eventListeners: new Map(), // eventName -> Set<callback>
+  categoryListeners: new Map(), // categoryName -> Set<callback>
   seenEventIds: new Set(),
-  status: 'OFFLINE', // LIVE, RECONNECTING, OFFLINE
+  status: 'OFFLINE', // LIVE, CONNECTING, RECONNECTING, OFFLINE
   isManualDisconnect: false,
+  lastEventTimestamp: null,
 
   init() {
     this.isManualDisconnect = false;
@@ -34,7 +35,7 @@ const RealtimeStream = {
     const host = window.location.host;
     const wsUrl = `${protocol}//${host}/ws/live`;
 
-    this.setStatus('RECONNECTING');
+    this.setStatus(this.reconnectAttempts > 0 ? 'RECONNECTING' : 'CONNECTING');
 
     try {
       this.socket = new WebSocket(wsUrl);
@@ -49,7 +50,7 @@ const RealtimeStream = {
       this.socket.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
-          this.processEvent(msg);
+          this.handleMessage(msg);
         } catch (e) {
           console.warn("RealtimeStream: JSON parse error", e);
         }
@@ -89,6 +90,22 @@ const RealtimeStream = {
     console.log("🔌 RealtimeStream: Disconnected manually");
   },
 
+  reconnect() {
+    this.disconnect();
+    this.isManualDisconnect = false;
+    this.reconnectAttempts = 0;
+    this.connect();
+  },
+
+  send(message) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      const payload = typeof message === 'string' ? message : JSON.stringify(message);
+      this.socket.send(payload);
+    } else {
+      console.warn("RealtimeStream: Cannot send, socket not open");
+    }
+  },
+
   scheduleReconnect() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     const delay = Math.min(1000 * Math.pow(1.5, this.reconnectAttempts), this.maxReconnectDelay);
@@ -102,7 +119,7 @@ const RealtimeStream = {
     this.stopHeartbeat();
     this.heartbeatTimer = setInterval(() => {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify({ action: "PING" }));
+        this.send({ action: "PING" });
       }
     }, 15000);
   },
@@ -119,8 +136,8 @@ const RealtimeStream = {
       if (newStatus === 'LIVE') {
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> LIVE`;
         badge.className = "realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
-      } else if (newStatus === 'RECONNECTING') {
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> RECONNECTING`;
+      } else if (newStatus === 'CONNECTING' || newStatus === 'RECONNECTING') {
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> ${newStatus}`;
         badge.className = "realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200";
       } else {
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span> OFFLINE`;
@@ -132,20 +149,33 @@ const RealtimeStream = {
     if (pulseDot) {
       pulseDot.className = newStatus === 'LIVE' 
         ? "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" 
-        : (newStatus === 'RECONNECTING' ? "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-slate-400");
+        : (newStatus === 'CONNECTING' || newStatus === 'RECONNECTING' ? "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-slate-400");
     }
   },
 
-  processEvent(msg) {
-    // Normalization adapter for legacy event_type
+  normalizeRealtimeEvent(msg) {
+    if (!msg || typeof msg !== 'object') return null;
     const eventName = msg.event || msg.event_type;
-    if (!eventName) return;
-    msg.event = eventName;
+    if (!eventName) return null;
+
+    return {
+      event_id: msg.event_id || `${eventName}_${msg.timestamp || Date.now()}_${(msg.data && msg.data.lot_id) || ''}`,
+      event: eventName,
+      category: msg.category || "general",
+      timestamp: msg.timestamp || new Date().toISOString(),
+      data: msg.data || {},
+      summary: msg.summary || "",
+      severity: msg.severity || "info"
+    };
+  },
+
+  handleMessage(rawMsg) {
+    const normMsg = this.normalizeRealtimeEvent(rawMsg);
+    if (!normMsg) return;
 
     // Deduplication check
-    const eventId = msg.event_id || `${msg.event}_${msg.timestamp}_${(msg.data && msg.data.lot_id) || ''}`;
-    if (this.seenEventIds.has(eventId)) return;
-    this.seenEventIds.add(eventId);
+    if (this.seenEventIds.has(normMsg.event_id)) return;
+    this.seenEventIds.add(normMsg.event_id);
 
     // Limit seen cache size
     if (this.seenEventIds.size > 500) {
@@ -153,23 +183,30 @@ const RealtimeStream = {
       for (let i = 0; i < 100; i++) this.seenEventIds.delete(it.next().value);
     }
 
-    // Update global ticker text if present
+    this.lastEventTimestamp = Date.now();
+    this.dispatchEvent(normMsg);
+  },
+
+  dispatchEvent(msg) {
+    // Update global ticker text
     this.updateTickers(msg);
 
-    // Dispatch to registered listeners
-    this.allListeners.forEach(fn => {
-      try { fn(msg); } catch (err) { console.error("Listener error", err); }
+    // 1. Dispatch to onAny listeners
+    this.anyListeners.forEach(fn => {
+      try { fn(msg); } catch (err) { console.error("Realtime onAny listener error:", err); }
     });
 
-    if (this.listeners[eventName]) {
-      this.listeners[eventName].forEach(fn => {
-        try { fn(msg); } catch (err) { console.error("Event listener error", err); }
+    // 2. Dispatch to event-specific listeners
+    if (this.eventListeners.has(msg.event)) {
+      this.eventListeners.get(msg.event).forEach(fn => {
+        try { fn(msg); } catch (err) { console.error("Realtime event listener error:", err); }
       });
     }
 
-    if (msg.category && this.categoryListeners[msg.category]) {
-      this.categoryListeners[msg.category].forEach(fn => {
-        try { fn(msg); } catch (err) { console.error("Category listener error", err); }
+    // 3. Dispatch to category-specific listeners
+    if (msg.category && this.categoryListeners.has(msg.category)) {
+      this.categoryListeners.get(msg.category).forEach(fn => {
+        try { fn(msg); } catch (err) { console.error("Realtime category listener error:", err); }
       });
     }
   },
@@ -198,57 +235,67 @@ const RealtimeStream = {
     }
   },
 
-  on(eventName, callback) {
-    if (!this.listeners[eventName]) this.listeners[eventName] = [];
-    this.listeners[eventName].push(callback);
-    return () => this.off(eventName, callback);
-  },
-
-  off(eventName, callback) {
-    if (!this.listeners[eventName]) return;
-    if (!callback) {
-      delete this.listeners[eventName];
-    } else {
-      this.listeners[eventName] = this.listeners[eventName].filter(cb => cb !== callback);
-    }
-  },
-
-  subscribe(eventName, callback) {
-    return this.on(eventName, callback);
-  },
-
-  unsubscribe(eventName, callback) {
-    return this.off(eventName, callback);
-  },
-
-  onCategory(categoryName, callback) {
-    if (!this.categoryListeners[categoryName]) this.categoryListeners[categoryName] = [];
-    this.categoryListeners[categoryName].push(callback);
-    return () => {
-      this.categoryListeners[categoryName] = this.categoryListeners[categoryName].filter(cb => cb !== callback);
-    };
-  },
-
   onAny(callback) {
-    this.allListeners.push(callback);
+    if (typeof callback === 'function') {
+      this.anyListeners.add(callback);
+    }
     return () => this.offAny(callback);
   },
 
   offAny(callback) {
-    if (!callback) {
-      this.allListeners = [];
+    if (callback) {
+      this.anyListeners.delete(callback);
     } else {
-      this.allListeners = this.allListeners.filter(cb => cb !== callback);
+      this.anyListeners.clear();
     }
   },
 
-  async hydrateEventHistory() {
+  subscribe(eventName, callback) {
+    if (typeof callback !== 'function') return () => {};
+    if (!this.eventListeners.has(eventName)) {
+      this.eventListeners.set(eventName, new Set());
+    }
+    this.eventListeners.get(eventName).add(callback);
+    return () => this.unsubscribe(eventName, callback);
+  },
+
+  unsubscribe(eventName, callback) {
+    if (!this.eventListeners.has(eventName)) return;
+    if (callback) {
+      this.eventListeners.get(eventName).delete(callback);
+    } else {
+      this.eventListeners.delete(eventName);
+    }
+  },
+
+  on(eventName, callback) {
+    return this.subscribe(eventName, callback);
+  },
+
+  off(eventName, callback) {
+    return this.unsubscribe(eventName, callback);
+  },
+
+  onCategory(categoryName, callback) {
+    if (typeof callback !== 'function') return () => {};
+    if (!this.categoryListeners.has(categoryName)) {
+      this.categoryListeners.set(categoryName, new Set());
+    }
+    this.categoryListeners.get(categoryName).add(callback);
+    return () => {
+      if (this.categoryListeners.has(categoryName)) {
+        this.categoryListeners.get(categoryName).delete(callback);
+      }
+    };
+  },
+
+  async hydrateEventHistory(limit = 50) {
     try {
-      const res = await fetch('/api/v1/events/history?limit=30');
+      const res = await fetch(`/api/v1/events/history?limit=${limit}`);
       if (res.ok) {
         const json = await res.json();
         if (json.events && Array.isArray(json.events)) {
-          json.events.forEach(evt => this.processEvent(evt));
+          json.events.forEach(evt => this.handleMessage(evt));
         }
       }
     } catch (e) {

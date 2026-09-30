@@ -456,6 +456,29 @@ function renderMiniEventStream() {
   }).join('');
 }
 
+function destroyAnalytics() {
+  if (telemetryTimer) {
+    clearInterval(telemetryTimer);
+    telemetryTimer = null;
+  }
+  if (window.RealtimeStream) {
+    window.RealtimeStream.offAny(handleRealtimeAnalyticsEvent);
+  }
+  if (collectionChart) {
+    collectionChart.destroy();
+    collectionChart = null;
+  }
+  if (materialChart) {
+    materialChart.destroy();
+    materialChart = null;
+  }
+  analyticsInitialized = false;
+}
+
+window.destroyAnalytics = destroyAnalytics;
+window.refreshAllAnalytics = refreshAllAnalytics;
+window.switchTrendInterval = switchTrendInterval;
+
 document.addEventListener('DOMContentLoaded', () => {
   initAnalytics();
 });
