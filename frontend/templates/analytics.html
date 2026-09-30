@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Real-Time Analytics & Ecosystem Intelligence | E-Waste Saathi</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+    }
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,7 +182,7 @@
             <button onclick="switchTrendInterval('30d', this)" class="trend-btn px-2 py-1 rounded-lg bg-slate-100 text-brandDark hover:bg-slate-200">30d</button>
           </div>
         </div>
-        <div class="h-64 w-full">
+        <div class="relative h-64 w-full" id="collectionTrendContainer">
           <canvas id="collectionTrendChart"></canvas>
         </div>
         <div class="flex items-center justify-between text-[11px] font-mono text-brandSecondary pt-2 border-t border-slate-100">
@@ -195,7 +200,7 @@
           </h2>
           <p class="text-xs text-brandSecondary">Relative composition of e-waste lots by grade.</p>
         </div>
-        <div class="h-48 w-full flex items-center justify-center">
+        <div class="relative h-56 w-full flex items-center justify-center" id="materialMixContainer">
           <canvas id="materialMixChart"></canvas>
         </div>
         <div id="materialMixList" class="space-y-1.5 font-mono text-xs">

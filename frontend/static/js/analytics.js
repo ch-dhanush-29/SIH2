@@ -126,60 +126,193 @@ async function fetchCollectionTrend(interval = '24h') {
   }
 }
 
+let lastCollectionPoints = [];
+let lastMaterialsData = [];
+
 function renderCollectionChart(points) {
-  const ctx = document.getElementById('collectionTrendChart');
+  lastCollectionPoints = points || [];
+  const canvas = document.getElementById('collectionTrendChart');
+  if (!canvas) return;
+
+  const labels = lastCollectionPoints.map(p => p.label);
+  const weights = lastCollectionPoints.map(p => p.weight_kg);
+
+  if (typeof Chart !== 'undefined') {
+    if (collectionChart) {
+      collectionChart.data.labels = labels;
+      collectionChart.data.datasets[0].data = weights;
+      collectionChart.update();
+      return;
+    }
+
+    try {
+      collectionChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Collected Weight (kg)',
+            data: weights,
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#047857',
+            pointRadius: 3,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: (item) => ` ${item.parsed.y} kg`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#667085' }
+            },
+            y: {
+              grid: { color: '#F1F5F9' },
+              ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#667085' }
+            }
+          }
+        }
+      });
+      return;
+    } catch (err) {
+      console.warn("Chart.js failed to initialize line chart, falling back to 2D Canvas:", err);
+    }
+  }
+
+  // Native HTML5 Canvas 2D Render Fallback
+  drawCustomLineChart(canvas, lastCollectionPoints);
+}
+
+function drawCustomLineChart(canvas, points) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const labels = points.map(p => p.label);
-  const weights = points.map(p => p.weight_kg);
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = rect.width > 50 ? rect.width : 500;
+  const h = rect.height > 50 ? rect.height : 256;
 
-  if (collectionChart) {
-    collectionChart.data.labels = labels;
-    collectionChart.data.datasets[0].data = weights;
-    collectionChart.update();
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (!points || points.length === 0) {
+    ctx.fillStyle = '#667085';
+    ctx.font = '12px IBM Plex Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('No collection trend data available', w / 2, h / 2);
     return;
   }
 
-  collectionChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Collected Weight (kg)',
-        data: weights,
-        borderColor: '#059669',
-        backgroundColor: 'rgba(5, 150, 105, 0.08)',
-        borderWidth: 2.5,
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: '#047857',
-        pointRadius: 3,
-        pointHoverRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          callbacks: {
-            label: (item) => ` ${item.parsed.y} kg`
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#667085' }
-        },
-        y: {
-          grid: { color: '#F1F5F9' },
-          ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#667085' }
-        }
-      }
+  const padding = { top: 20, right: 24, bottom: 35, left: 45 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+
+  const maxVal = Math.max(...points.map(p => p.weight_kg), 10) * 1.15;
+  const minVal = 0;
+
+  // Grid lines & Y-ticks
+  const ySteps = 4;
+  ctx.strokeStyle = '#F1F5F9';
+  ctx.lineWidth = 1;
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right';
+
+  for (let i = 0; i <= ySteps; i++) {
+    const val = (maxVal / ySteps) * i;
+    const y = padding.top + chartH - (val / maxVal) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(w - padding.right, y);
+    ctx.stroke();
+    ctx.fillText(`${Math.round(val)}kg`, padding.left - 8, y + 3);
+  }
+
+  // Calculate coords
+  const coords = points.map((p, idx) => {
+    const x = padding.left + (idx / Math.max(points.length - 1, 1)) * chartW;
+    const y = padding.top + chartH - ((p.weight_kg - minVal) / (maxVal - minVal)) * chartH;
+    return { x, y, point: p };
+  });
+
+  // Gradient fill under the curve
+  const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+  gradient.addColorStop(0, 'rgba(5, 150, 105, 0.25)');
+  gradient.addColorStop(1, 'rgba(5, 150, 105, 0.01)');
+
+  ctx.beginPath();
+  ctx.moveTo(coords[0].x, padding.top + chartH);
+  ctx.lineTo(coords[0].x, coords[0].y);
+
+  for (let i = 0; i < coords.length - 1; i++) {
+    const xc = (coords[i].x + coords[i + 1].x) / 2;
+    const yc = (coords[i].y + coords[i + 1].y) / 2;
+    ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+  }
+  if (coords.length > 1) {
+    ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+  }
+  ctx.lineTo(coords[coords.length - 1].x, padding.top + chartH);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Line Stroke
+  ctx.beginPath();
+  ctx.moveTo(coords[0].x, coords[0].y);
+  for (let i = 0; i < coords.length - 1; i++) {
+    const xc = (coords[i].x + coords[i + 1].x) / 2;
+    const yc = (coords[i].y + coords[i + 1].y) / 2;
+    ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+  }
+  if (coords.length > 1) {
+    ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+  }
+  ctx.strokeStyle = '#059669';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Draw points & X-labels
+  ctx.fillStyle = '#64748B';
+  ctx.textAlign = 'center';
+  const labelSkip = Math.ceil(coords.length / 6);
+
+  coords.forEach((c, idx) => {
+    // Dot
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#047857';
+    ctx.fill();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // X-axis label
+    if (idx % labelSkip === 0 || idx === coords.length - 1) {
+      ctx.fillStyle = '#64748B';
+      ctx.font = '10px IBM Plex Mono, monospace';
+      ctx.fillText(c.point.label, c.x, padding.top + chartH + 18);
     }
   });
 }
@@ -208,40 +341,50 @@ async function fetchMaterialsMix() {
 }
 
 function renderMaterialsMix(materials) {
-  const ctx = document.getElementById('materialMixChart');
+  lastMaterialsData = materials || [];
+  const canvas = document.getElementById('materialMixChart');
   const listEl = document.getElementById('materialMixList');
-  if (!ctx || !listEl) return;
+  if (!canvas || !listEl) return;
 
-  const labels = materials.map(m => m.name);
-  const weights = materials.map(m => m.weight_kg);
+  const labels = lastMaterialsData.map(m => m.name);
+  const weights = lastMaterialsData.map(m => m.weight_kg);
   const colors = ['#2563EB', '#059669', '#D89B1D', '#F59E0B', '#64748B', '#9333EA', '#DC2626'];
 
-  if (materialChart) {
-    materialChart.data.labels = labels;
-    materialChart.data.datasets[0].data = weights;
-    materialChart.update();
-  } else {
-    materialChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: weights,
-          backgroundColor: colors.slice(0, materials.length),
-          borderWidth: 2,
-          borderColor: '#FFFFFF'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: { legend: { display: false } }
+  if (typeof Chart !== 'undefined') {
+    if (materialChart) {
+      materialChart.data.labels = labels;
+      materialChart.data.datasets[0].data = weights;
+      materialChart.update();
+    } else {
+      try {
+        materialChart = new Chart(canvas, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: weights,
+              backgroundColor: colors.slice(0, lastMaterialsData.length),
+              borderWidth: 2,
+              borderColor: '#FFFFFF'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { display: false } }
+          }
+        });
+      } catch (err) {
+        console.warn("Chart.js doughnut init failed, falling back to 2D Canvas:", err);
+        drawCustomDoughnutChart(canvas, lastMaterialsData, colors);
       }
-    });
+    }
+  } else {
+    drawCustomDoughnutChart(canvas, lastMaterialsData, colors);
   }
 
-  listEl.innerHTML = materials.slice(0, 4).map((m, idx) => `
+  listEl.innerHTML = lastMaterialsData.slice(0, 4).map((m, idx) => `
     <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-brandBorder">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx % colors.length]}"></span>
@@ -253,6 +396,66 @@ function renderMaterialsMix(materials) {
       </div>
     </div>
   `).join('');
+}
+
+function drawCustomDoughnutChart(canvas, materials, colors) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = rect.width > 50 ? rect.width : 220;
+  const h = rect.height > 50 ? rect.height : 220;
+
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, w, h);
+
+  const totalWeight = materials.reduce((acc, m) => acc + (m.weight_kg || 0), 0);
+  const centerX = w / 2;
+  const centerY = h / 2;
+  const radius = Math.min(centerX, centerY) - 12;
+  const innerRadius = radius * 0.68;
+
+  if (totalWeight <= 0 || materials.length === 0) {
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = '#E2E8F0';
+    ctx.lineWidth = radius - innerRadius;
+    ctx.stroke();
+    return;
+  }
+
+  let startAngle = -Math.PI / 2;
+
+  materials.forEach((m, idx) => {
+    const sliceAngle = ((m.weight_kg || 0) / totalWeight) * (Math.PI * 2);
+    const endAngle = startAngle + sliceAngle;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, (radius + innerRadius) / 2, startAngle, endAngle);
+    ctx.strokeStyle = colors[idx % colors.length];
+    ctx.lineWidth = radius - innerRadius;
+    ctx.stroke();
+
+    startAngle = endAngle;
+  });
+
+  // Center hole text
+  ctx.fillStyle = '#101828';
+  ctx.font = 'bold 14px Sora, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${Math.round(totalWeight)}kg`, centerX, centerY - 6);
+
+  ctx.fillStyle = '#667085';
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.fillText('TOTAL LOTS', centerX, centerY + 10);
 }
 
 async function fetchPricingMatrix() {
@@ -474,6 +677,20 @@ function destroyAnalytics() {
   }
   analyticsInitialized = false;
 }
+
+window.addEventListener('resize', () => {
+  if (typeof Chart === 'undefined') {
+    if (lastCollectionPoints.length > 0) {
+      const canvas = document.getElementById('collectionTrendChart');
+      drawCustomLineChart(canvas, lastCollectionPoints);
+    }
+    if (lastMaterialsData.length > 0) {
+      const canvas = document.getElementById('materialMixChart');
+      const colors = ['#2563EB', '#059669', '#D89B1D', '#F59E0B', '#64748B', '#9333EA', '#DC2626'];
+      drawCustomDoughnutChart(canvas, lastMaterialsData, colors);
+    }
+  }
+});
 
 window.destroyAnalytics = destroyAnalytics;
 window.refreshAllAnalytics = refreshAllAnalytics;
