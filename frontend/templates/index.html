@@ -303,8 +303,11 @@
       style="background: linear-gradient(90deg, rgba(247,249,248,0.98) 0%, rgba(247,249,248,0.88) 45%, rgba(247,249,248,0.25) 100%);"
     ></div>
 
-    <!-- Layer 2: Subtle Technical Grid -->
+    <!-- Layer 2: Subtle Technical Grid & Interactive 3D Holographic AI Neural Lattice -->
     <div class="absolute inset-0 z-[2] bg-tech-grid pointer-events-none opacity-50"></div>
+    <div class="absolute inset-0 z-[2] pointer-events-none opacity-40">
+      <canvas id="s01-3d-bg-canvas" class="w-full h-full"></canvas>
+    </div>
 
     <!-- Layer 3: Section Content -->
     <div class="relative z-[3] space-y-12">
@@ -416,8 +419,11 @@
       style="background: linear-gradient(90deg, rgba(247,249,248,0.98) 0%, rgba(247,249,248,0.88) 45%, rgba(247,249,248,0.25) 100%);"
     ></div>
 
-    <!-- Layer 2: Subtle Technical Grid -->
+    <!-- Layer 2: Subtle Technical Grid & Interactive 3D Flowing Price Harmonic Wave -->
     <div class="absolute inset-0 z-[2] bg-tech-grid pointer-events-none opacity-50"></div>
+    <div class="absolute inset-0 z-[2] pointer-events-none opacity-40">
+      <canvas id="s03-3d-bg-canvas" class="w-full h-full"></canvas>
+    </div>
 
     <!-- Layer 3: Section Content -->
     <div class="relative z-[3] space-y-12">
@@ -502,8 +508,11 @@
       style="background: linear-gradient(90deg, rgba(247,249,248,0.98) 0%, rgba(247,249,248,0.88) 45%, rgba(247,249,248,0.25) 100%);"
     ></div>
 
-    <!-- Layer 2: Subtle Technical Grid -->
+    <!-- Layer 2: Subtle Technical Grid & Interactive 3D Geospatial Supply Orbits -->
     <div class="absolute inset-0 z-[2] bg-tech-grid pointer-events-none opacity-50"></div>
+    <div class="absolute inset-0 z-[2] pointer-events-none opacity-40">
+      <canvas id="s04-3d-bg-canvas" class="w-full h-full"></canvas>
+    </div>
 
     <!-- Layer 3: Section Content -->
     <div class="relative z-[3] space-y-12">
@@ -609,8 +618,11 @@
       style="background: linear-gradient(180deg, rgba(247,249,248,0.97) 0%, rgba(247,249,248,0.88) 50%, rgba(247,249,248,0.40) 100%);"
     ></div>
 
-    <!-- Layer 2: Subtle Technical Grid -->
+    <!-- Layer 2: Subtle Technical Grid & Interactive 3D Hexagonal Blockchain Shield -->
     <div class="absolute inset-0 z-[2] bg-tech-grid pointer-events-none opacity-50"></div>
+    <div class="absolute inset-0 z-[2] pointer-events-none opacity-40">
+      <canvas id="s05-3d-bg-canvas" class="w-full h-full"></canvas>
+    </div>
 
     <!-- Layer 3: Section Content -->
     <div class="relative z-[3] space-y-12">
@@ -698,8 +710,11 @@
       style="background: linear-gradient(90deg, rgba(247,249,248,0.98) 0%, rgba(247,249,248,0.88) 45%, rgba(247,249,248,0.25) 100%);"
     ></div>
 
-    <!-- Layer 2: Subtle Technical Grid -->
+    <!-- Layer 2: Subtle Technical Grid & Interactive 3D Quantum Minerals Lattice -->
     <div class="absolute inset-0 z-[2] bg-tech-grid pointer-events-none opacity-50"></div>
+    <div class="absolute inset-0 z-[2] pointer-events-none opacity-40">
+      <canvas id="s06-3d-bg-canvas" class="w-full h-full"></canvas>
+    </div>
 
     <!-- Layer 3: Section Content -->
     <div class="relative z-[3] space-y-12">
@@ -778,16 +793,11 @@
   <!-- Global Judge Demo Modal Container -->
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
-  <script src="/static/js/hero_3d_bg.js"></script>
+  <script src="/static/js/all_sections_3d.js"></script>
 
   <script>
-    // 1. Initialize Interactive 3D WebGL Background Scene
     document.addEventListener('DOMContentLoaded', () => {
-      if (window.Hero3DBg) {
-        Hero3DBg.init('hero-3d-bg-canvas');
-      }
-
-      // 2. Interactive Parallax Tilt for the Hero 3D Card
+      // Interactive Parallax Tilt for the Hero 3D Card
       const heroCard = document.getElementById('hero3DCard');
       const heroSection = document.getElementById('heroSection');
 
@@ -806,7 +816,7 @@
         });
       }
 
-      // 3. Connect Real-time Telemetry WebSocket
+      // Connect Real-time Telemetry WebSocket
       initTickerWebSocket();
     });
 
