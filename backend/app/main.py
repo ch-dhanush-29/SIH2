@@ -9,7 +9,7 @@ from backend.app.database import engine, Base
 from backend.app.seeds.seed_data import seed_database
 from backend.app.routers import (
     auth, materials, prices, lots, recyclers, handover,
-    ledger, sync, anomalies, field_research, admin, voice_intent, websocket, simulation
+    ledger, sync, anomalies, field_research, admin, voice_intent, websocket, simulation, analytics
 )
 from backend.websocket.routes import router as ws_live_router
 
@@ -65,6 +65,7 @@ app.include_router(field_research.router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(voice_intent.router, prefix=settings.API_V1_STR)
 app.include_router(simulation.router, prefix=settings.API_V1_STR)
+app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(websocket.router)
 app.include_router(ws_live_router)
 
@@ -105,6 +106,10 @@ def root_portal(request: Request):
 @app.get("/dashboard/live", response_class=HTMLResponse)
 def live_dashboard_interface(request: Request):
     return templates.TemplateResponse(request=request, name="dashboard_live.html", context={"project_name": settings.PROJECT_NAME})
+
+@app.get("/analytics", response_class=HTMLResponse)
+def analytics_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="analytics.html", context={"project_name": settings.PROJECT_NAME})
 
 @app.get("/demo/live", response_class=HTMLResponse)
 def live_simulation_interface(request: Request):

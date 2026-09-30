@@ -25,6 +25,7 @@
 | Interface | URL | Purpose | Key Features |
 |---|---|---|---|
 | **Cinematic 3D Journey** | `/` | National Landing & Mission | Three.js 3D camera timeline, Tiranga national palette, 18-asset visual bento gallery, Judge Demo trigger. |
+| **Real-Time Analytics Hub** | `/analytics` | Ecosystem Intelligence | Dynamic Chart.js sliding-window charts, scrap grade mix, fair price uplift matrix, live event subscriber. |
 | **Real-Time Ops Dashboard** | `/dashboard/live` | Command Operations Center | Live WebSocket telemetry bus (`/ws/live`), 8 real-time KPI tickers, event stream with 6 category filters, live lot pipeline. |
 | **Live City Simulation** | `/demo/live` | Multi-City Automated Flow | 10-step automatic transaction generator (0.5x–5x speed), live JSON payload inspector, on-demand anomaly injectors. |
 | **Anomaly Defense Center** | `/anomalies` | Anti-Fraud & Risk Isolation | Real-time incident inspector, tare scale drift alerts, review/dismiss/escalate workflow with audit trail verification. |
@@ -50,11 +51,12 @@ python run.py
 
 ### 3. Open in Browser
 - **Cinematic Homepage**: [http://localhost:8000](http://localhost:8000)
+- **Real-Time Analytics Hub**: [http://localhost:8000/analytics](http://localhost:8000/analytics)
 - **Live Operations Dashboard**: [http://localhost:8000/dashboard/live](http://localhost:8000/dashboard/live)
 - **Live City Simulation Engine**: [http://localhost:8000/demo/live](http://localhost:8000/demo/live)
 - **Interactive OpenAPI Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. Run Automated Test Suite (23/23 Passing)
+### 4. Run Automated Test Suite (32/32 Passing)
 ```bash
 pytest
 ```

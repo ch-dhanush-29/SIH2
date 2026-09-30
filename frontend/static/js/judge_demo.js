@@ -201,35 +201,34 @@ window.JudgeDemoSteps = [
     },
     {
         step: 9,
-        title: "9. AI Anomaly & Anti-Fraud Defense",
-        role: "Security & Regulatory Oversight",
-        badge: "DEMO ANOMALY INJECTION",
-        description: "Continuous telemetry monitoring detects tare fraud, weight variations, sudden lithium temperature anomalies, or duplicate optical images before settlement occurs.",
-        actionHighlight: "Injects a controlled telemetry anomaly for judge demonstration and isolates the lot for human review.",
+        title: "9. Real-Time Analytics & Ecosystem Intelligence",
+        role: "Data Science & Executive Oversight",
+        badge: "LIVE INTELLIGENCE HUB",
+        description: "Aggregates real-time KPIs, collection volume time series, material grade composition, and fair price uplift across the national ecosystem.",
+        actionHighlight: "Subscribes to live WebSocket telemetry bus (/ws/live) and dynamically computes sliding-window analytics without browser reload.",
         metrics: [
-            { label: "Resolution Actions", val: "Review / Dismiss / Escalate" },
-            { label: "Audit Log", val: "Every action immutably logged" }
+            { label: "Streaming Bus", val: "WebSocket /ws/live" },
+            { label: "Live Visuals", val: "Sliding Window Chart.js" }
         ],
-        interactiveAction: "Inject Test Anomaly",
-        apiCall: "/api/v1/simulation/inject-anomaly",
+        interactiveAction: "Execute Analytics Refresh",
+        apiCall: "/api/v1/simulation/step",
         method: "POST",
         extractResults: (res) => {
-            const anom = (res && res.anomaly) || {};
-            const details = anom.details || {};
+            const d = (res && res.data) || {};
             return [
-                { label: "Anomaly ID", val: anom.anomaly_id || "ANOM-4192" },
-                { label: "Type", val: anom.anomaly_type || "WEIGHT_DISCREPANCY" },
-                { label: "Discrepancy Delta", val: `${details.discrepancy_pct || 21.6}%` },
-                { label: "Investigation State", val: anom.status || "FLAGGED_FOR_REVIEW" }
+                { label: "Analytics Route", val: "/analytics" },
+                { label: "Active Stream", val: "LIVE_DATABASE_AGGREGATION" },
+                { label: "State Event", val: d.event || "ANALYTICS_SYNCED" },
+                { label: "Dashboard Action", val: "Real-Time Sliding Window Updated" }
             ];
         }
     },
     {
         step: 10,
-        title: "10. Circular Critical Minerals & Impact Registry",
+        title: "10. Circular Critical Minerals & Regulatory Oversight",
         role: "Regulatory & Environmental Oversight",
-        badge: "ESTIMATED IMPACT",
-        description: "Calculates strategic domestic mineral recovery (Gold, Copper, Lithium) towards national resource security while generating EPR credit records.",
+        badge: "ESTIMATED LCA & EPR",
+        description: "Calculates strategic domestic mineral recovery (Gold, Copper, Lithium) towards national resource security while generating EPR credit records under CPCB 2022 guidelines.",
         actionHighlight: "Updates national recovery registers with estimated critical mineral yields and CO2 avoidance.",
         metrics: [
             { label: "Calculation Basis", val: "Empirical Material Assay Model" },

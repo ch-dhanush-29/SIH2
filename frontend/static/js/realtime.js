@@ -16,8 +16,10 @@ const RealtimeStream = {
   allListeners: [], // Array<callback>
   seenEventIds: new Set(),
   status: 'OFFLINE', // LIVE, RECONNECTING, OFFLINE
+  isManualDisconnect: false,
 
   init() {
+    this.isManualDisconnect = false;
     this.connect();
     this.hydrateEventHistory();
   },
@@ -27,6 +29,7 @@ const RealtimeStream = {
       return;
     }
 
+    this.isManualDisconnect = false;
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const wsUrl = `${protocol}//${host}/ws/live`;
@@ -55,7 +58,9 @@ const RealtimeStream = {
       this.socket.onclose = () => {
         this.stopHeartbeat();
         this.setStatus('OFFLINE');
-        this.scheduleReconnect();
+        if (!this.isManualDisconnect) {
+          this.scheduleReconnect();
+        }
       };
 
       this.socket.onerror = (err) => {
@@ -63,8 +68,25 @@ const RealtimeStream = {
       };
     } catch (e) {
       this.setStatus('OFFLINE');
-      this.scheduleReconnect();
+      if (!this.isManualDisconnect) {
+        this.scheduleReconnect();
+      }
     }
+  },
+
+  disconnect() {
+    this.isManualDisconnect = true;
+    this.stopHeartbeat();
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.socket) {
+      this.socket.close();
+      this.socket = null;
+    }
+    this.setStatus('OFFLINE');
+    console.log("🔌 RealtimeStream: Disconnected manually");
   },
 
   scheduleReconnect() {
@@ -135,14 +157,20 @@ const RealtimeStream = {
     this.updateTickers(msg);
 
     // Dispatch to registered listeners
-    this.allListeners.forEach(fn => fn(msg));
+    this.allListeners.forEach(fn => {
+      try { fn(msg); } catch (err) { console.error("Listener error", err); }
+    });
 
     if (this.listeners[eventName]) {
-      this.listeners[eventName].forEach(fn => fn(msg));
+      this.listeners[eventName].forEach(fn => {
+        try { fn(msg); } catch (err) { console.error("Event listener error", err); }
+      });
     }
 
     if (msg.category && this.categoryListeners[msg.category]) {
-      this.categoryListeners[msg.category].forEach(fn => fn(msg));
+      this.categoryListeners[msg.category].forEach(fn => {
+        try { fn(msg); } catch (err) { console.error("Category listener error", err); }
+      });
     }
   },
 
@@ -173,9 +201,24 @@ const RealtimeStream = {
   on(eventName, callback) {
     if (!this.listeners[eventName]) this.listeners[eventName] = [];
     this.listeners[eventName].push(callback);
-    return () => {
+    return () => this.off(eventName, callback);
+  },
+
+  off(eventName, callback) {
+    if (!this.listeners[eventName]) return;
+    if (!callback) {
+      delete this.listeners[eventName];
+    } else {
       this.listeners[eventName] = this.listeners[eventName].filter(cb => cb !== callback);
-    };
+    }
+  },
+
+  subscribe(eventName, callback) {
+    return this.on(eventName, callback);
+  },
+
+  unsubscribe(eventName, callback) {
+    return this.off(eventName, callback);
   },
 
   onCategory(categoryName, callback) {
@@ -188,9 +231,15 @@ const RealtimeStream = {
 
   onAny(callback) {
     this.allListeners.push(callback);
-    return () => {
+    return () => this.offAny(callback);
+  },
+
+  offAny(callback) {
+    if (!callback) {
+      this.allListeners = [];
+    } else {
       this.allListeners = this.allListeners.filter(cb => cb !== callback);
-    };
+    }
   },
 
   async hydrateEventHistory() {

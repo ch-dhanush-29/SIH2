@@ -73,6 +73,9 @@
 
       <!-- Navigation Links -->
       <nav class="flex items-center gap-2 text-xs font-semibold">
+        <a href="/analytics" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
+          <i class="fa-solid fa-chart-line text-brandBlue mr-1"></i> Analytics
+        </a>
         <a href="/demo/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
           <i class="fa-solid fa-play text-brandGreen mr-1"></i> Live Simulation
         </a>
@@ -80,7 +83,7 @@
           <i class="fa-solid fa-triangle-exclamation text-brandDanger mr-1"></i> Anomalies
         </a>
         <a href="/government" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
-          <i class="fa-solid fa-landmark text-brandGold mr-1"></i> CPCB / Govt
+          <i class="fa-solid fa-landmark text-brandGold mr-1"></i> Regulatory Intel
         </a>
         <a href="/impact" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
           <i class="fa-solid fa-leaf text-brandGreen mr-1"></i> Impact
@@ -100,10 +103,10 @@
       <div>
         <div class="flex items-center gap-2 font-mono text-xs">
           <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-brandBlue font-semibold border border-blue-200">REAL-TIME TELEMETRY BUS</span>
-          <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-bold">DEMO STREAM</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">● LIVE SUBSCRIBER</span>
         </div>
         <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">National E-Waste Operations Command Center</h1>
-        <p class="text-xs text-brandSecondary mt-0.5">Streaming active collections, certified weighing, fair pricing, and cryptographic handovers across 5 urban hubs.</p>
+        <p class="text-xs text-brandSecondary mt-0.5">Streaming active collections, certified weighing, fair pricing, and cryptographic handovers across urban hubs.</p>
       </div>
 
       <div class="flex items-center gap-2 text-xs font-mono">
@@ -119,42 +122,42 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 font-mono">
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Active Lots</div>
-        <div id="kpiActiveLots" class="text-xl font-bold text-brandDark mt-1">142</div>
+        <div id="kpiActiveLots" class="text-xl font-bold text-brandDark mt-1">--</div>
         <div class="text-[10px] text-brandGreen font-sans mt-0.5">Live Counter</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Total Weight</div>
-        <div id="kpiTotalWeight" class="text-xl font-bold text-brandGreen mt-1">4,820 kg</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MEASURED (BLE)</div>
+        <div id="kpiTotalWeight" class="text-xl font-bold text-brandGreen mt-1">-- kg</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MEASURED</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Fair Value</div>
-        <div id="kpiSettlement" class="text-xl font-bold text-brandBlue mt-1">₹18.45 L</div>
-        <div class="text-[10px] text-brandGreen font-sans mt-0.5">MANDI INDEX</div>
+        <div id="kpiSettlement" class="text-xl font-bold text-brandBlue mt-1">₹--</div>
+        <div class="text-[10px] text-brandGreen font-sans mt-0.5">SETTLED</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Handovers</div>
-        <div id="kpiHandovers" class="text-xl font-bold text-brandDark mt-1">98.4%</div>
+        <div id="kpiHandovers" class="text-xl font-bold text-brandDark mt-1">--</div>
         <div class="text-[10px] text-brandBlue font-sans mt-0.5">Dual Signed</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Gold (Au) Yield</div>
-        <div id="kpiGold" class="text-xl font-bold text-brandGold mt-1">314.8 g</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">ESTIMATED</div>
+        <div id="kpiGold" class="text-xl font-bold text-brandGold mt-1">-- g</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MODELED</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Refined Copper</div>
-        <div id="kpiCopper" class="text-xl font-bold text-brandDark mt-1">980 kg</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">ESTIMATED</div>
+        <div id="kpiCopper" class="text-xl font-bold text-brandDark mt-1">-- kg</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MODELED</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">CO₂e Avoided</div>
-        <div id="kpiCO2" class="text-xl font-bold text-brandGreen mt-1">14.35 T</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MODEL OUTPUT</div>
+        <div id="kpiCO2" class="text-xl font-bold text-brandGreen mt-1">-- T</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">ESTIMATED</div>
       </div>
       <div class="p-4 rounded-2xl bg-red-50 border border-red-200">
         <div class="text-[11px] font-medium text-red-800 font-sans">Anomalies</div>
-        <div id="kpiAnomalies" class="text-xl font-bold text-brandDanger mt-1">3</div>
+        <div id="kpiAnomalies" class="text-xl font-bold text-brandDanger mt-1">--</div>
         <div class="text-[10px] text-red-700 font-sans mt-0.5">Triage Queue</div>
       </div>
     </div>
@@ -206,8 +209,8 @@
 
           <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder text-center">
             <div class="text-xs font-mono text-brandSecondary">Lot Reference:</div>
-            <div id="activeLotId" class="text-base font-bold font-mono text-brandDark mt-0.5">LOT-2026-HYD-4192</div>
-            <div id="activeLotSub" class="text-xs text-brandSecondary mt-1">Telecom PCB &bull; 24.50 kg &bull; Musheerabad</div>
+            <div id="activeLotId" class="text-base font-bold font-mono text-brandDark mt-0.5">LOT-ACTIVE-INSPECTOR</div>
+            <div id="activeLotSub" class="text-xs text-brandSecondary mt-1">Awaiting next lifecycle state transition...</div>
           </div>
 
           <!-- 8 Step Progress Checklist -->
@@ -277,10 +280,54 @@
     let currentFilter = 'all';
     let allEvents = [];
     let isSimActive = true;
-    let activeLotsCount = 142;
-    let totalWeightCount = 4820.5;
-    let totalSettlementCount = 1845200;
-    let anomaliesCount = 3;
+    
+    // Live State Trackers
+    let activeLotsCount = 0;
+    let totalWeightCount = 0.0;
+    let totalSettlementCount = 0.0;
+    let verifiedHandoversCount = 0;
+    let anomaliesCount = 0;
+
+    async function hydrateDashboardSummary() {
+      try {
+        const res = await fetch('/api/v1/analytics/summary');
+        if (res.ok) {
+          const data = await res.json();
+          activeLotsCount = data.active_lots || 0;
+          totalWeightCount = data.total_weight_kg || 0.0;
+          totalSettlementCount = data.total_value_inr || 0.0;
+          verifiedHandoversCount = data.verified_handovers || 0;
+          anomaliesCount = data.active_anomalies || 0;
+
+          updateKPIDisplay(data);
+        }
+      } catch (err) {
+        console.warn("Could not load initial summary:", err);
+      }
+    }
+
+    function updateKPIDisplay(summaryData) {
+      document.getElementById('kpiActiveLots').innerText = activeLotsCount;
+      document.getElementById('kpiTotalWeight').innerText = `${Math.round(totalWeightCount).toLocaleString()} kg`;
+      
+      if (totalSettlementCount >= 100000) {
+        document.getElementById('kpiSettlement').innerText = `₹${(totalSettlementCount / 100000).toFixed(2)} L`;
+      } else {
+        document.getElementById('kpiSettlement').innerText = `₹${Math.round(totalSettlementCount).toLocaleString()}`;
+      }
+
+      document.getElementById('kpiHandovers').innerText = verifiedHandoversCount;
+      document.getElementById('kpiAnomalies').innerText = anomaliesCount;
+
+      // Yield models
+      const goldGrams = summaryData?.recovery_metrics?.gold_recovered_g || (totalWeightCount * 0.065);
+      const copperKg = summaryData?.recovery_metrics?.copper_recovered_kg || (totalWeightCount * 0.142);
+      const co2Tonnes = (totalWeightCount * 3.12 / 1000).toFixed(2);
+
+      document.getElementById('kpiGold').innerText = `${goldGrams.toFixed(1)} g`;
+      document.getElementById('kpiCopper').innerText = `${Math.round(copperKg)} kg`;
+      document.getElementById('kpiCO2').innerText = `${co2Tonnes} T`;
+    }
 
     function handleEvent(e) {
       allEvents.unshift(e);
@@ -292,16 +339,25 @@
         document.getElementById('activeLotSub').innerText = e.summary || e.event;
       }
 
-      // Dynamic KPI progression
+      // Dynamic KPI progression from actual event payloads
       if (e.event === 'LOT_CREATED') {
         activeLotsCount++;
         document.getElementById('kpiActiveLots').innerText = activeLotsCount;
-      } else if (e.event === 'WEIGHT_CAPTURED' && e.data?.certified_weight_kg) {
-        totalWeightCount += parseFloat(e.data.certified_weight_kg);
-        document.getElementById('kpiTotalWeight').innerText = `${Math.round(totalWeightCount).toLocaleString()} kg`;
+      } else if (e.event === 'WEIGHT_CAPTURED') {
+        const addedWeight = parseFloat(e.data?.weight_kg || e.data?.certified_weight_kg || 0);
+        if (addedWeight > 0) {
+          totalWeightCount += addedWeight;
+          updateKPIDisplay();
+        }
       } else if (e.event === 'PAYMENT_COMPLETED') {
-        totalSettlementCount += 16660;
-        document.getElementById('kpiSettlement').innerText = `₹${(totalSettlementCount / 100000).toFixed(2)} L`;
+        const addedAmount = parseFloat(e.data?.amount_inr || e.data?.final_amount_inr || 0);
+        if (addedAmount > 0) {
+          totalSettlementCount += addedAmount;
+          updateKPIDisplay();
+        }
+      } else if (e.event === 'HANDOVER_VERIFIED') {
+        verifiedHandoversCount++;
+        document.getElementById('kpiHandovers').innerText = verifiedHandoversCount;
       } else if (e.event === 'ANOMALY_DETECTED') {
         anomaliesCount++;
         document.getElementById('kpiAnomalies').innerText = anomaliesCount;
@@ -388,6 +444,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      hydrateDashboardSummary();
       if (window.RealtimeStream) {
         window.RealtimeStream.onAny((evt) => handleEvent(evt));
       }

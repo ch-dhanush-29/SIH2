@@ -25,11 +25,13 @@ All core architectural phases, AI engines, database models, multi-lingual offlin
 - [x] Unified Frontend Interfaces (`index.html`, `collector.html`, `recycler.html`, `admin.html`)
 - [x] Comprehensive Synthetic Demo Dataset Seeds (500+ prices, 20+ recyclers, 200+ lots)
 - [x] Canonical WebSocket Realtime Architecture (`/ws/live` & `RealtimeStream` frontend client)
+- [x] Real-Time Analytics API Hub (`/api/v1/analytics/*`) with live aggregation (Collection trend, materials mix, pricing matrix, anomalies, recyclers, collectors, LCA impact)
+- [x] Dedicated Interactive Analytics Portal (`/analytics` & `analytics.js`) with responsive Chart.js sliding-window visuals
 - [x] Live Event Bus with Standardized Schema & History Hydration (`/api/v1/events/history`)
 - [x] Real-time Multi-City Simulation Engine (`/demo/live`) & Command Dashboard (`/dashboard/live`)
-- [x] Automated Test Suite (`pytest` - 23/23 passed tests)
+- [x] Automated Test Suite (`pytest` - 32/32 passed tests)
 - [x] Complete Architecture & Project Documentation Suite (`README.md`, `ARCHITECTURE.md`, `DATABASE.md`, `AI.md`, `data_sources.md`)
 
 ## Verification Summary
-- **Pytest Suite**: 23/23 tests passed (Unit, Integration, Fair Price, Matching, Anomaly Detection, Sync Idempotency, E2E Handover, WebSocket /ws/live Bus, History Hydration, Anomaly Triage Actions).
+- **Pytest Suite**: 32/32 tests passed (Unit, Integration, Fair Price, Matching, Anomaly Detection, Sync Idempotency, E2E Handover, WebSocket /ws/live Bus, History Hydration, Anomaly Triage Actions, Analytics APIs & Aggregations).
 - **One-Click Launch**: `python run.py` initializes tables, runs deterministic seed dataset generator, and launches web server on `http://localhost:8000`.
