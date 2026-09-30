@@ -8,6 +8,7 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -66,6 +67,35 @@
     @keyframes pulse-ring {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    /* 3D Floating Motion */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(0.8deg); }
+    }
+    .animate-float-slow {
+      animation: floatSlow 5s ease-in-out infinite;
+    }
+
+    /* Laser Scanner Beam Keyframe Animation */
+    @keyframes scanBeam {
+      0% { top: 0%; opacity: 0.2; }
+      50% { top: 92%; opacity: 0.9; }
+      100% { top: 0%; opacity: 0.2; }
+    }
+    .animate-scan-beam {
+      animation: scanBeam 3.5s ease-in-out infinite;
+    }
+
+    /* 3D Interactive Parallax Card Tilt */
+    .parallax-3d-card {
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+    .parallax-3d-card:hover {
+      box-shadow: 0 30px 60px -15px rgba(5, 150, 105, 0.2);
     }
   </style>
 </head>
@@ -139,9 +169,22 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="pt-36 pb-20 px-4 sm:px-8 max-w-7xl mx-auto">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+  <!-- ========================================================================= -->
+  <!-- HERO SECTION WITH 3D BACKGROUND WEBGL STAGE & 3D RENDERING INTEGRATION    -->
+  <!-- ========================================================================= -->
+  <section id="heroSection" class="relative pt-36 pb-20 px-4 sm:px-8 max-w-7xl mx-auto overflow-hidden">
+    
+    <!-- 3D WebGL Background Canvas (Interactive Orbit & Particles) -->
+    <div class="absolute inset-0 pointer-events-none z-0 opacity-40">
+      <canvas id="hero-3d-bg-canvas" class="w-full h-full"></canvas>
+    </div>
+
+    <!-- 3D Rendered Asset Atmospheric Backdrop Layer -->
+    <div class="absolute top-10 right-0 w-[550px] h-[450px] pointer-events-none z-0 opacity-15 rounded-3xl overflow-hidden blur-[1px] animate-float-slow">
+      <img src="/static/images/narrative/hero_device_banner.jpg" alt="3D Device Rendering Backdrop" class="w-full h-full object-cover">
+    </div>
+
+    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       
       <!-- Left Column: Editorial Statement -->
       <div class="lg:col-span-7 space-y-6">
@@ -193,13 +236,27 @@
         </div>
       </div>
 
-      <!-- Right Column: Industrial Facility Hero Image & Live Telemetry Badge -->
+      <!-- Right Column: Interactive 3D Card with Laser Scanning Beam & Telemetry Tags -->
       <div class="lg:col-span-5 space-y-4">
-        <div class="bg-white p-3 rounded-3xl border border-brandBorder shadow-lg overflow-hidden relative group">
+        <div id="hero3DCard" class="parallax-3d-card bg-white p-3 rounded-3xl border border-brandBorder shadow-xl relative group">
+          
           <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+            <!-- Modern Plant Conveyor Photo with 3D Depth Layering -->
             <img src="/static/images/industrial/plant_conveyor_sorting.jpg" alt="Modern Industrial E-Waste Recycling Sorting Facility" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
             
+            <!-- Animated Glowing Laser Scanner Line -->
+            <div class="absolute left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-scan-beam pointer-events-none"></div>
+
+            <!-- Floating 3D Telemetry Badges -->
+            <div class="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20 text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1.5 shadow-lg">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+              <span>AI SPECTRA: 96.8% PCB</span>
+            </div>
+
+            <div class="absolute top-3 right-3 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20 text-[10px] font-mono text-amber-400 font-bold shadow-lg">
+              Au: 0.35g/kg
+            </div>
+
             <!-- In-Image Overlay Card -->
             <div class="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-brandBorder/80 shadow-md flex items-center justify-between">
               <div>
@@ -621,9 +678,38 @@
   <!-- Global Judge Demo Modal Container -->
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
+  <script src="/static/js/hero_3d_bg.js"></script>
 
   <script>
-    // Connect WebSocket for top ticker
+    // 1. Initialize Interactive 3D WebGL Background Scene
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.Hero3DBg) {
+        Hero3DBg.init('hero-3d-bg-canvas');
+      }
+
+      // 2. Interactive Parallax Tilt for the Hero 3D Card
+      const heroCard = document.getElementById('hero3DCard');
+      const heroSection = document.getElementById('heroSection');
+
+      if (heroCard && heroSection) {
+        heroSection.addEventListener('mousemove', (e) => {
+          const rect = heroCard.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          const rotateX = (y / rect.height) * -12;
+          const rotateY = (x / rect.width) * 12;
+          heroCard.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        heroSection.addEventListener('mouseleave', () => {
+          heroCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+      }
+
+      // 3. Connect Real-time Telemetry WebSocket
+      initTickerWebSocket();
+    });
+
     function initTickerWebSocket() {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/ws/live`;
@@ -642,8 +728,6 @@
         setTimeout(initTickerWebSocket, 3000);
       };
     }
-
-    document.addEventListener('DOMContentLoaded', initTickerWebSocket);
   </script>
 </body>
 </html>
