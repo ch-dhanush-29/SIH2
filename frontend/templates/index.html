@@ -204,15 +204,27 @@
 
       <!-- Quick Portals Switcher + Theme Toggle -->
       <div class="pointer-events-auto flex items-center space-x-2 bg-slate-900/90 border border-slate-800 backdrop-blur rounded-2xl p-1.5 shadow-2xl">
-        <a href="/admin" class="px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-shield-halved mr-1.5"></i> Admin
+        <a href="/dashboard/live" class="px-3 py-1.5 text-xs font-bold text-orange-400 hover:bg-slate-800 rounded-xl transition flex items-center">
+          <i class="fa-solid fa-satellite-dish mr-1.5"></i> Live Ops
         </a>
-        <a href="/recycler" class="px-3 py-1.5 text-xs font-bold text-blue-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-industry mr-1.5"></i> Recycler
+        <a href="/demo/live" class="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-slate-800 rounded-xl transition flex items-center">
+          <i class="fa-solid fa-play mr-1.5"></i> Simulation
         </a>
-        <a href="/collector" class="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-slate-800 rounded-xl transition flex items-center">
+        <a href="/anomalies" class="px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-slate-800 rounded-xl transition flex items-center">
+          <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Anomalies
+        </a>
+        <a href="/government" class="px-3 py-1.5 text-xs font-bold text-sky-400 hover:bg-slate-800 rounded-xl transition flex items-center">
+          <i class="fa-solid fa-landmark mr-1.5"></i> CPCB / Govt
+        </a>
+        <a href="/impact" class="px-3 py-1.5 text-xs font-bold text-teal-400 hover:bg-slate-800 rounded-xl transition flex items-center">
+          <i class="fa-solid fa-leaf mr-1.5"></i> Impact
+        </a>
+        <a href="/collector" class="px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800 rounded-xl transition flex items-center">
           <i class="fa-solid fa-mobile-screen mr-1.5"></i> Collector
         </a>
+        <button onclick="window.startJudgeWalkthrough()" class="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white rounded-xl shadow-lg shadow-orange-950/40 transition flex items-center gap-1.5">
+          <span>🎯</span> JUDGE DEMO
+        </button>
         <button onclick="ThemeManager.toggleTheme()" class="p-2 text-xs text-slate-400 hover:text-white rounded-xl transition">
           <i class="fa-solid fa-sun text-amber-400 theme-toggle-icon"></i>
         </button>
@@ -987,6 +999,8 @@
   </footer>
 
   <!-- Scripts -->
+  <div id="judgeDemoContainer"></div>
+  <script src="/static/js/judge_demo.js"></script>
   <script src="/static/js/theme.js"></script>
   <script src="/static/js/realtime.js"></script>
   <script src="/static/js/three_visualizer.js"></script>

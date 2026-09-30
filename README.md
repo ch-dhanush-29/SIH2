@@ -20,13 +20,20 @@
 
 ---
 
-## 🏛️ System Actors
+## 🏛️ System Portals & Interfaces
 
-| Actor | Interface | Key Functionalities |
-|---|---|---|
-| **Informal Collector (कबाड़ी साथी)** | Mobile PWA (`/collector`) | Voice navigation, photo AI classification, fair price score, QR passport, cash/UPI ledger, safety audio guides. |
-| **Authorized Recycler** | Industrial Portal (`/recycler`) | Incoming lot quotes, camera QR scanner, calibrated scale verification, SHA-256 receipts, batch route clustering. |
-| **Regulatory Authority (MoM/CPCB)** | Admin Dashboard (`/admin`) | Authorization verification, market anomaly alerts, dispute resolution, critical minerals audit, unit economics simulator. |
+| Interface | URL | Purpose | Key Features |
+|---|---|---|---|
+| **Cinematic 3D Journey** | `/` | National Landing & Mission | Three.js 3D camera timeline, Tiranga national palette, 18-asset visual bento gallery, Judge Demo trigger. |
+| **Real-Time Ops Dashboard** | `/dashboard/live` | Command Operations Center | Live WebSocket telemetry bus (`/ws/live`), 8 real-time KPI tickers, event stream with 6 category filters, live lot pipeline. |
+| **Live City Simulation** | `/demo/live` | Multi-City Automated Flow | 10-step automatic transaction generator (0.5x–5x speed), live JSON payload inspector, on-demand anomaly injectors. |
+| **Anomaly Defense Center** | `/anomalies` | Anti-Fraud & Risk Isolation | Real-time incident inspector, tare scale drift alerts, review/dismiss/escalate workflow with audit trail verification. |
+| **CPCB / Ministry of Mines** | `/government` | Regulatory Oversight | National EPR quota fulfillment registry, strategic mineral reserves tracker (Au, Cu, Li, Co), inter-state transit volume. |
+| **Circular Impact & LCA** | `/impact` | Environmental Life-Cycle | Transparent CPCB 2022 calculation formulas (CO₂ avoided, water saved, virgin ore displaced), primitive vs formal comparison. |
+| **Passport Verifier** | `/passport/verify` | Cryptographic Audit Chain | SHA-256 Merkle-style block verification confirming immutable chain of custody across 5 handover stages. |
+| **Informal Collector PWA** | `/collector` | Grassroots Mobile Client | Voice-assisted vernacular flow (Hindi/Marathi/English), edge AI camera classifier, dynamic fair pricing, offline sync. |
+| **Authorized Recycler** | `/recycler` | Gate Reception & Logistics | QR scanner, calibrated scale tare verification, dual cryptographic signature, instant micro-escrow payout trigger. |
+| **Admin & Market Intel** | `/admin` | Enterprise Analytics | Unit economics simulator, market price indices, dispute arbitration, collector trust scoring. |
 
 ---
 
@@ -42,69 +49,72 @@ python run.py
 ```
 
 ### 3. Open in Browser
-- **Unified Portal & Role Switcher**: [http://localhost:8000](http://localhost:8000)
-- **Collector Mobile Experience**: [http://localhost:8000/collector](http://localhost:8000/collector)
-- **Authorized Recycler Portal**: [http://localhost:8000/recycler](http://localhost:8000/recycler)
-- **Ministry & Admin Intelligence Hub**: [http://localhost:8000/admin](http://localhost:8000/admin)
+- **Cinematic Homepage**: [http://localhost:8000](http://localhost:8000)
+- **Live Operations Dashboard**: [http://localhost:8000/dashboard/live](http://localhost:8000/dashboard/live)
+- **Live City Simulation Engine**: [http://localhost:8000/demo/live](http://localhost:8000/demo/live)
 - **Interactive OpenAPI Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. Run Automated Test Suite
+### 4. Run Automated Test Suite (19/19 Passing)
 ```bash
-python -m pytest -v
+pytest
 ```
 
 ---
 
-## 🧪 Live Judge Demonstration Scenarios
+## 🎯 5–7 Minute Live Judge Walkthrough Script
 
-### Scenario 1: Deterministic End-to-End Formalization Handover
-1. Collector opens `/collector` in Hindi (`हिन्दी`).
-2. Taps **"ई-कचरा बेचें"** & selects photo of Motherboard PCB.
-3. AI classifies material as **"सर्किट बोर्ड (PCB)"** with 94% confidence.
-4. Collector enters `18 kg` weight & selects `Standard Mixed Good`.
-5. System computes **Fair Value of ₹2,400 – ₹2,850** (expected ₹2,640).
-6. Matches with **EcoGreen Authorized Recyclers** (94.5 Trust Score, CPCB verified, pickup available).
-7. System generates **Digital Lot Passport** and big **QR Code**.
-8. In `/recycler`, recycler scans QR, inputs certified electronic scale weight of `17.6 kg` @ ₹150/kg = ₹2,640.
-9. System generates **SHA-256 cryptographic receipt**.
-10. Collector's **Earnings Ledger** updates instantly with cash settlement record.
+Click the **`🎯 JUDGE DEMO`** button in the header from any page to open the interactive 10-step guided evaluation walkthrough:
 
-### Scenario 2: The "WOW" Anomaly Detection & Negotiation Assistant
-1. A rogue buyer offers a lowball rate of `₹1,100` for an 18kg lot (market benchmark ₹2,050).
-2. Anomaly Engine flags **-46.3% Undervaluation Anomaly (`ANOMALY-2026-001`)**.
-3. Collector receives a voice notification: *"यह ऑफर बाजार भाव से बहुत कम है।"*
-4. Negotiation Assistant provides suggested response: *"स्थानीय बाजार भाव ₹340/kg है, क्या आप ₹1,850 दे सकते हैं?"*
-5. High-trust alternative recyclers are presented to empower the informal worker.
+1. **Step 1: Informal Sector Onboarding (`/collector`)** — Explain that 95% of e-waste is processed informally. Demonstrate offline-first capture with vernacular Hindi audio guidance.
+2. **Step 2: Edge AI Computer Vision** — Show EfficientNet-B0 analyzing motherboard PCB surface morphology (96.8% confidence) and isolating Class 2 flame retardant hazard.
+3. **Step 3: Certified Bluetooth Tare Scale** — Certified IoT hardware zero-tare weight capture (24.50 kg) eliminating middleman skimming.
+4. **Step 4: Dynamic Fair Price Intelligence** — Show Mandi scrap index rate calculation (+38.8% higher collector earnings vs local predatory middlemen).
+5. **Step 5: Recycler Matching with MCDA Radar** — Multi-Criteria Decision Analysis matches nearest authorized recycler based on distance, rate, trust score, and certified capacity.
+6. **Step 6: QR Digital Passport & SHA-256 Chain** — Minting tamper-evident digital passport with blockchain-grade SHA-256 hash sealing.
+7. **Step 7: Dual-Signature Physical Handover** — Recycler gate scan and dual confirmation with 0.0 kg weight delta.
+8. **Step 8: Instant Micro-Escrow Settlement** — Direct UPI settlement (₹16,660.00) disbursed within 1.2 seconds.
+9. **Step 9: Anomaly & Anti-Fraud Defense (`/anomalies`)** — Proactive isolation of weight discrepancies and counterfeit receipts.
+10. **Step 10: National EPR & Circular Mineral Impact (`/government` & `/impact`)** — Ministry of Mines circular recovery record (8.57g Gold, 5.51kg Copper, 76.4kg CO₂ avoided).
 
 ---
 
 ## 📂 Project Structure
 
-```
+```text
 d:/SIH-2/
 ├── backend/
 │   ├── app/
 │   │   ├── config.py             # System thresholds, secrets & settings
 │   │   ├── database.py           # SQLAlchemy session engine (SQLite/Postgres)
-│   │   ├── models/               # 30+ normalized relational entities
-│   │   ├── schemas/              # Pydantic v2 validation models
-│   │   ├── services/             # AI, Price, Matching, Anomaly & QR engines
-│   │   ├── routers/              # Modular REST endpoints
-│   │   ├── seeds/                # 500+ prices, 20+ recyclers, 200+ seed lots
-│   │   └── main.py               # FastAPI server & route mounting
+│   │   ├── models/               # Relational database models
+│   │   ├── schemas/              # Pydantic validation schemas
+│   │   ├── services/             # AI CV, Fair Price, MCDA, Simulation & Anomaly engines
+│   │   ├── routers/              # Modular REST API endpoints
+│   │   ├── seeds/                # Realistic baseline seed datasets
+│   │   └── main.py               # FastAPI application & template routes
+│   ├── websocket/
+│   │   ├── manager.py            # Centralized WebSocket broadcast & pub/sub bus
+│   │   ├── events.py             # Real-time event schemas & types
+│   │   └── routes.py             # /ws/live endpoint and REST event gateway
 │   └── requirements.txt
 ├── frontend/
 │   ├── templates/
-│   │   ├── index.html            # Role switcher & judge overview
+│   │   ├── index.html            # Cinematic 3D landing & bento gallery
+│   │   ├── dashboard_live.html   # Real-time operations command dashboard
+│   │   ├── demo_live.html        # Live multi-city flow simulation engine
+│   │   ├── anomalies.html        # Anomaly Operations Center
+│   │   ├── government.html       # Ministry of Mines & CPCB oversight hub
+│   │   ├── impact.html           # Circular impact & LCA methodology
+│   │   ├── passport_verify.html  # Cryptographic SHA-256 audit verifier
 │   │   ├── collector.html        # High-contrast mobile PWA
-│   │   ├── recycler.html         # Industrial scale & QR scanner portal
-│   │   └── admin.html            # Ministry intelligence dashboard
+│   │   ├── recycler.html         # Recycler scale & QR scanner portal
+│   │   └── admin.html            # Administrative analytics dashboard
 │   └── static/
-│       ├── js/                   # i18n, Voice, Offline IndexedDB, Camera compression
-│       └── locales/              # Complete translations (en, hi, mr)
-├── tests/                        # 12 automated unit & integration test suites
+│       ├── js/                   # judge_demo.js, three_visualizer.js, realtime.js
+│       ├── locales/              # Complete translations (en, hi, mr)
+│       └── images/               # 18 curated story & bento assets
+├── tests/                        # 19 automated unit & integration test suites
 ├── docs/                         # Complete architecture & governance docs
-├── IMPLEMENTATION_STATUS.md
 ├── run.py                        # Single-command launcher
 └── data_sources.md               # Data provenance & methodology citations
 ```

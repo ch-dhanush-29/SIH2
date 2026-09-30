@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Operations Dashboard | E-Waste Saathi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        saffron: { 50: '#fff7ed', 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
+                        chakra: { 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
+                        indiaGreen: { 500: '#10b981', 600: '#059669', 700: '#047857' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .live-pulse {
+            animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.15); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-saffron-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="/" class="flex items-center gap-2 group">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-saffron-600 via-white/20 to-indiaGreen-600 p-[2px]">
+                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-recycle text-emerald-400 text-sm group-hover:rotate-180 transition-transform duration-500"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-orange-400 via-slate-100 to-emerald-400 bg-clip-text text-transparent">E-Waste Saathi</span>
+                        <span class="text-[10px] block font-mono text-slate-400 tracking-wider">REAL-TIME OPS DASHBOARD</span>
+                    </div>
+                </a>
+                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 live-pulse"></span>
+                    <span id="wsStatusText">WebSocket Connected (/ws/live)</span>
+                </div>
+            </div>
+
+            <!-- Global Nav Links & Demo Trigger -->
+            <div class="flex items-center gap-3">
+                <a href="/demo/live" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                    <i class="fa-solid fa-play text-orange-400 mr-1.5"></i>Live Simulation
+                </a>
+                <a href="/anomalies" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1.5"></i>Anomalies
+                </a>
+                <a href="/government" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                    <i class="fa-solid fa-landmark text-sky-400 mr-1.5"></i>CPCB / Govt
+                </a>
+                <a href="/impact" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                    <i class="fa-solid fa-leaf text-emerald-400 mr-1.5"></i>Impact
+                </a>
+                <button onclick="window.startJudgeWalkthrough()" class="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 hover:to-orange-400 text-white shadow-lg shadow-orange-950/50 flex items-center gap-1.5">
+                    <span>🎯</span> JUDGE DEMO
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Top Banner / Live Ticker -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl glass-panel border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white flex items-center gap-2">
+                        National Real-Time Telemetry Bus
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">SIH 2026 LIVE</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Streaming active e-waste formalization transactions across Hyderabad, Mumbai, Delhi, Bengaluru & Chennai.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono">
+                <span class="text-slate-400">Sim State:</span>
+                <span id="simBadge" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">STANDBY</span>
+                <button onclick="quickToggleSim()" id="simQuickBtn" class="px-3 py-1 rounded bg-orange-600 hover:bg-orange-500 text-white font-sans font-semibold transition">
+                    Run Stream
+                </button>
+            </div>
+        </div>
+
+        <!-- 8 Real-Time Operational KPI Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">Active Lots</div>
+                <div id="kpiActiveLots" class="text-xl font-bold font-mono text-white mt-1">142</div>
+                <div class="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-arrow-up text-[8px]"></i>+12% today</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">Today's Weight</div>
+                <div id="kpiTotalWeight" class="text-xl font-bold font-mono text-emerald-400 mt-1">4,820 kg</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Certified BLE Scales</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">Fair Settlement</div>
+                <div id="kpiSettlement" class="text-xl font-bold font-mono text-sky-400 mt-1">₹18.45 L</div>
+                <div class="text-[10px] text-emerald-400 mt-0.5">Micro-Escrow Instant</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">Verified Handovers</div>
+                <div id="kpiHandovers" class="text-xl font-bold font-mono text-white mt-1">98.4%</div>
+                <div class="text-[10px] text-sky-400 mt-0.5">Dual QR Signed</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">Gold Recovered</div>
+                <div id="kpiGold" class="text-xl font-bold font-mono text-amber-400 mt-1">314.8 g</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Strategic Reserves</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">Copper Yield</div>
+                <div id="kpiCopper" class="text-xl font-bold font-mono text-orange-400 mt-1">980 kg</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">99.2% Pure Refining</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-slate-800">
+                <div class="text-[11px] font-medium text-slate-400">CO₂ Avoided</div>
+                <div id="kpiCO2" class="text-xl font-bold font-mono text-emerald-400 mt-1">14.35 T</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">CPCB Formula</div>
+            </div>
+            <div class="p-3 rounded-xl glass-panel border border-rose-900/40 bg-rose-950/10">
+                <div class="text-[11px] font-medium text-rose-300">Anomalies</div>
+                <div id="kpiAnomalies" class="text-xl font-bold font-mono text-rose-400 mt-1">3</div>
+                <div class="text-[10px] text-rose-400/80 mt-0.5">Zero Unresolved</div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Split: Live Event Stream & Pipeline Visualizer -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left: Live Event Stream (2 Columns) -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="p-5 rounded-2xl glass-panel border border-slate-800">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                        <div>
+                            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-satellite-dish text-orange-400"></i>
+                                Live Event Bus Stream
+                            </h2>
+                            <p class="text-xs text-slate-400">Real-time WebSocket events broadcasted as transactions occur.</p>
+                        </div>
+
+                        <!-- Category Filters -->
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                            <button onclick="filterEvents('all')" class="ev-filter active px-2.5 py-1 rounded-lg bg-orange-600 text-white font-medium">All</button>
+                            <button onclick="filterEvents('collection')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Collection</button>
+                            <button onclick="filterEvents('ai')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">AI Vision</button>
+                            <button onclick="filterEvents('pricing')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Pricing</button>
+                            <button onclick="filterEvents('handover')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Handover</button>
+                            <button onclick="filterEvents('anomalies')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Anomalies</button>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Event Stream Container -->
+                    <div id="eventStreamList" class="mt-4 space-y-2.5 max-h-[520px] overflow-y-auto pr-1 font-mono text-xs">
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-400 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-spinner fa-spin text-orange-400"></i> Listening on WebSocket channel /ws/live...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Active Lot Pipeline & Quick Actions -->
+            <div class="space-y-4">
+
+                <!-- Active In-Flight Lot Card -->
+                <div class="p-5 rounded-2xl glass-panel border border-slate-800">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Lot in Pipeline</span>
+                        <span id="activeLotBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30">MONITORING</span>
+                    </div>
+
+                    <div id="activeLotContainer" class="mt-4 space-y-3">
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+                            <div class="w-12 h-12 rounded-full bg-slate-800 mx-auto flex items-center justify-center text-slate-400 mb-2">
+                                <i class="fa-solid fa-microchip text-lg"></i>
+                            </div>
+                            <div id="activeLotId" class="text-sm font-bold text-white font-mono">Waiting for Next Lot...</div>
+                            <div id="activeLotSub" class="text-xs text-slate-400 mt-1">Start Live Simulation to watch full 10-step lifecycle</div>
+                        </div>
+
+                        <!-- 10 Step Mini Tracker -->
+                        <div class="space-y-1.5 text-[11px] font-sans">
+                            <div id="pipeStep1" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>1. Discovered in Informal Hub</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep2" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>2. AI Material & Grade ID</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep3" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>3. BLE Scale Tare Weight</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep4" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>4. Fair Market Pricing</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep5" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>5. Recycler MCDA Matching</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep6" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>6. SHA-256 Digital Passport</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep7" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>7. Dual Handover Verification</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                            <div id="pipeStep8" class="flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-slate-400">
+                                <span>8. Instant Escrow Settlement</span>
+                                <i class="fa-solid fa-circle text-[8px] text-slate-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fast Actions Box -->
+                <div class="p-5 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Live Controls</span>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="stepSingleEvent()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-forward-step text-sky-400"></i> Step Once
+                        </button>
+                        <button onclick="injectDemoAnomaly()" class="p-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/60 text-xs font-semibold text-rose-200 flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Inject Anomaly
+                        </button>
+                    </div>
+
+                    <a href="/passport/verify" class="w-full p-2.5 rounded-xl bg-sky-950/40 hover:bg-sky-900/50 border border-sky-800/60 text-xs font-semibold text-sky-200 flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-shield-halved text-sky-400"></i> Verify SHA-256 Passport Chain
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Global Judge Demo Modal Container -->
+    <div id="judgeDemoContainer"></div>
+
+    <script src="/static/js/judge_demo.js"></script>
+    <script>
+        let ws = null;
+        let currentFilter = 'all';
+        let allEvents = [];
+        let isSimActive = false;
+
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/live`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                document.getElementById('wsStatusText').innerText = 'WebSocket Connected (/ws/live)';
+                console.log('Connected to /ws/live');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleIncomingEvent(data);
+                } catch(e) {
+                    console.error('Error parsing WS message:', e);
+                }
+            };
+
+            ws.onclose = () => {
+                document.getElementById('wsStatusText').innerText = 'Reconnecting WebSocket...';
+                setTimeout(initWebSocket, 2000);
+            };
+        }
+
+        function handleIncomingEvent(event) {
+            allEvents.unshift(event);
+            if (allEvents.length > 200) allEvents.pop();
+
+            // Update KPIs if present in stats or event
+            if (event.category === 'settlement' && event.data?.amount_inr) {
+                // Flash settlement card
+            }
+            if (event.category === 'circular_impact' && event.data) {
+                if (event.data.gold_recovered_g) {
+                    // Update gold
+                }
+            }
+
+            renderEventStream();
+            updatePipelineView(event);
+        }
+
+        function renderEventStream() {
+            const list = document.getElementById('eventStreamList');
+            const filtered = allEvents.filter(e => {
+                if (currentFilter === 'all') return true;
+                return e.category === currentFilter || e.event === currentFilter;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="p-3 text-slate-500 text-center">No events matching "${currentFilter}"</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.slice(0, 40).map(e => {
+                const time = e.timestamp ? e.timestamp.substring(11, 19) : new Date().toLocaleTimeString();
+                let icon = 'fa-info-circle text-sky-400';
+                let borderCol = 'border-slate-800';
+                let bgCol = 'bg-slate-900/60';
+
+                if (e.severity === 'alert' || e.event === 'ANOMALY_DETECTED') {
+                    icon = 'fa-triangle-exclamation text-rose-400';
+                    borderCol = 'border-rose-900/60';
+                    bgCol = 'bg-rose-950/20';
+                } else if (e.severity === 'success' || e.event === 'PAYMENT_COMPLETED' || e.event === 'HANDOVER_VERIFIED') {
+                    icon = 'fa-check-circle text-emerald-400';
+                    borderCol = 'border-emerald-900/60';
+                    bgCol = 'bg-emerald-950/20';
+                } else if (e.event === 'AI_CLASSIFIED') {
+                    icon = 'fa-robot text-purple-400';
+                } else if (e.event === 'PRICE_CALCULATED') {
+                    icon = 'fa-indian-rupee-sign text-amber-400';
+                } else if (e.event === 'RECYCLER_MATCHED') {
+                    icon = 'fa-recycle text-teal-400';
+                }
+
+                return `
+                    <div class="p-3 rounded-xl ${bgCol} border ${borderCol} transition hover:bg-slate-900 flex items-start gap-3">
+                        <div class="mt-0.5"><i class="fa-solid ${icon}"></i></div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="font-bold text-slate-200">${e.event}</span>
+                                <span class="text-slate-500">${time}</span>
+                            </div>
+                            <div class="text-slate-300 font-sans text-xs mt-0.5">${e.summary || JSON.stringify(e.data || {})}</div>
+                            ${e.data?.lot_id ? `<div class="mt-1 text-[10px] text-slate-400 font-mono"><span class="text-orange-400">LOT:</span> ${e.data.lot_id}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterEvents(category) {
+            currentFilter = category;
+            document.querySelectorAll('.ev-filter').forEach(btn => {
+                btn.classList.remove('active', 'bg-orange-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            event.target.classList.add('active', 'bg-orange-600', 'text-white');
+            renderEventStream();
+        }
+
+        function updatePipelineView(event) {
+            if (event.data?.lot_id) {
+                document.getElementById('activeLotId').innerText = event.data.lot_id;
+                document.getElementById('activeLotSub').innerText = event.summary || event.event;
+            }
+        }
+
+        async function quickToggleSim() {
+            if (!isSimActive) {
+                await fetch('/api/v1/simulation/start', { method: 'POST' });
+                isSimActive = true;
+                document.getElementById('simBadge').innerText = 'STREAMING (1.0x)';
+                document.getElementById('simBadge').className = 'px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                document.getElementById('simQuickBtn').innerText = 'Pause';
+            } else {
+                await fetch('/api/v1/simulation/pause', { method: 'POST' });
+                isSimActive = false;
+                document.getElementById('simBadge').innerText = 'PAUSED';
+                document.getElementById('simBadge').className = 'px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700';
+                document.getElementById('simQuickBtn').innerText = 'Run Stream';
+            }
+        }
+
+        async function stepSingleEvent() {
+            await fetch('/api/v1/simulation/step', { method: 'POST' });
+        }
+
+        async function injectDemoAnomaly() {
+            await fetch('/api/v1/simulation/inject-anomaly', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ anomaly_type: 'WEIGHT_DISCREPANCY_21.6%' })
+            });
+        }
+
+        // Fetch initial state & history
+        async function bootstrap() {
+            initWebSocket();
+            try {
+                const res = await fetch('/api/v1/events/history?limit=30');
+                const data = await res.json();
+                if (data.events) {
+                    allEvents = data.events.reverse();
+                    renderEventStream();
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', bootstrap);
+    </script>
+</body>
+</html>

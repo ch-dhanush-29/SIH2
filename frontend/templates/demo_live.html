@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live City Simulation | E-Waste Saathi SIH26229</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        saffron: { 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
+                        chakra: { 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
+                        indiaGreen: { 500: '#10b981', 600: '#059669', 700: '#047857' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .active-pulse {
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-saffron-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="/" class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-saffron-600 to-indiaGreen-600 p-[2px]">
+                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-city text-orange-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-orange-400 via-slate-100 to-emerald-400 bg-clip-text text-transparent">E-Waste Saathi</span>
+                        <span class="text-[10px] block font-mono text-slate-400 tracking-wider">LIVE CITY SIMULATION ENGINE</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-3">
+                <a href="/dashboard/live" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                    <i class="fa-solid fa-chart-line text-sky-400 mr-1.5"></i>Live Dashboard
+                </a>
+                <button onclick="window.startJudgeWalkthrough()" class="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white shadow-lg shadow-orange-950/50 flex items-center gap-1.5">
+                    <span>🎯</span> JUDGE DEMO
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Top Simulator Control Bar -->
+        <div class="p-6 rounded-2xl glass-panel border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30">SIH 2026 BENCHMARK</span>
+                    <span id="engineBadge" class="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">STANDBY</span>
+                </div>
+                <h1 class="text-xl font-bold text-white mt-1">Multi-City E-Waste Flow Simulator</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Automates end-to-end transactions: Discovery ➔ AI ID ➔ Scale Tare ➔ Pricing ➔ MCDA Matching ➔ QR ➔ Settlement ➔ Mineral Recovery.</p>
+            </div>
+
+            <!-- Execution Buttons & Speed Selector -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button id="btnStart" onclick="startSim()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-play"></i> START
+                    </button>
+                    <button id="btnPause" onclick="pauseSim()" class="px-3 py-2 rounded-lg bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-pause"></i> PAUSE
+                    </button>
+                    <button id="btnStep" onclick="stepSim()" class="px-3 py-2 rounded-lg bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-forward-step text-sky-400"></i> STEP
+                    </button>
+                    <button id="btnReset" onclick="resetSim()" class="px-3 py-2 rounded-lg bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-rotate-left text-slate-400"></i> RESET
+                    </button>
+                </div>
+
+                <!-- Speed Control -->
+                <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 text-xs font-mono">
+                    <span class="text-slate-500 px-1">SPEED:</span>
+                    <button onclick="setSpeed(0.5)" class="spd-btn px-2 py-1 rounded hover:bg-slate-800 text-slate-400">0.5x</button>
+                    <button onclick="setSpeed(1.0)" class="spd-btn px-2 py-1 rounded bg-orange-600 text-white font-bold">1x</button>
+                    <button onclick="setSpeed(2.0)" class="spd-btn px-2 py-1 rounded hover:bg-slate-800 text-slate-400">2x</button>
+                    <button onclick="setSpeed(5.0)" class="spd-btn px-2 py-1 rounded hover:bg-slate-800 text-slate-400">5x</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Grid: Interactive Active Lot Lifecycle + City Clusters -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left 2 Cols: Active Stepper Visualizer -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- 10 Step Visual Pipeline -->
+                <div class="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-orange-400"></i>
+                            Live 10-Step Workflow Progression
+                        </h2>
+                        <span id="currentStepLabel" class="text-xs font-mono text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded border border-emerald-800/40">Step 1 of 10</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-sans">
+                        <div id="stepCard0" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">01. DISCOVER</div>
+                            <div class="font-bold text-slate-200 mt-1">Informal Hub</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Photo capture</div>
+                        </div>
+                        <div id="stepCard1" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">02. AI VISION</div>
+                            <div class="font-bold text-slate-200 mt-1">Material ID</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Grade confidence</div>
+                        </div>
+                        <div id="stepCard2" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">03. WEIGHT</div>
+                            <div class="font-bold text-slate-200 mt-1">BLE Scale Tare</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Certified capture</div>
+                        </div>
+                        <div id="stepCard3" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">04. FAIR PRICE</div>
+                            <div class="font-bold text-slate-200 mt-1">Index Engine</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Dynamic rates</div>
+                        </div>
+                        <div id="stepCard4" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">05. RECYCLER</div>
+                            <div class="font-bold text-slate-200 mt-1">MCDA Radar</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Optimal match</div>
+                        </div>
+                        <div id="stepCard5" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">06. PASSPORT</div>
+                            <div class="font-bold text-slate-200 mt-1">SHA-256 Seal</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Digital tamper QR</div>
+                        </div>
+                        <div id="stepCard6" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">07. LOGISTICS</div>
+                            <div class="font-bold text-slate-200 mt-1">Driver Arrival</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">QR Gate Scan</div>
+                        </div>
+                        <div id="stepCard7" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">08. HANDOVER</div>
+                            <div class="font-bold text-slate-200 mt-1">Dual Weighing</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">0.0 kg delta check</div>
+                        </div>
+                        <div id="stepCard8" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">09. SETTLE</div>
+                            <div class="font-bold text-slate-200 mt-1">Micro-Escrow</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Instant UPI pay</div>
+                        </div>
+                        <div id="stepCard9" class="step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 transition">
+                            <div class="text-[10px] text-slate-500 font-mono">10. CIRCULAR</div>
+                            <div class="font-bold text-slate-200 mt-1">Mines Recovery</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Strategic Au/Cu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Simulation Payload Inspector -->
+                <div class="p-6 rounded-2xl glass-panel border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Live Telemetry Inspector (JSON Feed)</span>
+                        <span id="activeEventTitle" class="text-xs font-mono text-orange-400">LOT_CREATED</span>
+                    </div>
+                    <pre id="jsonPayload" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono text-xs max-h-56 overflow-y-auto">{
+  "status": "ready",
+  "message": "Click 'START' or 'STEP' to initiate live city telemetry stream"
+}</pre>
+                </div>
+
+            </div>
+
+            <!-- Right Column: City Hubs & Anomaly Injector Toolbox -->
+            <div class="space-y-6">
+
+                <!-- Active City Hubs -->
+                <div class="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                        <span>Connected Urban Hubs</span>
+                        <span class="text-[10px] text-emerald-400 font-mono">5 ACTIVE</span>
+                    </h3>
+
+                    <div class="space-y-2.5 text-xs">
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                                <div>
+                                    <div class="font-bold text-white">Hyderabad (Musheerabad)</div>
+                                    <div class="text-[11px] text-slate-400">34 Active Collectors • 3 Refineries</div>
+                                </div>
+                            </div>
+                            <span class="font-mono text-emerald-400 font-bold">1,420 kg</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                                <div>
+                                    <div class="font-bold text-white">Mumbai (Dharavi Cluster)</div>
+                                    <div class="text-[11px] text-slate-400">58 Active Collectors • 6 Recyclers</div>
+                                </div>
+                            </div>
+                            <span class="font-mono text-emerald-400 font-bold">2,150 kg</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                                <div>
+                                    <div class="font-bold text-white">Delhi NCR (Seelampur Hub)</div>
+                                    <div class="text-[11px] text-slate-400">42 Active Collectors • 4 Recyclers</div>
+                                </div>
+                            </div>
+                            <span class="font-mono text-emerald-400 font-bold">1,890 kg</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                                <div>
+                                    <div class="font-bold text-white">Bengaluru (Peenya Hub)</div>
+                                    <div class="text-[11px] text-slate-400">29 Active Collectors • 2 Refineries</div>
+                                </div>
+                            </div>
+                            <span class="font-mono text-emerald-400 font-bold">960 kg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Anomaly Injection Controls -->
+                <div class="p-6 rounded-2xl glass-panel border border-rose-900/40 bg-rose-950/10 space-y-4">
+                    <div>
+                        <h3 class="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-bolt-lightning text-rose-400"></i>
+                            Live Anomaly Test Harness
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-1">Trigger edge failure cases to demonstrate SIH AI anomaly detection in real-time.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <button onclick="injectSpecificAnomaly('WEIGHT_DISCREPANCY_24%')" class="w-full p-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 text-xs font-semibold text-rose-200 flex items-center justify-between transition">
+                            <span>⚖️ Weight Discrepancy (> 15%)</span>
+                            <i class="fa-solid fa-plus text-rose-400"></i>
+                        </button>
+                        <button onclick="injectSpecificAnomaly('HAZARD_LEAKAGE_BATTERY')" class="w-full p-2.5 rounded-xl bg-amber-950/60 hover:bg-amber-900/80 border border-amber-800/60 text-xs font-semibold text-amber-200 flex items-center justify-between transition">
+                            <span>⚠️ Hazmat Li-Ion Thermal Alert</span>
+                            <i class="fa-solid fa-plus text-amber-400"></i>
+                        </button>
+                        <button onclick="injectSpecificAnomaly('TAMPERED_SHA256_HASH')" class="w-full p-2.5 rounded-xl bg-sky-950/60 hover:bg-sky-900/80 border border-sky-800/60 text-xs font-semibold text-sky-200 flex items-center justify-between transition">
+                            <span>🔐 QR Passport Hash Tamper Alert</span>
+                            <i class="fa-solid fa-plus text-sky-400"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Global Judge Demo Modal Container -->
+    <div id="judgeDemoContainer"></div>
+
+    <script src="/static/js/judge_demo.js"></script>
+    <script>
+        let ws = null;
+        let isSimRunning = false;
+        let activeStepIdx = 0;
+
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/live`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleSimEvent(data);
+                } catch(e) {
+                    console.error(e);
+                }
+            };
+        }
+
+        function handleSimEvent(event) {
+            document.getElementById('jsonPayload').innerText = JSON.stringify(event, null, 2);
+            document.getElementById('activeEventTitle').innerText = event.event;
+
+            // Map event to step index
+            const stepMap = {
+                'LOT_CREATED': 0,
+                'AI_CLASSIFIED': 1,
+                'WEIGHT_CAPTURED': 2,
+                'PRICE_CALCULATED': 3,
+                'RECYCLER_MATCHED': 4,
+                'QR_GENERATED': 5,
+                'QR_SCANNED': 6,
+                'HANDOVER_VERIFIED': 7,
+                'PAYMENT_COMPLETED': 8,
+                'LOT_UPDATED': 9
+            };
+
+            if (stepMap[event.event] !== undefined) {
+                highlightStep(stepMap[event.event]);
+            }
+        }
+
+        function highlightStep(idx) {
+            activeStepIdx = idx;
+            document.getElementById('currentStepLabel').innerText = `Step ${idx + 1} of 10`;
+
+            for (let i = 0; i < 10; i++) {
+                const card = document.getElementById(`stepCard${i}`);
+                if (i === idx) {
+                    card.className = 'step-card p-3 rounded-xl bg-orange-950/50 border border-orange-500 text-white active-pulse transition';
+                } else if (i < idx) {
+                    card.className = 'step-card p-3 rounded-xl bg-emerald-950/20 border border-emerald-800/60 text-slate-300 transition';
+                } else {
+                    card.className = 'step-card p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-400 transition';
+                }
+            }
+        }
+
+        async function startSim() {
+            await fetch('/api/v1/simulation/start', { method: 'POST' });
+            isSimRunning = true;
+            document.getElementById('engineBadge').innerText = 'RUNNING LIVE';
+            document.getElementById('engineBadge').className = 'text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        }
+
+        async function pauseSim() {
+            await fetch('/api/v1/simulation/pause', { method: 'POST' });
+            isSimRunning = false;
+            document.getElementById('engineBadge').innerText = 'PAUSED';
+            document.getElementById('engineBadge').className = 'text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700';
+        }
+
+        async function stepSim() {
+            const res = await fetch('/api/v1/simulation/step', { method: 'POST' });
+            const data = await res.json();
+            if (data.event_executed) {
+                handleSimEvent(data.event_executed);
+            }
+        }
+
+        async function resetSim() {
+            await fetch('/api/v1/simulation/reset', { method: 'POST' });
+            isSimRunning = false;
+            highlightStep(0);
+            document.getElementById('engineBadge').innerText = 'STANDBY';
+        }
+
+        async function setSpeed(mult) {
+            await fetch('/api/v1/simulation/speed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ speed: mult })
+            });
+            document.querySelectorAll('.spd-btn').forEach(b => {
+                b.classList.remove('bg-orange-600', 'text-white', 'font-bold');
+                b.classList.add('text-slate-400');
+            });
+            event.target.classList.add('bg-orange-600', 'text-white', 'font-bold');
+        }
+
+        async function injectSpecificAnomaly(type) {
+            await fetch('/api/v1/simulation/inject-anomaly', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ anomaly_type: type })
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            highlightStep(0);
+        });
+    </script>
+</body>
+</html>

@@ -9,8 +9,9 @@ from backend.app.database import engine, Base
 from backend.app.seeds.seed_data import seed_database
 from backend.app.routers import (
     auth, materials, prices, lots, recyclers, handover,
-    ledger, sync, anomalies, field_research, admin, voice_intent, websocket
+    ledger, sync, anomalies, field_research, admin, voice_intent, websocket, simulation
 )
+from backend.websocket.routes import router as ws_live_router
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -30,6 +31,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Setup directories
@@ -62,7 +64,9 @@ app.include_router(anomalies.router, prefix=settings.API_V1_STR)
 app.include_router(field_research.router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(voice_intent.router, prefix=settings.API_V1_STR)
+app.include_router(simulation.router, prefix=settings.API_V1_STR)
 app.include_router(websocket.router)
+app.include_router(ws_live_router)
 
 @app.on_event("startup")
 def on_startup():
@@ -89,13 +93,22 @@ def readiness_check():
         "database": "connected",
         "cv_classifier": "loaded",
         "price_engine": "ready",
-        "matching_engine": "ready"
+        "matching_engine": "ready",
+        "simulation_engine": "ready"
     }
 
 # Web Interface Endpoints
 @app.get("/", response_class=HTMLResponse)
 def root_portal(request: Request):
     return templates.TemplateResponse(request=request, name="index.html", context={"project_name": settings.PROJECT_NAME})
+
+@app.get("/dashboard/live", response_class=HTMLResponse)
+def live_dashboard_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="dashboard_live.html", context={"project_name": settings.PROJECT_NAME})
+
+@app.get("/demo/live", response_class=HTMLResponse)
+def live_simulation_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="demo_live.html", context={"project_name": settings.PROJECT_NAME})
 
 @app.get("/collector", response_class=HTMLResponse)
 def collector_interface(request: Request):
@@ -109,6 +122,23 @@ def recycler_interface(request: Request):
 def admin_interface(request: Request):
     return templates.TemplateResponse(request=request, name="admin.html", context={"project_name": settings.PROJECT_NAME})
 
+@app.get("/anomalies", response_class=HTMLResponse)
+def anomalies_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="anomalies.html", context={"project_name": settings.PROJECT_NAME})
+
+@app.get("/government", response_class=HTMLResponse)
+def government_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="government.html", context={"project_name": settings.PROJECT_NAME})
+
+@app.get("/impact", response_class=HTMLResponse)
+def impact_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="impact.html", context={"project_name": settings.PROJECT_NAME})
+
+@app.get("/passport/verify", response_class=HTMLResponse)
+def passport_verify_interface(request: Request):
+    return templates.TemplateResponse(request=request, name="passport_verify.html", context={"project_name": settings.PROJECT_NAME})
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)
+
