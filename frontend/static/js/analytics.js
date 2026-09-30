@@ -350,6 +350,34 @@ function renderMaterialsMix(materials) {
   const weights = lastMaterialsData.map(m => m.weight_kg);
   const colors = ['#2563EB', '#059669', '#D89B1D', '#F59E0B', '#64748B', '#9333EA', '#DC2626'];
 
+  const totalLots = lastMaterialsData.reduce((acc, m) => acc + (m.lots_count || 0), 0);
+  const totalWeight = lastMaterialsData.reduce((acc, m) => acc + (m.weight_kg || 0), 0);
+
+  const centerTextPlugin = {
+    id: 'doughnutCenterCount',
+    afterDraw(chart) {
+      const { ctx, chartArea: { top, bottom, left, right } } = chart;
+      if (!ctx || !top || !bottom) return;
+      ctx.save();
+      const centerX = (left + right) / 2;
+      const centerY = (top + bottom) / 2;
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Primary: Total Lots Count
+      ctx.fillStyle = '#101828';
+      ctx.font = 'bold 16px Sora, sans-serif';
+      ctx.fillText(`${totalLots > 0 ? totalLots : Math.round(totalWeight)} Lots`, centerX, centerY - 8);
+
+      // Secondary: Total Weight
+      ctx.fillStyle = '#667085';
+      ctx.font = '600 11px IBM Plex Mono, monospace';
+      ctx.fillText(`${Math.round(totalWeight).toLocaleString()} kg`, centerX, centerY + 11);
+      ctx.restore();
+    }
+  };
+
   if (typeof Chart !== 'undefined') {
     if (materialChart) {
       materialChart.data.labels = labels;
@@ -368,11 +396,23 @@ function renderMaterialsMix(materials) {
               borderColor: '#FFFFFF'
             }]
           },
+          plugins: [centerTextPlugin],
           options: {
             responsive: true,
             maintainAspectRatio: false,
             cutout: '70%',
-            plugins: { legend: { display: false } }
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (item) => {
+                    const mat = lastMaterialsData[item.dataIndex];
+                    if (!mat) return ` ${item.parsed} kg`;
+                    return ` ${mat.name}: ${mat.lots_count || 0} lots (${mat.weight_kg} kg, ${mat.share_pct}%)`;
+                  }
+                }
+              }
+            }
           }
         });
       } catch (err) {
@@ -384,15 +424,15 @@ function renderMaterialsMix(materials) {
     drawCustomDoughnutChart(canvas, lastMaterialsData, colors);
   }
 
-  listEl.innerHTML = lastMaterialsData.slice(0, 4).map((m, idx) => `
+  listEl.innerHTML = lastMaterialsData.slice(0, 5).map((m, idx) => `
     <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-brandBorder">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx % colors.length]}"></span>
         <span class="text-brandDark font-medium">${m.icon} ${m.name}</span>
       </div>
       <div class="text-right">
-        <span class="font-bold text-brandDark">${m.weight_kg} kg</span>
-        <span class="text-[10px] text-brandSecondary ml-1">(${m.share_pct}%)</span>
+        <span class="font-bold text-brandDark font-mono">${m.lots_count || 0} lots</span>
+        <span class="text-[10px] text-brandSecondary ml-1">(${m.weight_kg} kg &bull; ${m.share_pct}%)</span>
       </div>
     </div>
   `).join('');
@@ -416,6 +456,7 @@ function drawCustomDoughnutChart(canvas, materials, colors) {
 
   ctx.clearRect(0, 0, w, h);
 
+  const totalLots = materials.reduce((acc, m) => acc + (m.lots_count || 0), 0);
   const totalWeight = materials.reduce((acc, m) => acc + (m.weight_kg || 0), 0);
   const centerX = w / 2;
   const centerY = h / 2;
@@ -446,16 +487,16 @@ function drawCustomDoughnutChart(canvas, materials, colors) {
     startAngle = endAngle;
   });
 
-  // Center hole text
+  // Center hole text: Prominent lot count and total weight
   ctx.fillStyle = '#101828';
-  ctx.font = 'bold 14px Sora, sans-serif';
+  ctx.font = 'bold 16px Sora, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`${Math.round(totalWeight)}kg`, centerX, centerY - 6);
+  ctx.fillText(`${totalLots > 0 ? totalLots : Math.round(totalWeight)} Lots`, centerX, centerY - 8);
 
   ctx.fillStyle = '#667085';
-  ctx.font = '10px IBM Plex Mono, monospace';
-  ctx.fillText('TOTAL LOTS', centerX, centerY + 10);
+  ctx.font = '600 11px IBM Plex Mono, monospace';
+  ctx.fillText(`${Math.round(totalWeight).toLocaleString()} kg`, centerX, centerY + 11);
 }
 
 async function fetchPricingMatrix() {
