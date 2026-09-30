@@ -69,6 +69,9 @@
       </div>
 
       <nav class="flex items-center gap-2 text-xs font-semibold">
+        <span class="realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span> OFFLINE
+        </span>
         <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
           <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
         </a>
@@ -85,8 +88,8 @@
     <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2 font-mono text-xs">
-          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-brandGreen font-bold border border-emerald-200">LCA METHODOLOGY (CPCB 2022)</span>
-          <span class="text-brandSecondary">Estimated & Modeled</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-brandGreen font-bold border border-emerald-200">LCA METHODOLOGY</span>
+          <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-bold">ESTIMATED & MODELED</span>
         </div>
         <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">Environmental Life-Cycle Assessment (LCA) & Resource Savings</h1>
         <p class="text-xs text-brandSecondary mt-0.5">Quantifying carbon offsets, water conservation, and virgin ore preservation through formalized recycling.</p>
@@ -102,22 +105,22 @@
       <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
         <div class="text-[11px] text-emerald-800 font-sans">CO₂e Emissions Avoided</div>
         <div class="text-2xl font-bold text-brandGreen mt-1">14.35 Tons</div>
-        <div class="text-[10px] text-emerald-700 font-sans mt-0.5">3.12 kg CO₂ / kg e-waste</div>
+        <div class="text-[10px] text-emerald-700 font-sans mt-0.5">MODEL OUTPUT (3.12 kg/kg)</div>
       </div>
       <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
         <div class="text-[11px] text-amber-800 font-sans">Virgin Copper Ore Saved</div>
         <div class="text-2xl font-bold text-brandGold mt-1">196.0 Tons</div>
-        <div class="text-[10px] text-amber-700 font-sans mt-0.5">Displaced open-pit mining</div>
+        <div class="text-[10px] text-amber-700 font-sans mt-0.5">ESTIMATED DISPLACEMENT</div>
       </div>
       <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200">
         <div class="text-[11px] text-blue-800 font-sans">Freshwater Conserved</div>
         <div class="text-2xl font-bold text-brandBlue mt-1">280,000 L</div>
-        <div class="text-[10px] text-blue-700 font-sans mt-0.5">Zero toxic acid leaching</div>
+        <div class="text-[10px] text-blue-700 font-sans mt-0.5">ESTIMATED (No Acid Bath)</div>
       </div>
       <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder">
         <div class="text-[11px] text-brandSecondary font-sans">Toxic Lead Contained</div>
         <div class="text-2xl font-bold text-brandDark mt-1">840 kg</div>
-        <div class="text-[10px] text-brandGreen font-sans mt-0.5">Zero open burning</div>
+        <div class="text-[10px] text-brandGreen font-sans mt-0.5">HAZARD ISOLATION (EST)</div>
       </div>
     </div>
 
@@ -132,7 +135,7 @@
           <thead class="text-brandSecondary font-mono border-b border-brandBorder bg-slate-50">
             <tr>
               <th class="py-3 px-4">Metric / Dimension</th>
-              <th class="py-3 px-4 text-brandDanger">Primitive Informal Methods (Current)</th>
+              <th class="py-3 px-4 text-brandDanger">Primitive Informal Methods</th>
               <th class="py-3 px-4 text-brandGreen">E-Waste Saathi Formalized Flow</th>
               <th class="py-3 px-4 text-brandBlue">Net Improvement</th>
             </tr>
@@ -173,20 +176,20 @@
   <div id="methodologyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
     <div class="max-w-xl w-full bg-white border border-brandBorder rounded-3xl p-6 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-brandBorder">
-        <h3 class="font-sora text-base font-bold text-brandDark">LCA Impact Calculation Formulas</h3>
+        <h3 class="font-sora text-base font-bold text-brandDark">LCA Impact Calculation Methodology</h3>
         <button onclick="closeMethodologyModal()" class="text-brandSecondary hover:text-brandDark"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-xs text-slate-700 font-mono">
         <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
-          <span class="text-brandGreen font-bold">CO₂e Avoided:</span><br>
-          Avoided_CO2 = Weight_kg × 3.12 kg CO₂e/kg (CPCB benchmark vs virgin refining)
+          <span class="text-brandGreen font-bold">CO₂e Avoided Calculation:</span><br>
+          Avoided_CO2 = Weight_kg × 3.12 kg CO₂e/kg (Empirical standard model vs virgin refining)
         </div>
         <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
           <span class="text-brandGold font-bold">Virgin Copper Ore Displaced:</span><br>
           Ore_Saved = (Recovered_Cu_kg / 0.005) (Assuming standard 0.5% open-pit copper ore concentration)
         </div>
         <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder text-[11px] text-brandSecondary">
-          <span class="font-bold text-brandDark">Standard Citation:</span> Published under CPCB E-Waste Management Rules 2022 and UNEP Circular Economy Assessment Guidelines.
+          <span class="font-bold text-brandDark">Source Reference:</span> Published under CPCB E-Waste Management Guidelines and UNEP Circular Economy Evaluation Metrics.
         </div>
       </div>
       <button onclick="closeMethodologyModal()" class="w-full py-2.5 rounded-2xl bg-brandDark hover:bg-slate-800 text-white font-semibold text-xs transition">
@@ -197,6 +200,7 @@
 
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
+  <script src="/static/js/realtime.js"></script>
 
   <script>
     function openMethodologyModal() {

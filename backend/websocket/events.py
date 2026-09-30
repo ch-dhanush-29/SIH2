@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 from typing import Any, Dict, Optional
 from datetime import datetime
@@ -20,11 +21,13 @@ class EventType(str, Enum):
     LOT_UPDATED = "LOT_UPDATED"
     SYNC_STARTED = "SYNC_STARTED"
     SYNC_COMPLETED = "SYNC_COMPLETED"
+    SYNC_FAILED = "SYNC_FAILED"
     SYSTEM_ALERT = "SYSTEM_ALERT"
     PRICE_TICK = "PRICE_TICK"
     SIMULATION_TICK = "SIMULATION_TICK"
 
 class RealtimeEvent(BaseModel):
+    event_id: str = Field(default_factory=lambda: f"EVT-{uuid.uuid4().hex[:8].upper()}")
     event: str
     category: str = "general"
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())

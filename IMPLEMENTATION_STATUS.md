@@ -24,9 +24,12 @@ All core architectural phases, AI engines, database models, multi-lingual offlin
 - [x] Offline-First Client Architecture (IndexedDB, Sync Engine, Voice Assistant)
 - [x] Unified Frontend Interfaces (`index.html`, `collector.html`, `recycler.html`, `admin.html`)
 - [x] Comprehensive Synthetic Demo Dataset Seeds (500+ prices, 20+ recyclers, 200+ lots)
-- [x] Automated Test Suite (`pytest` - 12 passed tests)
+- [x] Canonical WebSocket Realtime Architecture (`/ws/live` & `RealtimeStream` frontend client)
+- [x] Live Event Bus with Standardized Schema & History Hydration (`/api/v1/events/history`)
+- [x] Real-time Multi-City Simulation Engine (`/demo/live`) & Command Dashboard (`/dashboard/live`)
+- [x] Automated Test Suite (`pytest` - 23/23 passed tests)
 - [x] Complete Architecture & Project Documentation Suite (`README.md`, `ARCHITECTURE.md`, `DATABASE.md`, `AI.md`, `data_sources.md`)
 
 ## Verification Summary
-- **Pytest Suite**: 12/12 tests passed (Unit, Integration, Fair Price, Matching, Anomaly Detection, Sync Idempotency, E2E Handover).
+- **Pytest Suite**: 23/23 tests passed (Unit, Integration, Fair Price, Matching, Anomaly Detection, Sync Idempotency, E2E Handover, WebSocket /ws/live Bus, History Hydration, Anomaly Triage Actions).
 - **One-Click Launch**: `python run.py` initializes tables, runs deterministic seed dataset generator, and launches web server on `http://localhost:8000`.

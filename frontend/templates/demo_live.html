@@ -69,6 +69,9 @@
       </div>
 
       <nav class="flex items-center gap-2 text-xs font-semibold">
+        <span class="realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span> OFFLINE
+        </span>
         <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
           <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
         </a>
@@ -85,8 +88,8 @@
     <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
       <div>
         <div class="flex items-center gap-2 font-mono text-xs">
-          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-brandGreen font-bold border border-emerald-200">DEMO BENCHMARK</span>
-          <span id="engineBadge" class="text-brandSecondary">STANDBY</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-brandGreen font-bold border border-emerald-200">DEMO BENCHMARK ENGINE</span>
+          <span id="engineBadge" class="text-brandSecondary font-bold">STANDBY</span>
         </div>
         <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">Multi-City E-Waste Flow Simulator</h1>
         <p class="text-xs text-brandSecondary mt-0.5">Automates end-to-end transactions: Discovery ➔ AI ID ➔ Scale Tare ➔ Pricing ➔ MCDA Matching ➔ QR ➔ Settlement ➔ Recovery.</p>
@@ -112,10 +115,10 @@
         <!-- Speed Selector -->
         <div class="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-2xl border border-brandBorder text-xs font-mono">
           <span class="text-brandSecondary px-1">SPEED:</span>
-          <button onclick="setSpeed(0.5)" class="spd-btn px-2 py-1 rounded-lg text-brandSecondary hover:bg-white">0.5x</button>
-          <button onclick="setSpeed(1.0)" class="spd-btn px-2 py-1 rounded-lg bg-brandDark text-white font-bold">1x</button>
-          <button onclick="setSpeed(2.0)" class="spd-btn px-2 py-1 rounded-lg text-brandSecondary hover:bg-white">2x</button>
-          <button onclick="setSpeed(5.0)" class="spd-btn px-2 py-1 rounded-lg text-brandSecondary hover:bg-white">5x</button>
+          <button onclick="setSpeed(0.5, this)" class="spd-btn px-2 py-1 rounded-lg text-brandSecondary hover:bg-white">0.5x</button>
+          <button onclick="setSpeed(1.0, this)" class="spd-btn px-2 py-1 rounded-lg bg-brandDark text-white font-bold">1x</button>
+          <button onclick="setSpeed(2.0, this)" class="spd-btn px-2 py-1 rounded-lg text-brandSecondary hover:bg-white">2x</button>
+          <button onclick="setSpeed(5.0, this)" class="spd-btn px-2 py-1 rounded-lg text-brandSecondary hover:bg-white">5x</button>
         </div>
       </div>
     </div>
@@ -191,7 +194,7 @@
       <div class="lg:col-span-8 p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-brandBorder">
           <span class="text-xs font-mono font-bold text-brandSecondary uppercase">Live Telemetry Inspector (JSON Stream)</span>
-          <span id="activeEventTitle" class="text-xs font-mono font-bold text-brandBlue">LOT_CREATED</span>
+          <span id="activeEventTitle" class="text-xs font-mono font-bold text-brandBlue">READY</span>
         </div>
         <pre id="jsonPayload" class="p-4 rounded-2xl bg-slate-900 text-emerald-400 font-mono text-xs max-h-64 overflow-y-auto">{
   "status": "ready",
@@ -206,7 +209,7 @@
             <i class="fa-solid fa-triangle-exclamation text-brandDanger"></i>
             Live Anomaly Test Harness
           </h3>
-          <p class="text-xs text-brandSecondary mt-1">Inject edge failure cases to test SIH anomaly isolation in real time.</p>
+          <p class="text-xs text-brandSecondary mt-1">Inject edge failure cases to test anomaly isolation in real time.</p>
         </div>
 
         <div class="space-y-2">
@@ -231,24 +234,9 @@
 
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
+  <script src="/static/js/realtime.js"></script>
 
   <script>
-    let ws = null;
-    let isSimRunning = false;
-
-    function initWebSocket() {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws/live`;
-      ws = new WebSocket(wsUrl);
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          handleSimEvent(data);
-        } catch(e) {}
-      };
-    }
-
     function handleSimEvent(event) {
       document.getElementById('jsonPayload').innerText = JSON.stringify(event, null, 2);
       document.getElementById('activeEventTitle').innerText = event.event;
@@ -276,6 +264,7 @@
 
       for (let i = 0; i < 10; i++) {
         const card = document.getElementById(`stepCard${i}`);
+        if (!card) continue;
         if (i === idx) {
           card.className = 'step-card p-3.5 rounded-2xl bg-emerald-50 border-2 border-brandGreen text-brandDark shadow-sm transition';
         } else if (i < idx) {
@@ -288,16 +277,14 @@
 
     async function startSim() {
       await fetch('/api/v1/simulation/start', { method: 'POST' });
-      isSimRunning = true;
       document.getElementById('engineBadge').innerText = 'RUNNING LIVE';
       document.getElementById('engineBadge').className = 'text-brandGreen font-bold';
     }
 
     async function pauseSim() {
       await fetch('/api/v1/simulation/pause', { method: 'POST' });
-      isSimRunning = false;
       document.getElementById('engineBadge').innerText = 'PAUSED';
-      document.getElementById('engineBadge').className = 'text-brandSecondary';
+      document.getElementById('engineBadge').className = 'text-brandSecondary font-bold';
     }
 
     async function stepSim() {
@@ -310,13 +297,12 @@
 
     async function resetSim() {
       await fetch('/api/v1/simulation/reset', { method: 'POST' });
-      isSimRunning = false;
       highlightStep(0);
       document.getElementById('engineBadge').innerText = 'STANDBY';
-      document.getElementById('engineBadge').className = 'text-brandSecondary';
+      document.getElementById('engineBadge').className = 'text-brandSecondary font-bold';
     }
 
-    async function setSpeed(mult) {
+    async function setSpeed(mult, btn) {
       await fetch('/api/v1/simulation/speed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -326,7 +312,7 @@
         b.classList.remove('bg-brandDark', 'text-white', 'font-bold');
         b.classList.add('text-brandSecondary');
       });
-      event.target.classList.add('bg-brandDark', 'text-white', 'font-bold');
+      if (btn) btn.classList.add('bg-brandDark', 'text-white', 'font-bold');
     }
 
     async function injectSpecificAnomaly(type) {
@@ -338,8 +324,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initWebSocket();
       highlightStep(0);
+      if (window.RealtimeStream) {
+        window.RealtimeStream.onAny((evt) => handleSimEvent(evt));
+      }
     });
   </script>
 </body>

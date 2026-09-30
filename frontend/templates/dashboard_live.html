@@ -49,13 +49,6 @@
         linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
       background-size: 32px 32px;
     }
-    .pulse-dot {
-      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes pulse-ring {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.2); }
-    }
   </style>
 </head>
 <body class="bg-brandBg text-brandDark min-h-screen bg-tech-grid selection:bg-brandGreen selection:text-white">
@@ -73,10 +66,9 @@
             <div class="text-[10px] font-mono text-brandSecondary">Real-Time Operations Hub</div>
           </div>
         </a>
-        <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-brandGreen text-xs font-mono">
-          <span class="w-2 h-2 rounded-full bg-brandGreen pulse-dot"></span>
-          <span id="wsStatusText">WebSocket Connected (/ws/live)</span>
-        </div>
+        <span class="realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> LIVE
+        </span>
       </div>
 
       <!-- Navigation Links -->
@@ -107,8 +99,8 @@
     <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2 font-mono text-xs">
-          <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-brandBlue font-semibold border border-blue-200">SIH 2026 LIVE TELEMETRY</span>
-          <span class="text-brandSecondary">Real-time Pub/Sub Bus</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-brandBlue font-semibold border border-blue-200">REAL-TIME TELEMETRY BUS</span>
+          <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-bold">DEMO STREAM</span>
         </div>
         <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">National E-Waste Operations Command Center</h1>
         <p class="text-xs text-brandSecondary mt-0.5">Streaming active collections, certified weighing, fair pricing, and cryptographic handovers across 5 urban hubs.</p>
@@ -128,17 +120,17 @@
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Active Lots</div>
         <div id="kpiActiveLots" class="text-xl font-bold text-brandDark mt-1">142</div>
-        <div class="text-[10px] text-brandGreen font-sans mt-0.5">+12% today</div>
+        <div class="text-[10px] text-brandGreen font-sans mt-0.5">Live Counter</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
-        <div class="text-[11px] font-medium text-brandSecondary font-sans">Today's Weight</div>
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Total Weight</div>
         <div id="kpiTotalWeight" class="text-xl font-bold text-brandGreen mt-1">4,820 kg</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">BLE Tare Scales</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MEASURED (BLE)</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
-        <div class="text-[11px] font-medium text-brandSecondary font-sans">Fair Settlement</div>
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Fair Value</div>
         <div id="kpiSettlement" class="text-xl font-bold text-brandBlue mt-1">₹18.45 L</div>
-        <div class="text-[10px] text-brandGreen font-sans mt-0.5">Micro-Escrow</div>
+        <div class="text-[10px] text-brandGreen font-sans mt-0.5">MANDI INDEX</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Handovers</div>
@@ -148,22 +140,22 @@
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Gold (Au) Yield</div>
         <div id="kpiGold" class="text-xl font-bold text-brandGold mt-1">314.8 g</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Strategic Metal</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">ESTIMATED</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Refined Copper</div>
         <div id="kpiCopper" class="text-xl font-bold text-brandDark mt-1">980 kg</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">99.2% Pure</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">ESTIMATED</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">CO₂e Avoided</div>
         <div id="kpiCO2" class="text-xl font-bold text-brandGreen mt-1">14.35 T</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">CPCB Formula</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">MODEL OUTPUT</div>
       </div>
       <div class="p-4 rounded-2xl bg-red-50 border border-red-200">
         <div class="text-[11px] font-medium text-red-800 font-sans">Anomalies</div>
         <div id="kpiAnomalies" class="text-xl font-bold text-brandDanger mt-1">3</div>
-        <div class="text-[10px] text-red-700 font-sans mt-0.5">Zero Unresolved</div>
+        <div class="text-[10px] text-red-700 font-sans mt-0.5">Triage Queue</div>
       </div>
     </div>
 
@@ -177,19 +169,19 @@
             <div>
               <h2 class="font-sora text-base font-bold text-brandDark flex items-center gap-2">
                 <i class="fa-solid fa-satellite-dish text-brandBlue"></i>
-                Live Event Bus Stream
+                Live Event Bus Stream (/ws/live)
               </h2>
               <p class="text-xs text-brandSecondary">Real-time WebSocket feed broadcasted as physical transactions occur.</p>
             </div>
 
             <!-- Filters -->
             <div class="flex flex-wrap items-center gap-1.5 text-xs font-medium">
-              <button onclick="filterEvents('all')" class="ev-filter active px-2.5 py-1 rounded-lg bg-brandDark text-white">All</button>
-              <button onclick="filterEvents('collection')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Collection</button>
-              <button onclick="filterEvents('ai')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">AI Vision</button>
-              <button onclick="filterEvents('pricing')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Pricing</button>
-              <button onclick="filterEvents('handover')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Handover</button>
-              <button onclick="filterEvents('anomalies')" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Anomalies</button>
+              <button onclick="filterEvents('all', this)" class="ev-filter active px-2.5 py-1 rounded-lg bg-brandDark text-white">All</button>
+              <button onclick="filterEvents('collection', this)" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Collection</button>
+              <button onclick="filterEvents('ai', this)" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">AI Vision</button>
+              <button onclick="filterEvents('pricing', this)" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Pricing</button>
+              <button onclick="filterEvents('handover', this)" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Handover</button>
+              <button onclick="filterEvents('anomalies', this)" class="ev-filter px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-brandDark">Anomalies</button>
             </div>
           </div>
 
@@ -218,7 +210,7 @@
             <div id="activeLotSub" class="text-xs text-brandSecondary mt-1">Telecom PCB &bull; 24.50 kg &bull; Musheerabad</div>
           </div>
 
-          <!-- 10 Step Progress Checklist -->
+          <!-- 8 Step Progress Checklist -->
           <div class="space-y-1.5 text-xs font-sans">
             <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-brandBorder text-brandSecondary">
               <span>1. Discovered in Informal Hub</span>
@@ -279,43 +271,40 @@
 
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
+  <script src="/static/js/realtime.js"></script>
 
   <script>
-    let ws = null;
     let currentFilter = 'all';
     let allEvents = [];
     let isSimActive = true;
+    let activeLotsCount = 142;
+    let totalWeightCount = 4820.5;
+    let totalSettlementCount = 1845200;
+    let anomaliesCount = 3;
 
-    function initWebSocket() {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws/live`;
-      ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        document.getElementById('wsStatusText').innerText = 'WebSocket Connected (/ws/live)';
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          handleIncomingEvent(data);
-        } catch(e) {}
-      };
-
-      ws.onclose = () => {
-        document.getElementById('wsStatusText').innerText = 'Reconnecting WebSocket...';
-        setTimeout(initWebSocket, 2000);
-      };
-    }
-
-    function handleIncomingEvent(event) {
-      allEvents.unshift(event);
+    function handleEvent(e) {
+      allEvents.unshift(e);
       if (allEvents.length > 200) allEvents.pop();
       renderEventStream();
 
-      if (event.data?.lot_id) {
-        document.getElementById('activeLotId').innerText = event.data.lot_id;
-        document.getElementById('activeLotSub').innerText = event.summary || event.event;
+      if (e.data?.lot_id) {
+        document.getElementById('activeLotId').innerText = e.data.lot_id;
+        document.getElementById('activeLotSub').innerText = e.summary || e.event;
+      }
+
+      // Dynamic KPI progression
+      if (e.event === 'LOT_CREATED') {
+        activeLotsCount++;
+        document.getElementById('kpiActiveLots').innerText = activeLotsCount;
+      } else if (e.event === 'WEIGHT_CAPTURED' && e.data?.certified_weight_kg) {
+        totalWeightCount += parseFloat(e.data.certified_weight_kg);
+        document.getElementById('kpiTotalWeight').innerText = `${Math.round(totalWeightCount).toLocaleString()} kg`;
+      } else if (e.event === 'PAYMENT_COMPLETED') {
+        totalSettlementCount += 16660;
+        document.getElementById('kpiSettlement').innerText = `₹${(totalSettlementCount / 100000).toFixed(2)} L`;
+      } else if (e.event === 'ANOMALY_DETECTED') {
+        anomaliesCount++;
+        document.getElementById('kpiAnomalies').innerText = anomaliesCount;
       }
     }
 
@@ -362,13 +351,13 @@
       }).join('');
     }
 
-    function filterEvents(category) {
+    function filterEvents(category, btn) {
       currentFilter = category;
-      document.querySelectorAll('.ev-filter').forEach(btn => {
-        btn.classList.remove('active', 'bg-brandDark', 'text-white');
-        btn.classList.add('bg-slate-100', 'text-brandDark');
+      document.querySelectorAll('.ev-filter').forEach(b => {
+        b.classList.remove('active', 'bg-brandDark', 'text-white');
+        b.classList.add('bg-slate-100', 'text-brandDark');
       });
-      event.target.classList.add('active', 'bg-brandDark', 'text-white');
+      if (btn) btn.classList.add('active', 'bg-brandDark', 'text-white');
       renderEventStream();
     }
 
@@ -398,19 +387,11 @@
       });
     }
 
-    async function bootstrap() {
-      initWebSocket();
-      try {
-        const res = await fetch('/api/v1/events/history?limit=30');
-        const data = await res.json();
-        if (data.events) {
-          allEvents = data.events.reverse();
-          renderEventStream();
-        }
-      } catch(e) {}
-    }
-
-    document.addEventListener('DOMContentLoaded', bootstrap);
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.RealtimeStream) {
+        window.RealtimeStream.onAny((evt) => handleEvent(evt));
+      }
+    });
   </script>
 </body>
 </html>

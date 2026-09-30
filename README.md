@@ -54,7 +54,7 @@ python run.py
 - **Live City Simulation Engine**: [http://localhost:8000/demo/live](http://localhost:8000/demo/live)
 - **Interactive OpenAPI Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. Run Automated Test Suite (19/19 Passing)
+### 4. Run Automated Test Suite (23/23 Passing)
 ```bash
 pytest
 ```

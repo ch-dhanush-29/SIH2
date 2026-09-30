@@ -14,7 +14,8 @@ async def websocket_live_endpoint(
     channels: Optional[str] = Query(None)  # comma-separated channels
 ):
     """
-    Standard WebSocket gateway for real-time live events.
+    Canonical WebSocket gateway for real-time live operations telemetry.
+    Endpoint: /ws/live
     Supports event subscriptions, heartbeats, and category filtering.
     """
     channel_list = [c.strip() for c in channels.split(",")] if channels else ["all"]
@@ -41,7 +42,6 @@ async def websocket_live_endpoint(
                         "timestamp": datetime.utcnow().isoformat()
                     })
                 elif action == "PUBLISH":
-                    # For testing / client-originated event propagation
                     event_payload = msg.get("event_data", {})
                     await event_manager.broadcast(event_payload)
             except json.JSONDecodeError:
@@ -51,11 +51,17 @@ async def websocket_live_endpoint(
     except Exception:
         event_manager.disconnect(websocket)
 
+# Legacy compatibility alias route
+@router.websocket("/ws/live-stream")
+async def websocket_legacy_alias(websocket: WebSocket):
+    """Compatibility alias redirecting legacy connections to canonical manager."""
+    await websocket_live_endpoint(websocket, channels=None)
+
 @router.get("/api/v1/events/history")
 def get_event_history(limit: int = 50, category: Optional[str] = None):
-    """Fetch recent broadcast history for instant initial dashboard load."""
+    """Fetch recent broadcast history for instant initial dashboard hydration."""
     history = event_manager.event_history
-    if category:
+    if category and category != "all":
         history = [e for e in history if e.get("category") == category]
     return {
         "status": "success",
@@ -67,4 +73,4 @@ def get_event_history(limit: int = 50, category: Optional[str] = None):
 async def broadcast_custom_event(event: RealtimeEvent):
     """REST endpoint to broadcast custom simulation or system events."""
     await event_manager.broadcast(event.dict())
-    return {"status": "broadcasted", "event": event.event}
+    return {"status": "broadcasted", "event_id": event.event_id, "event": event.event}

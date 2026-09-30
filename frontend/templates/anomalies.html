@@ -69,6 +69,9 @@
       </div>
 
       <nav class="flex items-center gap-2 text-xs font-semibold">
+        <span class="realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span> OFFLINE
+        </span>
         <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
           <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
         </a>
@@ -86,7 +89,7 @@
       <div>
         <div class="flex items-center gap-2 font-mono text-xs">
           <span class="px-2.5 py-0.5 rounded-full bg-red-50 text-brandDanger font-bold border border-red-200">INTELLIGENT DEFENSE LAYER</span>
-          <span class="text-brandSecondary">Zero-Trust Inspection</span>
+          <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-bold">DEMO TELEMETRY</span>
         </div>
         <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">Real-Time Anomaly & Fraud Isolation Center</h1>
         <p class="text-xs text-brandSecondary mt-0.5">Automated ML safeguards detect tare scale discrepancies, hazardous thermal spikes, and counterfeit QR digital passports.</p>
@@ -101,23 +104,23 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Pending Review</div>
-        <div class="text-2xl font-bold text-amber-600 mt-1">2</div>
+        <div id="kpiPending" class="text-2xl font-bold text-amber-600 mt-1">2</div>
         <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Inspector triage queue</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
-        <div class="text-[11px] font-medium text-brandSecondary font-sans">Escalated to CPCB</div>
-        <div class="text-2xl font-bold text-brandDanger mt-1">1</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Regulatory review flag</div>
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Escalated to Regulatory</div>
+        <div id="kpiEscalated" class="text-2xl font-bold text-brandDanger mt-1">1</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Flagged review log</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
         <div class="text-[11px] font-medium text-brandSecondary font-sans">Auto-Resolved</div>
-        <div class="text-2xl font-bold text-brandGreen mt-1">38</div>
+        <div id="kpiResolved" class="text-2xl font-bold text-brandGreen mt-1">38</div>
         <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Within tare margin</div>
       </div>
       <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
-        <div class="text-[11px] font-medium text-brandSecondary font-sans">AI False Alarm Rate</div>
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Model Benchmark</div>
         <div class="text-2xl font-bold text-brandBlue mt-1">&lt; 0.18%</div>
-        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">10,000+ benchmarked lots</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">BENCHMARK (10k lots)</div>
       </div>
     </div>
 
@@ -131,9 +134,9 @@
             Active Flagged Incidents
           </h2>
 
-          <div class="space-y-3">
+          <div id="incidentListContainer" class="space-y-3">
             <!-- Incident 1 -->
-            <div onclick="selectAnomaly('ANOM-8841')" class="p-4 rounded-2xl bg-slate-50 border-2 border-red-300 hover:border-red-500 cursor-pointer transition flex items-start justify-between gap-4">
+            <div onclick="selectAnomaly('ANOM-8841', 'Weight Discrepancy > 21.6% at Recycler Gate', 'Claimed 24.5 kg ➔ Scale Measured 19.2 kg (Delta: 5.3 kg)', 'HIGH')" class="p-4 rounded-2xl bg-slate-50 border-2 border-red-300 hover:border-red-500 cursor-pointer transition flex items-start justify-between gap-4">
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
                   <span class="px-2 py-0.5 rounded-md bg-red-100 text-brandDanger font-mono text-[10px] font-bold">HIGH SEVERITY</span>
@@ -143,11 +146,11 @@
                 <div class="text-xs font-bold text-brandDark">Weight Discrepancy > 21.6% at Recycler Gate</div>
                 <div class="text-[11px] text-brandSecondary">Claimed 24.5 kg ➔ Scale Measured 19.2 kg (Delta: 5.3 kg)</div>
               </div>
-              <span class="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold">PENDING</span>
+              <span id="badge-ANOM-8841" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold">PENDING</span>
             </div>
 
             <!-- Incident 2 -->
-            <div onclick="selectAnomaly('ANOM-7319')" class="p-4 rounded-2xl bg-slate-50 border border-brandBorder hover:border-brandDark cursor-pointer transition flex items-start justify-between gap-4">
+            <div onclick="selectAnomaly('ANOM-7319', 'AI Material Grade Discrepancy (PCB vs Shredded Plastic)', 'Visual spectrum indicates high flame-retardant casing content.', 'MEDIUM')" class="p-4 rounded-2xl bg-slate-50 border border-brandBorder hover:border-brandDark cursor-pointer transition flex items-start justify-between gap-4">
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
                   <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-mono text-[10px] font-bold">MEDIUM</span>
@@ -157,7 +160,7 @@
                 <div class="text-xs font-bold text-brandDark">AI Material Grade Discrepancy (PCB vs Shredded Plastic Shells)</div>
                 <div class="text-[11px] text-brandSecondary">Visual spectrum indicates high flame-retardant casing content.</div>
               </div>
-              <span class="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold">PENDING</span>
+              <span id="badge-ANOM-7319" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold">PENDING</span>
             </div>
           </div>
         </div>
@@ -179,19 +182,23 @@
             <div>&bull; SHA-256 Hash: <span class="text-brandBlue">e7d8a9f23...84b1</span></div>
           </div>
 
-          <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+          <div id="aiSuggestionBox" class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
             <span class="font-bold">AI Root Cause Suggestion:</span> Tare weight calibration drift on collector mobile scale or physical moisture evaporation during long transit.
+          </div>
+
+          <div id="actionFeedback" class="hidden p-3 rounded-xl bg-emerald-50 text-brandGreen font-mono text-xs font-bold border border-emerald-200">
+            ✓ Action executed and broadcasted to live audit log.
           </div>
 
           <!-- Actions -->
           <div class="space-y-2 pt-2">
-            <button onclick="resolveAnomaly('APPROVED')" class="w-full py-2.5 rounded-xl bg-brandGreen hover:bg-brandDarkGreen text-white font-bold text-xs transition">
+            <button onclick="executeAction('APPROVE')" class="w-full py-2.5 rounded-xl bg-brandGreen hover:bg-brandDarkGreen text-white font-bold text-xs transition shadow-sm">
               Approve Adjusted Weight (19.2 kg)
             </button>
-            <button onclick="resolveAnomaly('DISMISS')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-brandDark font-semibold text-xs transition">
+            <button onclick="executeAction('DISMISS')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-brandDark font-semibold text-xs transition border border-brandBorder">
               Dismiss as False Alarm
             </button>
-            <button onclick="resolveAnomaly('ESCALATE')" class="w-full py-2.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-brandDanger font-semibold text-xs transition">
+            <button onclick="executeAction('ESCALATE')" class="w-full py-2.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-brandDanger font-semibold text-xs transition">
               Escalate to CPCB Regulatory Board
             </button>
           </div>
@@ -204,23 +211,78 @@
 
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
+  <script src="/static/js/realtime.js"></script>
 
   <script>
-    function selectAnomaly(id) {
+    let currentAnomalyId = 'ANOM-8841';
+
+    function selectAnomaly(id, title, desc, severity) {
+      currentAnomalyId = id;
       document.getElementById('evStatusBadge').innerText = id;
+      document.getElementById('actionFeedback').classList.add('hidden');
     }
 
     async function injectTestAnomaly() {
-      await fetch('/api/v1/simulation/inject-anomaly', {
+      const res = await fetch('/api/v1/simulation/inject-anomaly', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anomaly_type: 'WEIGHT_MISMATCH_GATE' })
+        body: JSON.stringify({ anomaly_type: 'WEIGHT_DISCREPANCY_21.6%' })
       });
-      alert('Anomaly injected and broadcasted to WebSocket stream!');
+      if (res.ok) {
+        const json = await res.json();
+        const a = json.anomaly || {};
+        const container = document.getElementById('incidentListContainer');
+        const newCard = document.createElement('div');
+        newCard.className = 'p-4 rounded-2xl bg-red-50/50 border-2 border-red-300 hover:border-red-500 cursor-pointer transition flex items-start justify-between gap-4 animate-in fade-in';
+        newCard.onclick = () => selectAnomaly(a.anomaly_id, 'Weight Discrepancy', 'Scale discrepancy on gate arrival', 'HIGH');
+        newCard.innerHTML = `
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md bg-red-100 text-brandDanger font-mono text-[10px] font-bold">LIVE INJECTED</span>
+              <span class="text-xs font-bold font-mono text-brandDark">${a.anomaly_id}</span>
+              <span class="text-[11px] text-brandSecondary font-mono">${a.lot_id}</span>
+            </div>
+            <div class="text-xs font-bold text-brandDark">Live Injected: ${a.anomaly_type}</div>
+            <div class="text-[11px] text-brandSecondary">${a.details?.reason || 'Exceeds tolerance limit.'}</div>
+          </div>
+          <span id="badge-${a.anomaly_id}" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-red-50 text-brandDanger border border-red-200 font-bold">ACTION NEEDED</span>
+        `;
+        container.prepend(newCard);
+      }
     }
 
-    function resolveAnomaly(action) {
-      alert(`Incident resolved with action: ${action}`);
+    async function executeAction(action) {
+      try {
+        const res = await fetch('/api/v1/anomalies/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            anomaly_id: currentAnomalyId,
+            action: action,
+            notes: `Action ${action} executed by regulatory triage officer`
+          })
+        });
+
+        const feedback = document.getElementById('actionFeedback');
+        feedback.innerText = `✓ Action [${action}] recorded on ${currentAnomalyId} and published to real-time event bus.`;
+        feedback.classList.remove('hidden');
+
+        const badge = document.getElementById(`badge-${currentAnomalyId}`);
+        if (badge) {
+          if (action === 'APPROVE') {
+            badge.innerText = 'APPROVED';
+            badge.className = 'text-[10px] font-mono px-2 py-1 rounded-lg bg-emerald-50 text-brandGreen border border-emerald-200 font-bold';
+          } else if (action === 'DISMISS') {
+            badge.innerText = 'DISMISSED';
+            badge.className = 'text-[10px] font-mono px-2 py-1 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 font-bold';
+          } else {
+            badge.innerText = 'ESCALATED';
+            badge.className = 'text-[10px] font-mono px-2 py-1 rounded-lg bg-red-50 text-brandDanger border border-red-200 font-bold';
+          }
+        }
+      } catch(e) {
+        console.warn(e);
+      }
     }
   </script>
 </body>

@@ -1,94 +1,209 @@
 /**
- * E-Waste Saathi Realtime Stream Client
- * Connects to FastAPI WebSocket endpoint and updates live price tickers,
- * incoming lot notifications, and handover alerts.
+ * E-Waste Saathi — Unified Real-Time WebSocket Client
+ * Canonical Endpoint: /ws/live
+ * Provides connection state monitoring, automatic exponential reconnect,
+ * heartbeat keepalive, event deduplication, and initial history hydration.
  */
 
 const RealtimeStream = {
   socket: null,
-  reconnectInterval: 3000,
+  reconnectAttempts: 0,
+  maxReconnectDelay: 10000,
+  reconnectTimer: null,
+  heartbeatTimer: null,
+  listeners: {}, // eventName -> Array<callback>
+  categoryListeners: {}, // categoryName -> Array<callback>
+  allListeners: [], // Array<callback>
+  seenEventIds: new Set(),
+  status: 'OFFLINE', // LIVE, RECONNECTING, OFFLINE
 
-  init(onEventCallback) {
-    this.connect(onEventCallback);
+  init() {
+    this.connect();
+    this.hydrateEventHistory();
   },
 
-  connect(onEventCallback) {
+  connect() {
+    if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws/live-stream`;
+    const wsUrl = `${protocol}//${host}/ws/live`;
+
+    this.setStatus('RECONNECTING');
 
     try {
       this.socket = new WebSocket(wsUrl);
 
       this.socket.onopen = () => {
-        console.log("⚡ Connected to E-Waste Saathi Realtime Stream");
-        this.updateLiveIndicator(true);
+        this.reconnectAttempts = 0;
+        this.setStatus('LIVE');
+        this.startHeartbeat();
+        console.log("⚡ RealtimeStream: Connected to canonical /ws/live");
       };
 
       this.socket.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
-          this.handleIncomingEvent(msg);
-          if (onEventCallback) onEventCallback(msg);
+          this.processEvent(msg);
         } catch (e) {
-          console.warn("WS Parse error:", e);
+          console.warn("RealtimeStream: JSON parse error", e);
         }
       };
 
       this.socket.onclose = () => {
-        this.updateLiveIndicator(false);
-        setTimeout(() => this.connect(onEventCallback), this.reconnectInterval);
+        this.stopHeartbeat();
+        this.setStatus('OFFLINE');
+        this.scheduleReconnect();
       };
 
       this.socket.onerror = (err) => {
-        console.warn("WebSocket error:", err);
+        console.warn("RealtimeStream: WebSocket error", err);
       };
     } catch (e) {
-      console.warn("WS init failed:", e);
+      this.setStatus('OFFLINE');
+      this.scheduleReconnect();
     }
   },
 
-  updateLiveIndicator(isActive) {
-    const el = document.getElementById("realtime-pulse-dot");
-    if (el) {
-      el.className = isActive 
+  scheduleReconnect() {
+    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+    const delay = Math.min(1000 * Math.pow(1.5, this.reconnectAttempts), this.maxReconnectDelay);
+    this.reconnectAttempts++;
+    this.reconnectTimer = setTimeout(() => {
+      this.connect();
+    }, delay);
+  },
+
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatTimer = setInterval(() => {
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({ action: "PING" }));
+      }
+    }, 15000);
+  },
+
+  stopHeartbeat() {
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+  },
+
+  setStatus(newStatus) {
+    this.status = newStatus;
+    
+    // Update any UI badge elements
+    document.querySelectorAll('.realtime-status-badge').forEach(badge => {
+      if (newStatus === 'LIVE') {
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> LIVE`;
+        badge.className = "realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+      } else if (newStatus === 'RECONNECTING') {
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> RECONNECTING`;
+        badge.className = "realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200";
+      } else {
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span> OFFLINE`;
+        badge.className = "realtime-status-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200";
+      }
+    });
+
+    const pulseDot = document.getElementById("realtime-pulse-dot");
+    if (pulseDot) {
+      pulseDot.className = newStatus === 'LIVE' 
         ? "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" 
-        : "w-2.5 h-2.5 rounded-full bg-amber-400";
+        : (newStatus === 'RECONNECTING' ? "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-slate-400");
     }
   },
 
-  handleIncomingEvent(msg) {
-    const ticker = document.getElementById("realtime-ticker-text");
-    if (!ticker) return;
+  processEvent(msg) {
+    // Normalization adapter for legacy event_type
+    const eventName = msg.event || msg.event_type;
+    if (!eventName) return;
+    msg.event = eventName;
 
-    if (msg.event_type === "PRICE_TICK") {
-      ticker.innerHTML = `<span class="text-amber-400 font-bold">📈 Live Ticker:</span> ${msg.data.name} @ <strong>₹${msg.data.price}/kg</strong> (${msg.data.change})`;
-    } else if (msg.event_type === "NEW_LOT_BROADCAST") {
-      ticker.innerHTML = `<span class="text-blue-400 font-bold">📦 New Lot:</span> ${msg.data.lot_code} in <strong>${msg.data.city}</strong> (${msg.data.weight_kg}kg ${msg.data.material})`;
-      this.playChime(440, 0.1);
-    } else if (msg.event_type === "HANDOVER_VERIFIED") {
-      ticker.innerHTML = `<span class="text-emerald-400 font-bold">✓ Scale Verified:</span> ${msg.data.verified_weight_kg}kg settled for <strong>₹${msg.data.payout_inr}</strong> by ${msg.data.recycler}`;
-      this.playChime(660, 0.15);
-    } else if (msg.event_type === "MINERAL_RECOVERED") {
-      ticker.innerHTML = `<span class="text-teal-300 font-bold">💎 Critical Recovery:</span> <strong>${msg.data.gold_grams}g Gold</strong> + <strong>${msg.data.copper_kg}kg Copper</strong> formally extracted.`;
+    // Deduplication check
+    const eventId = msg.event_id || `${msg.event}_${msg.timestamp}_${(msg.data && msg.data.lot_id) || ''}`;
+    if (this.seenEventIds.has(eventId)) return;
+    this.seenEventIds.add(eventId);
+
+    // Limit seen cache size
+    if (this.seenEventIds.size > 500) {
+      const it = this.seenEventIds.values();
+      for (let i = 0; i < 100; i++) this.seenEventIds.delete(it.next().value);
+    }
+
+    // Update global ticker text if present
+    this.updateTickers(msg);
+
+    // Dispatch to registered listeners
+    this.allListeners.forEach(fn => fn(msg));
+
+    if (this.listeners[eventName]) {
+      this.listeners[eventName].forEach(fn => fn(msg));
+    }
+
+    if (msg.category && this.categoryListeners[msg.category]) {
+      this.categoryListeners[msg.category].forEach(fn => fn(msg));
     }
   },
 
-  playChime(freq = 520, duration = 0.1) {
+  updateTickers(msg) {
+    const summaryText = msg.summary || (msg.data && (msg.data.initial_notes || msg.data.reason)) || msg.event;
+    
+    const tickerMessage = document.getElementById("tickerMessage");
+    if (tickerMessage) {
+      tickerMessage.innerHTML = `<span class="text-brandDark font-semibold">● STREAM:</span> ${summaryText}`;
+    }
+
+    const realtimeTicker = document.getElementById("realtime-ticker-text");
+    if (realtimeTicker) {
+      if (msg.event === "PRICE_TICK" || msg.event === "PRICE_CALCULATED") {
+        realtimeTicker.innerHTML = `<span class="text-amber-500 font-bold">₹ PRICE:</span> ${summaryText}`;
+      } else if (msg.event === "LOT_CREATED" || msg.event === "NEW_LOT_BROADCAST") {
+        realtimeTicker.innerHTML = `<span class="text-blue-500 font-bold">📦 LOT:</span> ${summaryText}`;
+      } else if (msg.event === "HANDOVER_VERIFIED") {
+        realtimeTicker.innerHTML = `<span class="text-emerald-500 font-bold">✓ VERIFIED:</span> ${summaryText}`;
+      } else if (msg.event === "ANOMALY_DETECTED") {
+        realtimeTicker.innerHTML = `<span class="text-rose-500 font-bold">⚠️ ALERT:</span> ${summaryText}`;
+      } else {
+        realtimeTicker.innerHTML = `<span class="text-slate-600 font-bold">● STREAM:</span> ${summaryText}`;
+      }
+    }
+  },
+
+  on(eventName, callback) {
+    if (!this.listeners[eventName]) this.listeners[eventName] = [];
+    this.listeners[eventName].push(callback);
+    return () => {
+      this.listeners[eventName] = this.listeners[eventName].filter(cb => cb !== callback);
+    };
+  },
+
+  onCategory(categoryName, callback) {
+    if (!this.categoryListeners[categoryName]) this.categoryListeners[categoryName] = [];
+    this.categoryListeners[categoryName].push(callback);
+    return () => {
+      this.categoryListeners[categoryName] = this.categoryListeners[categoryName].filter(cb => cb !== callback);
+    };
+  },
+
+  onAny(callback) {
+    this.allListeners.push(callback);
+    return () => {
+      this.allListeners = this.allListeners.filter(cb => cb !== callback);
+    };
+  },
+
+  async hydrateEventHistory() {
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
+      const res = await fetch('/api/v1/events/history?limit=30');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.events && Array.isArray(json.events)) {
+          json.events.forEach(evt => this.processEvent(evt));
+        }
+      }
     } catch (e) {
-      // Audio autoplay policy fallback
+      console.warn("RealtimeStream: Could not fetch initial event history", e);
     }
   }
 };
