@@ -29,9 +29,9 @@ All core architectural phases, AI engines, database models, multi-lingual offlin
 - [x] Dedicated Interactive Analytics Portal (`/analytics` & `analytics.js`) with responsive Chart.js sliding-window visuals
 - [x] Live Event Bus with Standardized Schema & History Hydration (`/api/v1/events/history`)
 - [x] Real-time Multi-City Simulation Engine (`/demo/live`) & Command Dashboard (`/dashboard/live`)
-- [x] Automated Test Suite (`pytest` - 32/32 passed tests)
+- [x] Automated Test Suite (`pytest` - 33/33 passed tests)
 - [x] Complete Architecture & Project Documentation Suite (`README.md`, `ARCHITECTURE.md`, `DATABASE.md`, `AI.md`, `data_sources.md`)
 
 ## Verification Summary
-- **Pytest Suite**: 32/32 tests passed (Unit, Integration, Fair Price, Matching, Anomaly Detection, Sync Idempotency, E2E Handover, WebSocket /ws/live Bus, History Hydration, Anomaly Triage Actions, Analytics APIs & Aggregations).
+- **Pytest Suite**: 33/33 tests passed (Unit, Integration, Fair Price, Matching, Anomaly Detection, Sync Idempotency, E2E Handover, WebSocket /ws/live Bus, History Hydration, Anomaly Triage Actions, Analytics APIs & Aggregations, Funnel Pipeline).
 - **One-Click Launch**: `python run.py` initializes tables, runs deterministic seed dataset generator, and launches web server on `http://localhost:8000`.

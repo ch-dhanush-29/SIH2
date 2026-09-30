@@ -8,6 +8,8 @@ let collectionChart = null;
 let materialChart = null;
 let currentTrendInterval = '24h';
 let liveEventsBuffer = [];
+let analyticsInitialized = false;
+let telemetryTimer = null;
 
 // Metric Trackers
 let liveState = {
@@ -27,20 +29,34 @@ async function initAnalytics() {
     fetchPricingMatrix(),
     fetchAnomalyAnalytics(),
     fetchImpactAnalytics(),
+    fetchFunnelAnalytics(),
     fetchSystemTelemetry()
   ]);
 
-  // Subscribe to RealtimeStream
-  if (window.RealtimeStream) {
-    window.RealtimeStream.onAny((evt) => handleRealtimeAnalyticsEvent(evt));
+  if (!analyticsInitialized) {
+    analyticsInitialized = true;
+    // Subscribe to RealtimeStream once
+    if (window.RealtimeStream) {
+      window.RealtimeStream.onAny((evt) => handleRealtimeAnalyticsEvent(evt));
+    }
   }
 
   // Periodic telemetry refresh
-  setInterval(fetchSystemTelemetry, 15000);
+  if (telemetryTimer) clearInterval(telemetryTimer);
+  telemetryTimer = setInterval(fetchSystemTelemetry, 15000);
 }
 
 async function refreshAllAnalytics() {
-  await initAnalytics();
+  await Promise.all([
+    fetchSummary(),
+    fetchCollectionTrend(currentTrendInterval),
+    fetchMaterialsMix(),
+    fetchPricingMatrix(),
+    fetchAnomalyAnalytics(),
+    fetchImpactAnalytics(),
+    fetchFunnelAnalytics(),
+    fetchSystemTelemetry()
+  ]);
 }
 
 async function fetchSummary() {
@@ -334,6 +350,37 @@ async function fetchImpactAnalytics() {
     }
   } catch (err) {
     console.warn("Could not fetch impact analytics:", err);
+  }
+}
+
+async function fetchFunnelAnalytics() {
+  try {
+    const res = await fetch('/api/v1/analytics/funnel');
+    if (res.ok) {
+      const data = await res.json();
+      const container = document.getElementById('funnelStagesContainer');
+      if (container && data.stages) {
+        container.innerHTML = data.stages.map((s, idx) => `
+          <div class="p-3 rounded-2xl ${idx === data.stages.length - 1 ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-brandBorder'}">
+            <div class="text-[10px] ${idx === data.stages.length - 1 ? 'text-emerald-800 font-bold' : 'text-brandSecondary'} font-sans">${s.stage}</div>
+            <div class="text-sm font-bold ${idx === data.stages.length - 1 ? 'text-brandGreen' : 'text-brandDark'} mt-1">${s.pct}%</div>
+            <div class="text-[9px] text-brandSecondary mt-0.5">${s.count} lots</div>
+          </div>
+        `).join('');
+      }
+
+      if (data.turnaround_velocity) {
+        const vel = data.turnaround_velocity;
+        const elHandover = document.getElementById('velHandover');
+        const elAi = document.getElementById('velAi');
+        const elPayout = document.getElementById('velPayout');
+        if (elHandover) elHandover.innerText = `${vel.avg_handover_hours} hours`;
+        if (elAi) elAi.innerText = `${vel.ai_classification_ms} ms`;
+        if (elPayout) elPayout.innerText = `${vel.escrow_payout_seconds} seconds`;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch funnel analytics:", err);
   }
 }
 

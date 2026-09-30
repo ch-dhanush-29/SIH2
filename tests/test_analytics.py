@@ -95,6 +95,17 @@ def test_analytics_impact_and_ai():
     ai_data = ai_resp.json()
     assert ai_data["accuracy_benchmark"] == "NOT BENCHMARKED (Demo Simulation & Validation Dataset)"
 
+def test_analytics_funnel():
+    """Test process funnel stages and turnaround velocities."""
+    response = client.get("/api/v1/analytics/funnel")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "stages" in data
+    assert len(data["stages"]) == 7
+    assert data["stages"][0]["stage"] == "1. Collected"
+    assert "turnaround_velocity" in data
+
 def test_analytics_system_telemetry():
     """Test system telemetry and runtime stats."""
     response = client.get("/api/v1/analytics/system")

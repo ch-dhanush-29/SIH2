@@ -280,34 +280,34 @@
         </div>
         
         <!-- Funnel Stages Bar -->
-        <div class="grid grid-cols-7 gap-2 text-center font-mono text-xs">
+        <div id="funnelStagesContainer" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-center font-mono text-xs">
           <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
             <div class="text-[10px] text-brandSecondary font-sans">1. Collected</div>
             <div class="text-sm font-bold text-brandDark mt-1">100%</div>
           </div>
           <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
             <div class="text-[10px] text-brandSecondary font-sans">2. Classified</div>
-            <div class="text-sm font-bold text-brandDark mt-1">98.2%</div>
+            <div class="text-sm font-bold text-brandDark mt-1">--%</div>
           </div>
           <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
             <div class="text-[10px] text-brandSecondary font-sans">3. Weighed</div>
-            <div class="text-sm font-bold text-brandDark mt-1">96.5%</div>
+            <div class="text-sm font-bold text-brandDark mt-1">--%</div>
           </div>
           <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
             <div class="text-[10px] text-brandSecondary font-sans">4. Priced</div>
-            <div class="text-sm font-bold text-brandDark mt-1">94.8%</div>
+            <div class="text-sm font-bold text-brandDark mt-1">--%</div>
           </div>
           <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
             <div class="text-[10px] text-brandSecondary font-sans">5. Matched</div>
-            <div class="text-sm font-bold text-brandDark mt-1">91.4%</div>
+            <div class="text-sm font-bold text-brandDark mt-1">--%</div>
           </div>
           <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
             <div class="text-[10px] text-brandSecondary font-sans">6. Handover</div>
-            <div class="text-sm font-bold text-brandDark mt-1">88.2%</div>
+            <div class="text-sm font-bold text-brandDark mt-1">--%</div>
           </div>
           <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
             <div class="text-[10px] text-emerald-800 font-sans font-bold">7. Settled</div>
-            <div class="text-sm font-bold text-brandGreen mt-1">87.5%</div>
+            <div class="text-sm font-bold text-brandGreen mt-1">--%</div>
           </div>
         </div>
 
@@ -315,15 +315,15 @@
         <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
           <div>
             <span class="text-brandSecondary">Avg Handover Velocity:</span>
-            <span class="font-bold text-brandDark ml-1">4.2 hours</span>
+            <span id="velHandover" class="font-bold text-brandDark ml-1">4.2 hours</span>
           </div>
           <div>
             <span class="text-brandSecondary">AI Classification:</span>
-            <span class="font-bold text-brandBlue ml-1">142 ms</span>
+            <span id="velAi" class="font-bold text-brandBlue ml-1">142 ms</span>
           </div>
           <div>
             <span class="text-brandSecondary">Escrow Payout Speed:</span>
-            <span class="font-bold text-brandGreen ml-1">1.2 seconds</span>
+            <span id="velPayout" class="font-bold text-brandGreen ml-1">1.2 seconds</span>
           </div>
         </div>
       </div>

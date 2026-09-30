@@ -51,12 +51,6 @@ async def websocket_live_endpoint(
     except Exception:
         event_manager.disconnect(websocket)
 
-# Legacy compatibility alias route
-@router.websocket("/ws/live-stream")
-async def websocket_legacy_alias(websocket: WebSocket):
-    """Compatibility alias redirecting legacy connections to canonical manager."""
-    await websocket_live_endpoint(websocket, channels=None)
-
 @router.get("/api/v1/events/history")
 def get_event_history(limit: int = 50, category: Optional[str] = None):
     """Fetch recent broadcast history for instant initial dashboard hydration."""
