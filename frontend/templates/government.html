@@ -1,188 +1,204 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Regulatory & EPR Hub | Ministry of Mines & CPCB</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        saffron: { 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
-                        chakra: { 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
-                        indiaGreen: { 500: '#10b981', 600: '#059669', 700: '#047857' },
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Regulatory & EPR Hub | Ministry of Mines & CPCB</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sora: ['Sora', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            brandBg: '#F7F9F8',
+            brandDark: '#101828',
+            brandSecondary: '#667085',
+            brandGreen: '#059669',
+            brandDarkGreen: '#047857',
+            brandBlue: '#2563EB',
+            brandGold: '#D89B1D',
+            brandWarning: '#F59E0B',
+            brandDanger: '#DC2626',
+            brandCard: '#FFFFFF',
+            brandBorder: '#E5E7EB',
+          }
         }
-    </script>
-    <style>
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F7F9F8;
+      color: #101828;
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-tech-grid {
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-saffron-500 selection:text-white">
+<body class="bg-brandBg text-brandDark min-h-screen bg-tech-grid selection:bg-brandGreen selection:text-white">
 
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="/" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-saffron-600 via-sky-500 to-indiaGreen-600 p-[2px]">
-                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-landmark text-sky-400 text-sm"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-orange-400 via-slate-100 to-emerald-400 bg-clip-text text-transparent">E-Waste Saathi</span>
-                        <span class="text-[10px] block font-mono text-slate-400 tracking-wider">MINISTRY OF MINES & CPCB REGULATORY HUB</span>
-                    </div>
-                </a>
-            </div>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brandBorder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brandBlue text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            <i class="fa-solid fa-landmark"></i>
+          </div>
+          <div>
+            <div class="font-sora font-bold text-sm text-brandDark">E-Waste Saathi</div>
+            <div class="text-[10px] font-mono text-brandSecondary">Ministry of Mines & CPCB Hub</div>
+          </div>
+        </a>
+      </div>
 
-            <div class="flex items-center gap-3">
-                <a href="/dashboard/live" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-                    <i class="fa-solid fa-satellite-dish text-orange-400 mr-1.5"></i>Live Ops
-                </a>
-                <button onclick="window.startJudgeWalkthrough()" class="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white flex items-center gap-1.5">
-                    <span>🎯</span> JUDGE DEMO
-                </button>
-            </div>
+      <nav class="flex items-center gap-2 text-xs font-semibold">
+        <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
+          <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
+        </a>
+        <button onclick="window.startJudgeWalkthrough()" class="px-3.5 py-2 rounded-xl bg-brandDark hover:bg-slate-800 text-white font-bold transition flex items-center gap-1.5 shadow-sm">
+          <span>🎯</span> JUDGE DEMO
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+
+    <!-- Top Banner -->
+    <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-brandBlue font-bold border border-blue-200">CPCB EPR PORTAL 2026</span>
+          <span class="text-brandSecondary">Ministry of Mines (SIH26229)</span>
         </div>
-    </header>
+        <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">National Circular Strategic Mineral Reserves & EPR Compliance</h1>
+        <p class="text-xs text-brandSecondary mt-0.5">Automated traceability from grassroots informal collection to domestic smelters and EPR credit registry.</p>
+      </div>
+      <div class="text-xs font-mono px-3 py-1.5 rounded-xl bg-slate-50 border border-brandBorder text-brandSecondary">
+        Registry: <span class="font-bold text-brandGreen">CPCB VERIFIED</span>
+      </div>
+    </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- 4 Mineral Reserves Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+      <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+        <div class="text-[11px] text-amber-800 font-sans">Gold (Au) Recovered</div>
+        <div class="text-2xl font-bold text-brandGold mt-1">314.80 g</div>
+        <div class="text-[10px] text-amber-700 font-sans mt-0.5">₹21.4 Lakh Value</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+        <div class="text-[11px] text-emerald-800 font-sans">Refined Copper (Cu)</div>
+        <div class="text-2xl font-bold text-brandGreen mt-1">980.20 kg</div>
+        <div class="text-[10px] text-emerald-700 font-sans mt-0.5">99.2% Pure Metallurgy</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200">
+        <div class="text-[11px] text-blue-800 font-sans">Lithium & Cobalt</div>
+        <div class="text-2xl font-bold text-brandBlue mt-1">142.50 kg</div>
+        <div class="text-[10px] text-blue-700 font-sans mt-0.5">Battery Grade Precursors</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder">
+        <div class="text-[11px] text-brandSecondary font-sans">EPR Certificates Minted</div>
+        <div class="text-2xl font-bold text-brandDark mt-1">1,482</div>
+        <div class="text-[10px] text-brandGreen font-sans mt-0.5">100% CPCB Format</div>
+      </div>
+    </div>
 
-        <!-- Banner -->
-        <div class="p-6 rounded-2xl glass-panel border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <!-- State Flows & Brand Registry Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Inter-State Flow Breakdown -->
+      <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-4">
+        <h2 class="font-sora text-base font-bold text-brandDark flex items-center gap-2 pb-3 border-b border-brandBorder">
+          <i class="fa-solid fa-map-location-dot text-brandBlue"></i>
+          Inter-State Formalization Volume
+        </h2>
+
+        <div class="space-y-3 font-mono text-xs">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
             <div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">CPCB EPR PORTAL 2026</span>
-                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">MINISTRY OF MINES (SIH26229)</span>
-                </div>
-                <h1 class="text-xl font-bold text-white mt-1">National Circular Strategic Mineral Reserves & EPR Compliance</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Automated traceability from grassroots informal collection to domestic smelters and EPR credit registry.</p>
+              <div class="font-bold text-brandDark font-sans">Maharashtra (Mumbai / Pune)</div>
+              <div class="text-[11px] text-brandSecondary">Dharavi Cluster ➔ PCMC Smelters</div>
             </div>
-            <div class="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
-                Data Status: <span class="text-emerald-400">DEMO VERIFIED</span>
+            <span class="text-brandGreen font-bold">142.4 Tons / Mo</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div>
+              <div class="font-bold text-brandDark font-sans">Telangana (Hyderabad)</div>
+              <div class="text-[11px] text-brandSecondary">Musheerabad Aggregators ➔ EcoGreen</div>
             </div>
+            <span class="text-brandGreen font-bold">98.6 Tons / Mo</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div>
+              <div class="font-bold text-brandDark font-sans">Delhi NCR (Seelampur Hub)</div>
+              <div class="text-[11px] text-brandSecondary">Informal Pickers ➔ CPCB Approved Facilities</div>
+            </div>
+            <span class="text-brandGreen font-bold">186.2 Tons / Mo</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div>
+              <div class="font-bold text-brandDark font-sans">Karnataka (Bengaluru)</div>
+              <div class="text-[11px] text-brandSecondary">Peenya Hub ➔ GreenTerra Metallurgy</div>
+            </div>
+            <span class="text-brandGreen font-bold">84.1 Tons / Mo</span>
+          </div>
         </div>
+      </div>
 
-        <!-- 4 Strategic Mineral Recovered Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Gold (Au) Recovered</div>
-                <div class="text-2xl font-bold font-mono text-amber-400 mt-1">314.80 g</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">₹21.4 Lakh Strategic Value</div>
+      <!-- EPR Producer Registry -->
+      <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-4">
+        <h2 class="font-sora text-base font-bold text-brandDark flex items-center gap-2 pb-3 border-b border-brandBorder">
+          <i class="fa-solid fa-certificate text-brandGreen"></i>
+          EPR Brand Fulfillment Registry
+        </h2>
+
+        <div class="space-y-3 font-sans text-xs">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div>
+              <div class="font-bold text-brandDark">Samsung Electronics India</div>
+              <div class="text-[11px] text-brandSecondary">EPR Target: 8,400 T &bull; Fulfilled: 88.4%</div>
             </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Refined Copper (Cu)</div>
-                <div class="text-2xl font-bold font-mono text-orange-400 mt-1">980.20 kg</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">99.2% Pure Electrolytic Grade</div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-brandGreen font-mono text-[11px] font-bold">ON TRACK</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div>
+              <div class="font-bold text-brandDark">Dell Technologies India</div>
+              <div class="text-[11px] text-brandSecondary">EPR Target: 4,200 T &bull; Fulfilled: 92.1%</div>
             </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Lithium & Cobalt (Li/Co)</div>
-                <div class="text-2xl font-bold font-mono text-sky-400 mt-1">142.50 kg</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Battery Grade Precursors</div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-brandGreen font-mono text-[11px] font-bold">COMPLIANT</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div>
+              <div class="font-bold text-brandDark">Voltas Air Conditioners</div>
+              <div class="text-[11px] text-brandSecondary">EPR Target: 6,100 T &bull; Fulfilled: 74.0%</div>
             </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">EPR Certificates Minted</div>
-                <div class="text-2xl font-bold font-mono text-emerald-400 mt-1">1,482</div>
-                <div class="text-[10px] text-emerald-400/80 mt-0.5">100% CPCB Format Compliant</div>
-            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 font-mono text-[11px] font-bold">IN PROGRESS</span>
+          </div>
         </div>
+      </div>
 
-        <!-- State-Wise Flow Map & EPR Producer Registry -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    </div>
 
-            <!-- State Flow Breakdown -->
-            <div class="p-5 rounded-2xl glass-panel border border-slate-800 space-y-4">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
-                    <i class="fa-solid fa-map-location-dot text-sky-400"></i>
-                    Inter-State Formalization Volume
-                </h2>
+  </main>
 
-                <div class="space-y-3 text-xs font-mono">
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Maharashtra (Mumbai / Pune)</div>
-                            <div class="text-[11px] text-slate-400 font-sans">Dharavi Informal Cluster ➔ PCMC Smelters</div>
-                        </div>
-                        <span class="text-emerald-400 font-bold">142.4 Tons / Mo</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Telangana (Hyderabad)</div>
-                            <div class="text-[11px] text-slate-400 font-sans">Musheerabad Aggregators ➔ EcoGreen Refineries</div>
-                        </div>
-                        <span class="text-emerald-400 font-bold">98.6 Tons / Mo</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Delhi NCR (Seelampur / Mayapuri)</div>
-                            <div class="text-[11px] text-slate-400 font-sans">Informal Dismantlers ➔ CPCB Approved Facilities</div>
-                        </div>
-                        <span class="text-emerald-400 font-bold">186.2 Tons / Mo</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Karnataka (Bengaluru)</div>
-                            <div class="text-[11px] text-slate-400 font-sans">Peenya Hub ➔ GreenTerra Metallurgy</div>
-                        </div>
-                        <span class="text-emerald-400 font-bold">84.1 Tons / Mo</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- EPR Producers Registry -->
-            <div class="p-5 rounded-2xl glass-panel border border-slate-800 space-y-4">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
-                    <i class="fa-solid fa-certificate text-emerald-400"></i>
-                    EPR Brand Fulfillment Registry
-                </h2>
-
-                <div class="space-y-3 text-xs font-sans">
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Samsung Electronics India</div>
-                            <div class="text-[11px] text-slate-400">EPR Target: 8,400 T • Fulfilled: 88.4%</div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[11px]">ON TRACK</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Dell Technologies India</div>
-                            <div class="text-[11px] text-slate-400">EPR Target: 4,200 T • Fulfilled: 92.1%</div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[11px]">COMPLIANT</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-white">Voltas Air Conditioners</div>
-                            <div class="text-[11px] text-slate-400">EPR Target: 6,100 T • Fulfilled: 74.0%</div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 font-mono text-[11px]">IN PROGRESS</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-    </main>
-
-    <div id="judgeDemoContainer"></div>
-    <script src="/static/js/judge_demo.js"></script>
+  <div id="judgeDemoContainer"></div>
+  <script src="/static/js/judge_demo.js"></script>
 </body>
 </html>

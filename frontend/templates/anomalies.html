@@ -1,231 +1,227 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anomaly Operations Center | E-Waste Saathi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        saffron: { 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
-                        chakra: { 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
-                        indiaGreen: { 500: '#10b981', 600: '#059669', 700: '#047857' },
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anomaly Operations Center | E-Waste Saathi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sora: ['Sora', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            brandBg: '#F7F9F8',
+            brandDark: '#101828',
+            brandSecondary: '#667085',
+            brandGreen: '#059669',
+            brandDarkGreen: '#047857',
+            brandBlue: '#2563EB',
+            brandGold: '#D89B1D',
+            brandWarning: '#F59E0B',
+            brandDanger: '#DC2626',
+            brandCard: '#FFFFFF',
+            brandBorder: '#E5E7EB',
+          }
         }
-    </script>
-    <style>
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F7F9F8;
+      color: #101828;
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-tech-grid {
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-saffron-500 selection:text-white">
+<body class="bg-brandBg text-brandDark min-h-screen bg-tech-grid selection:bg-brandGreen selection:text-white">
 
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="/" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-600 p-[2px]">
-                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-rose-400 via-slate-100 to-amber-400 bg-clip-text text-transparent">E-Waste Saathi</span>
-                        <span class="text-[10px] block font-mono text-slate-400 tracking-wider">AI ANOMALY DEFENSE CENTER</span>
-                    </div>
-                </a>
-            </div>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brandBorder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <div class="font-sora font-bold text-sm text-brandDark">E-Waste Saathi</div>
+            <div class="text-[10px] font-mono text-brandSecondary">AI Anomaly Operations Center</div>
+          </div>
+        </a>
+      </div>
 
-            <div class="flex items-center gap-3">
-                <a href="/dashboard/live" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-                    <i class="fa-solid fa-satellite-dish text-orange-400 mr-1.5"></i>Live Ops
-                </a>
-                <button onclick="window.startJudgeWalkthrough()" class="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white flex items-center gap-1.5">
-                    <span>🎯</span> JUDGE DEMO
-                </button>
-            </div>
+      <nav class="flex items-center gap-2 text-xs font-semibold">
+        <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
+          <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
+        </a>
+        <button onclick="window.startJudgeWalkthrough()" class="px-3.5 py-2 rounded-xl bg-brandDark hover:bg-slate-800 text-white font-bold transition flex items-center gap-1.5 shadow-sm">
+          <span>🎯</span> JUDGE DEMO
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+
+    <!-- Top Banner -->
+    <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <span class="px-2.5 py-0.5 rounded-full bg-red-50 text-brandDanger font-bold border border-red-200">INTELLIGENT DEFENSE LAYER</span>
+          <span class="text-brandSecondary">Zero-Trust Inspection</span>
         </div>
-    </header>
+        <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">Real-Time Anomaly & Fraud Isolation Center</h1>
+        <p class="text-xs text-brandSecondary mt-0.5">Automated ML safeguards detect tare scale discrepancies, hazardous thermal spikes, and counterfeit QR digital passports.</p>
+      </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <button onclick="injectTestAnomaly()" class="px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-plus"></i> Inject Demo Anomaly
+      </button>
+    </div>
 
-        <!-- Top Overview -->
-        <div class="p-6 rounded-2xl glass-panel border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
+    <!-- 4 KPI Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+      <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Pending Review</div>
+        <div class="text-2xl font-bold text-amber-600 mt-1">2</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Inspector triage queue</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Escalated to CPCB</div>
+        <div class="text-2xl font-bold text-brandDanger mt-1">1</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Regulatory review flag</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">Auto-Resolved</div>
+        <div class="text-2xl font-bold text-brandGreen mt-1">38</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">Within tare margin</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white border border-brandBorder shadow-sm">
+        <div class="text-[11px] font-medium text-brandSecondary font-sans">AI False Alarm Rate</div>
+        <div class="text-2xl font-bold text-brandBlue mt-1">&lt; 0.18%</div>
+        <div class="text-[10px] text-brandSecondary font-sans mt-0.5">10,000+ benchmarked lots</div>
+      </div>
+    </div>
+
+    <!-- Split: Incident Queue & Evidence Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left: Flagged Incidents List -->
+      <div class="lg:col-span-7 space-y-4">
+        <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-4">
+          <h2 class="font-sora text-base font-bold text-brandDark pb-3 border-b border-brandBorder">
+            Active Flagged Incidents
+          </h2>
+
+          <div class="space-y-3">
+            <!-- Incident 1 -->
+            <div onclick="selectAnomaly('ANOM-8841')" class="p-4 rounded-2xl bg-slate-50 border-2 border-red-300 hover:border-red-500 cursor-pointer transition flex items-start justify-between gap-4">
+              <div class="space-y-1">
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">INTELLIGENT DEFENSE LAYER</span>
-                    <span class="text-xs font-mono text-slate-400">Zero Trust Verification</span>
+                  <span class="px-2 py-0.5 rounded-md bg-red-100 text-brandDanger font-mono text-[10px] font-bold">HIGH SEVERITY</span>
+                  <span class="text-xs font-bold font-mono text-brandDark">ANOM-8841</span>
+                  <span class="text-[11px] text-brandSecondary font-mono">LOT-2026-HYD-4192</span>
                 </div>
-                <h1 class="text-xl font-bold text-white mt-1">Real-Time Anomaly & Fraud Isolation Engine</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Automated ML safeguards detect tare discrepancies, hazardous chemical leaks, and counterfeit QR digital passports.</p>
+                <div class="text-xs font-bold text-brandDark">Weight Discrepancy > 21.6% at Recycler Gate</div>
+                <div class="text-[11px] text-brandSecondary">Claimed 24.5 kg ➔ Scale Measured 19.2 kg (Delta: 5.3 kg)</div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold">PENDING</span>
             </div>
 
-            <div class="flex items-center gap-2">
-                <button onclick="injectTestAnomaly()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 transition">
-                    <i class="fa-solid fa-plus"></i> Inject Demo Anomaly
-                </button>
-            </div>
-        </div>
-
-        <!-- 4 Anomaly KPI Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Pending Review</div>
-                <div id="countPending" class="text-2xl font-bold font-mono text-amber-400 mt-1">2</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Awaiting inspector decision</div>
-            </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Escalated to CPCB</div>
-                <div id="countEscalated" class="text-2xl font-bold font-mono text-rose-400 mt-1">1</div>
-                <div class="text-[10px] text-rose-400/80 mt-0.5">Regulatory flag active</div>
-            </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Auto-Resolved</div>
-                <div class="text-2xl font-bold font-mono text-emerald-400 mt-1">38</div>
-                <div class="text-[10px] text-emerald-400/80 mt-0.5">Within tare margin</div>
-            </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">AI False Alarm Rate</div>
-                <div class="text-2xl font-bold font-mono text-sky-400 mt-1">&lt; 0.18%</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Trained on 10k+ lot events</div>
-            </div>
-        </div>
-
-        <!-- Anomaly Feed & Evidence Inspector Split -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Left: Anomaly Feed -->
-            <div class="lg:col-span-2 space-y-4">
-                <div class="p-5 rounded-2xl glass-panel border border-slate-800">
-                    <h2 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
-                        <i class="fa-solid fa-list-check text-rose-400"></i> Active Flagged Incidents
-                    </h2>
-
-                    <div id="anomalyList" class="mt-4 space-y-3">
-                        <!-- Card 1 -->
-                        <div onclick="selectAnomaly('ANOM-8841')" class="p-4 rounded-xl bg-slate-900/80 border border-rose-900/60 hover:border-rose-500 cursor-pointer transition flex items-start justify-between gap-4">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold border border-rose-500/30">HIGH SEVERITY</span>
-                                    <span class="text-xs font-bold text-white font-mono">ANOM-8841</span>
-                                    <span class="text-[11px] text-slate-500">LOT-2026-HYD-4192</span>
-                                </div>
-                                <div class="text-xs font-semibold text-slate-200">Weight Discrepancy > 21.6% at Recycler Gate</div>
-                                <div class="text-[11px] text-slate-400">Claimed 24.5 kg ➔ Scale Measured 19.2 kg (Delta: 5.3 kg)</div>
-                            </div>
-                            <span class="text-[10px] font-mono px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">PENDING</span>
-                        </div>
-
-                        <!-- Card 2 -->
-                        <div onclick="selectAnomaly('ANOM-7319')" class="p-4 rounded-xl bg-slate-900/80 border border-amber-900/60 hover:border-amber-500 cursor-pointer transition flex items-start justify-between gap-4">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">MEDIUM</span>
-                                    <span class="text-xs font-bold text-white font-mono">ANOM-7319</span>
-                                    <span class="text-[11px] text-slate-500">LOT-2026-MUM-1102</span>
-                                </div>
-                                <div class="text-xs font-semibold text-slate-200">AI Material Grade Discrepancy (PCB vs Shredded Plastics)</div>
-                                <div class="text-[11px] text-slate-400">Visual spectrum indicates high flame-retardant plastic shell content.</div>
-                            </div>
-                            <span class="text-[10px] font-mono px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">PENDING</span>
-                        </div>
-
-                        <!-- Card 3 -->
-                        <div onclick="selectAnomaly('ANOM-6021')" class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition flex items-start justify-between gap-4">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold border border-rose-500/30">CRITICAL</span>
-                                    <span class="text-xs font-bold text-white font-mono">ANOM-6021</span>
-                                    <span class="text-[11px] text-slate-500">LOT-2026-DEL-8341</span>
-                                </div>
-                                <div class="text-xs font-semibold text-slate-200">Thermal Hazard Trigger in Li-Ion Drum Storage</div>
-                                <div class="text-[11px] text-slate-400">IoT sensor detected 54°C surface temp (Fireproof protocol invoked).</div>
-                            </div>
-                            <span class="text-[10px] font-mono px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">ESCALATED</span>
-                        </div>
-                    </div>
+            <!-- Incident 2 -->
+            <div onclick="selectAnomaly('ANOM-7319')" class="p-4 rounded-2xl bg-slate-50 border border-brandBorder hover:border-brandDark cursor-pointer transition flex items-start justify-between gap-4">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-mono text-[10px] font-bold">MEDIUM</span>
+                  <span class="text-xs font-bold font-mono text-brandDark">ANOM-7319</span>
+                  <span class="text-[11px] text-brandSecondary font-mono">LOT-2026-MUM-1102</span>
                 </div>
+                <div class="text-xs font-bold text-brandDark">AI Material Grade Discrepancy (PCB vs Shredded Plastic Shells)</div>
+                <div class="text-[11px] text-brandSecondary">Visual spectrum indicates high flame-retardant casing content.</div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold">PENDING</span>
             </div>
-
-            <!-- Right: Evidence & Resolution Panel -->
-            <div class="space-y-4">
-                <div class="p-5 rounded-2xl glass-panel border border-slate-800 space-y-4">
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Evidence Inspector</span>
-                        <span id="evStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">ANOM-8841</span>
-                    </div>
-
-                    <div class="space-y-3 text-xs font-sans">
-                        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                            <div class="text-[11px] font-mono text-slate-400">AUDIT TRAIL EVIDENCE:</div>
-                            <div class="font-mono text-slate-300 text-[11px] leading-relaxed">
-                                • Tare Scale ID: <span class="text-sky-400">BLE-SCALE-09</span><br>
-                                • Origin Hub: <span class="text-white">Musheerabad, HYD</span><br>
-                                • Collector: <span class="text-white">Ramesh Kumar (Rating: 4.9)</span><br>
-                                • Gate Arrival: <span class="text-white">14:32:10 UTC</span><br>
-                                • SHA-256 Hash: <span class="text-emerald-400 font-mono text-[10px]">e7d8a9f23...84b1</span>
-                            </div>
-                        </div>
-
-                        <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-900/40 text-rose-200 text-xs">
-                            <span class="font-bold">AI Root Cause Suggestion:</span> Tare weight calibration drift on collector mobile scale or physical moisture loss during long transit.
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="space-y-2 pt-2">
-                            <button onclick="resolveAnomaly('APPROVED')" class="w-full p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
-                                <i class="fa-solid fa-check"></i> Approve Adjusted Weight (19.2 kg)
-                            </button>
-                            <button onclick="resolveAnomaly('DISMISS')" class="w-full p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
-                                <i class="fa-solid fa-xmark"></i> Dismiss as False Alarm
-                            </button>
-                            <button onclick="resolveAnomaly('ESCALATE')" class="w-full p-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 text-rose-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
-                                <i class="fa-solid fa-flag"></i> Escalate to CPCB Regulatory Board
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+          </div>
         </div>
+      </div>
 
-    </main>
+      <!-- Right: Evidence & Resolution Panel -->
+      <div class="lg:col-span-5 space-y-4">
+        <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-brandBorder">
+            <span class="text-xs font-mono font-bold text-brandSecondary uppercase">Evidence Inspector</span>
+            <span id="evStatusBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-brandBlue">ANOM-8841</span>
+          </div>
 
-    <div id="judgeDemoContainer"></div>
-    <script src="/static/js/judge_demo.js"></script>
-    <script>
-        function selectAnomaly(id) {
-            document.getElementById('evStatusBadge').innerText = id;
-        }
+          <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder font-mono text-xs space-y-1 text-slate-700">
+            <div>&bull; Scale ID: <span class="font-bold text-brandDark">BLE-SCALE-09</span></div>
+            <div>&bull; Origin Hub: <span class="font-bold text-brandDark">Musheerabad, HYD</span></div>
+            <div>&bull; Collector: <span class="font-bold text-brandDark">Ramesh Kumar (Rating 4.9)</span></div>
+            <div>&bull; Gate Arrival: <span class="font-bold text-brandDark">14:32:10 UTC</span></div>
+            <div>&bull; SHA-256 Hash: <span class="text-brandBlue">e7d8a9f23...84b1</span></div>
+          </div>
 
-        async function injectTestAnomaly() {
-            await fetch('/api/v1/simulation/inject-anomaly', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ anomaly_type: 'WEIGHT_MISMATCH_GATE' })
-            });
-            alert('Anomaly injected and broadcasted to WebSocket stream!');
-        }
+          <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+            <span class="font-bold">AI Root Cause Suggestion:</span> Tare weight calibration drift on collector mobile scale or physical moisture evaporation during long transit.
+          </div>
 
-        function resolveAnomaly(action) {
-            alert(`Incident resolved with action: ${action}`);
-        }
-    </script>
+          <!-- Actions -->
+          <div class="space-y-2 pt-2">
+            <button onclick="resolveAnomaly('APPROVED')" class="w-full py-2.5 rounded-xl bg-brandGreen hover:bg-brandDarkGreen text-white font-bold text-xs transition">
+              Approve Adjusted Weight (19.2 kg)
+            </button>
+            <button onclick="resolveAnomaly('DISMISS')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-brandDark font-semibold text-xs transition">
+              Dismiss as False Alarm
+            </button>
+            <button onclick="resolveAnomaly('ESCALATE')" class="w-full py-2.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-brandDanger font-semibold text-xs transition">
+              Escalate to CPCB Regulatory Board
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div id="judgeDemoContainer"></div>
+  <script src="/static/js/judge_demo.js"></script>
+
+  <script>
+    function selectAnomaly(id) {
+      document.getElementById('evStatusBadge').innerText = id;
+    }
+
+    async function injectTestAnomaly() {
+      await fetch('/api/v1/simulation/inject-anomaly', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anomaly_type: 'WEIGHT_MISMATCH_GATE' })
+      });
+      alert('Anomaly injected and broadcasted to WebSocket stream!');
+    }
+
+    function resolveAnomaly(action) {
+      alert(`Incident resolved with action: ${action}`);
+    }
+  </script>
 </body>
 </html>

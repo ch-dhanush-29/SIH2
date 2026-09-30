@@ -199,68 +199,68 @@ function renderJudgeModal() {
     const progressPct = ((currentJudgeStep + 1) / window.JudgeDemoSteps.length) * 100;
 
     container.innerHTML = `
-        <div id="judgeDemoOverlay" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md font-sans">
-            <div class="max-w-2xl w-full bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div id="judgeDemoOverlay" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm font-sans">
+            <div class="max-w-2xl w-full bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
                 
                 <!-- Progress Header -->
-                <div class="h-1.5 w-full bg-slate-800">
-                    <div class="h-full bg-gradient-to-r from-saffron-500 via-sky-500 to-indiaGreen-500 transition-all duration-300" style="width: ${progressPct}%"></div>
+                <div class="h-1.5 w-full bg-slate-100">
+                    <div class="h-full bg-gradient-to-r from-orange-500 via-blue-500 to-emerald-600 transition-all duration-300" style="width: ${progressPct}%"></div>
                 </div>
 
                 <!-- Modal Top Bar -->
-                <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-8 h-8 rounded-lg bg-orange-600/20 text-orange-400 border border-orange-500/40 flex items-center justify-center font-bold text-sm">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold text-sm">
                             🎯
                         </span>
                         <div>
-                            <div class="text-[10px] font-mono text-orange-400 font-bold uppercase tracking-wider">SIH 2026 Live Evaluation Mode</div>
-                            <div class="text-xs text-slate-400">Step ${currentJudgeStep + 1} of 10 • ${step.role}</div>
+                            <div class="text-[10px] font-mono text-emerald-800 font-bold uppercase tracking-wider">SIH 2026 Live Evaluation Mode</div>
+                            <div class="text-xs text-slate-500 font-mono">Step ${currentJudgeStep + 1} of 10 &bull; ${step.role}</div>
                         </div>
                     </div>
-                    <button onclick="closeJudgeModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <button onclick="closeJudgeModal()" class="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 flex items-center justify-center transition">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
                 <!-- Modal Body -->
-                <div class="p-6 space-y-4">
+                <div class="p-6 sm:p-8 space-y-5">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-bold text-white">${step.title}</h2>
-                        <span class="text-[10px] font-mono px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">${step.badge}</span>
+                        <h2 class="text-xl font-bold font-sora text-slate-900">${step.title}</h2>
+                        <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">${step.badge}</span>
                     </div>
 
-                    <p class="text-xs leading-relaxed text-slate-300">${step.description}</p>
+                    <p class="text-xs leading-relaxed text-slate-600">${step.description}</p>
 
-                    <div class="p-3.5 rounded-xl bg-orange-950/20 border border-orange-800/40 flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check text-orange-400 mt-0.5 text-sm"></i>
-                        <div class="text-xs text-orange-200">
-                            <span class="font-bold text-white">Live Execution:</span> ${step.actionHighlight}
+                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+                        <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5 text-sm"></i>
+                        <div class="text-xs text-slate-800">
+                            <span class="font-bold text-slate-900">Live Execution:</span> ${step.actionHighlight}
                         </div>
                     </div>
 
                     <!-- Metrics Grid -->
-                    <div class="grid grid-cols-2 gap-2.5">
+                    <div class="grid grid-cols-2 gap-3">
                         ${step.metrics.map(m => `
-                            <div class="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
+                            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
                                 <div class="text-[10px] text-slate-500 font-mono">${m.label}</div>
-                                <div class="text-xs font-bold font-mono text-emerald-400 mt-0.5">${m.val}</div>
+                                <div class="text-xs font-bold font-mono text-slate-900 mt-0.5">${m.val}</div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
-                    <button onclick="prevJudgeStep()" ${currentJudgeStep === 0 ? 'disabled' : ''} class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 text-xs font-semibold flex items-center gap-1.5 transition">
+                <div class="p-5 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between">
+                    <button onclick="prevJudgeStep()" ${currentJudgeStep === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 disabled:opacity-30 text-xs font-semibold flex items-center gap-1.5 transition">
                         <i class="fa-solid fa-chevron-left"></i> Previous
                     </button>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="closeJudgeModal()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+                        <button onclick="closeJudgeModal()" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-semibold transition">
                             Exit Tour
                         </button>
-                        <button onclick="nextJudgeStep()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-orange-950/50 transition">
+                        <button onclick="nextJudgeStep()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
                             <span>${step.interactiveAction}</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>

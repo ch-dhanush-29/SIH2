@@ -1,190 +1,206 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Digital Passport Cryptographic Verifier | E-Waste Saathi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        saffron: { 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
-                        chakra: { 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
-                        indiaGreen: { 500: '#10b981', 600: '#059669', 700: '#047857' },
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Digital Passport Cryptographic Verifier | E-Waste Saathi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sora: ['Sora', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            brandBg: '#F7F9F8',
+            brandDark: '#101828',
+            brandSecondary: '#667085',
+            brandGreen: '#059669',
+            brandDarkGreen: '#047857',
+            brandBlue: '#2563EB',
+            brandGold: '#D89B1D',
+            brandWarning: '#F59E0B',
+            brandDanger: '#DC2626',
+            brandCard: '#FFFFFF',
+            brandBorder: '#E5E7EB',
+          }
         }
-    </script>
-    <style>
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F7F9F8;
+      color: #101828;
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-tech-grid {
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-saffron-500 selection:text-white">
+<body class="bg-brandBg text-brandDark min-h-screen bg-tech-grid selection:bg-brandGreen selection:text-white">
 
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="/" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 p-[2px]">
-                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-shield-halved text-sky-400 text-sm"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-sky-400 via-indigo-200 to-purple-400 bg-clip-text text-transparent">E-Waste Saathi</span>
-                        <span class="text-[10px] block font-mono text-slate-400 tracking-wider">CRYPTOGRAPHIC PASSPORT AUDIT VERIFIER</span>
-                    </div>
-                </a>
-            </div>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brandBorder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brandBlue text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <div class="font-sora font-bold text-sm text-brandDark">E-Waste Saathi</div>
+            <div class="text-[10px] font-mono text-brandSecondary">Cryptographic Passport Audit Verifier</div>
+          </div>
+        </a>
+      </div>
 
+      <nav class="flex items-center gap-2 text-xs font-semibold">
+        <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
+          <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
+        </a>
+        <button onclick="window.startJudgeWalkthrough()" class="px-3.5 py-2 rounded-xl bg-brandDark hover:bg-slate-800 text-white font-bold transition flex items-center gap-1.5 shadow-sm">
+          <span>🎯</span> JUDGE DEMO
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+
+    <!-- Search / Input Card -->
+    <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-4">
+      <div>
+        <span class="text-xs font-mono font-bold text-brandBlue uppercase">SHA-256 AUDIT VERIFIER</span>
+        <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">Verify E-Waste Lot Digital Passport Chain</h1>
+        <p class="text-xs text-brandSecondary mt-0.5">Enter Lot ID to cryptographically validate the 5-block chain of custody.</p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input id="inputLotId" type="text" value="LOT-2026-HYD-4192" placeholder="e.g. LOT-2026-HYD-4192" class="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-brandBorder text-sm font-mono text-brandDark focus:outline-none focus:border-brandBlue">
+        <button onclick="runVerification()" class="px-6 py-3 rounded-2xl bg-brandBlue hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 transition shadow-sm">
+          <i class="fa-solid fa-magnifying-glass"></i> Validate Passport Chain
+        </button>
+      </div>
+    </div>
+
+    <!-- Verification Document Card -->
+    <div id="resultsCard" class="p-8 rounded-3xl bg-white border border-brandBorder shadow-lg space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-brandBorder">
+        <div>
+          <div class="text-xs font-mono text-brandSecondary uppercase">PASSPORT SUBJECT</div>
+          <div id="resLotId" class="text-2xl font-bold font-mono text-brandDark mt-0.5">LOT-2026-HYD-4192</div>
+        </div>
+        <div id="resBadge" class="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-brandGreen font-mono text-xs font-bold flex items-center gap-2">
+          <i class="fa-solid fa-circle-check"></i> AUTHENTIC CHAIN OF CUSTODY
+        </div>
+      </div>
+
+      <!-- Hash Fingerprint -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder font-mono text-xs space-y-1">
+        <div class="text-brandSecondary text-[11px]">CANONICAL SHA-256 GENESIS HASH:</div>
+        <div id="resHash" class="text-brandBlue font-semibold break-all text-[11px]">
+          e7d8a9f2348bca6129841ef902b47e2a9018cbf56182390abef381920acde941
+        </div>
+      </div>
+
+      <!-- 5-Block Sequence -->
+      <div class="space-y-3">
+        <div class="text-xs font-mono font-bold text-brandSecondary uppercase">5-Step Immutable Custody Sequence</div>
+
+        <div class="space-y-2 text-xs font-mono">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="/dashboard/live" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-                    <i class="fa-solid fa-satellite-dish text-orange-400 mr-1.5"></i>Live Ops
-                </a>
-                <button onclick="window.startJudgeWalkthrough()" class="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white flex items-center gap-1.5">
-                    <span>🎯</span> JUDGE DEMO
-                </button>
+              <span class="w-6 h-6 rounded-full bg-emerald-100 text-brandGreen flex items-center justify-center font-bold text-[10px]">1</span>
+              <div>
+                <span class="font-bold text-brandDark">LOT_ORIGINATION</span>
+                <span class="text-brandSecondary text-[11px] ml-2 font-sans">Collector: Ramesh Kumar</span>
+              </div>
             </div>
+            <span class="text-brandGreen font-mono">Block Hash: 7a8f102c98...</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-emerald-100 text-brandGreen flex items-center justify-center font-bold text-[10px]">2</span>
+              <div>
+                <span class="font-bold text-brandDark">AI_SPECTRA_ID</span>
+                <span class="text-brandSecondary text-[11px] ml-2 font-sans">EfficientNet-B0 (96.8%)</span>
+              </div>
+            </div>
+            <span class="text-brandGreen font-mono">Block Hash: 3b9c481e11...</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-emerald-100 text-brandGreen flex items-center justify-center font-bold text-[10px]">3</span>
+              <div>
+                <span class="font-bold text-brandDark">BLE_TARE_SCALE</span>
+                <span class="text-brandSecondary text-[11px] ml-2 font-sans">Scale #TS-09 (24.50 kg)</span>
+              </div>
+            </div>
+            <span class="text-brandGreen font-mono">Block Hash: d4e109823f...</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-emerald-100 text-brandGreen flex items-center justify-center font-bold text-[10px]">4</span>
+              <div>
+                <span class="font-bold text-brandDark">RECYCLER_GATE_IN</span>
+                <span class="text-brandSecondary text-[11px] ml-2 font-sans">EcoGreen (0.0 kg Delta)</span>
+              </div>
+            </div>
+            <span class="text-brandGreen font-mono">Block Hash: 91c8402aeb...</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full bg-blue-100 text-brandBlue flex items-center justify-center font-bold text-[10px]">5</span>
+              <div>
+                <span class="font-bold text-brandDark">FINAL_SETTLEMENT</span>
+                <span class="text-brandSecondary text-[11px] ml-2 font-sans">₹16,660.00 UPI Settled</span>
+              </div>
+            </div>
+            <span class="text-brandBlue font-mono">Sealed Root: e7d8a9f234...</span>
+          </div>
         </div>
-    </header>
+      </div>
+    </div>
 
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  </main>
 
-        <!-- Verifier Input Box -->
-        <div class="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
-            <div>
-                <span class="text-xs font-mono px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">SHA-256 INTEGRITY AUDIT</span>
-                <h1 class="text-xl font-bold text-white mt-1">Verify E-Waste Lot Digital Passport Chain</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Enter Lot ID or scan physical QR to validate the cryptographic chain of custody.</p>
-            </div>
+  <div id="judgeDemoContainer"></div>
+  <script src="/static/js/judge_demo.js"></script>
 
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input id="inputLotId" type="text" value="LOT-2026-HYD-4192" placeholder="e.g. LOT-2026-HYD-4192" class="flex-1 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm font-mono text-white focus:outline-none focus:border-sky-500">
-                <button onclick="runVerification()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-sky-950/50 transition">
-                    <i class="fa-solid fa-magnifying-glass"></i> Validate Passport Chain
-                </button>
-            </div>
-        </div>
+  <script>
+    async function runVerification() {
+      const lotId = document.getElementById('inputLotId').value.trim();
+      if (!lotId) return;
 
-        <!-- Verification Results Box -->
-        <div id="resultsCard" class="p-6 rounded-2xl glass-panel border border-slate-800 space-y-6">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-                <div>
-                    <div class="text-xs text-slate-400 font-mono">AUDIT SUBJECT</div>
-                    <div id="resLotId" class="text-lg font-bold text-white font-mono mt-0.5">LOT-2026-HYD-4192</div>
-                </div>
-                <div id="resBadge" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check"></i> AUTHENTIC CHAIN OF CUSTODY
-                </div>
-            </div>
-
-            <!-- Hash Fingerprint -->
-            <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 font-mono text-xs space-y-1">
-                <div class="text-slate-400 text-[11px]">CANONICAL SHA-256 GENESIS HASH:</div>
-                <div id="resHash" class="text-sky-400 break-all font-semibold">e7d8a9f2348bca6129841ef902b47e2a9018cbf56182390abef381920acde941</div>
-            </div>
-
-            <!-- Merkle Block Sequence -->
-            <div class="space-y-3">
-                <div class="text-xs font-bold text-slate-300 uppercase tracking-wider">5-Step Immutable Custody Sequence</div>
-
-                <div class="space-y-2 text-xs font-mono">
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">1</span>
-                            <div>
-                                <span class="font-bold text-white">LOT_ORIGINATION</span>
-                                <span class="text-slate-500 text-[10px] ml-2">Collector: Ramesh Kumar</span>
-                            </div>
-                        </div>
-                        <span class="text-emerald-400 font-mono">Block Hash: 7a8f102c98...</span>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">2</span>
-                            <div>
-                                <span class="font-bold text-white">AI_SPECTRA_ID</span>
-                                <span class="text-slate-500 text-[10px] ml-2">EfficientNet-B0 (96.8% Match)</span>
-                            </div>
-                        </div>
-                        <span class="text-emerald-400 font-mono">Block Hash: 3b9c481e11...</span>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">3</span>
-                            <div>
-                                <span class="font-bold text-white">BLE_TARE_SCALE</span>
-                                <span class="text-slate-500 text-[10px] ml-2">Scale #TS-09 (24.50 kg)</span>
-                            </div>
-                        </div>
-                        <span class="text-emerald-400 font-mono">Block Hash: d4e109823f...</span>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">4</span>
-                            <div>
-                                <span class="font-bold text-white">RECYCLER_GATE_IN</span>
-                                <span class="text-slate-500 text-[10px] ml-2">EcoGreen Recyclers (0.0 kg Delta)</span>
-                            </div>
-                        </div>
-                        <span class="text-emerald-400 font-mono">Block Hash: 91c8402aeb...</span>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">5</span>
-                            <div>
-                                <span class="font-bold text-white">FINAL_SETTLEMENT</span>
-                                <span class="text-slate-500 text-[10px] ml-2">₹16,660.00 UPI Settled</span>
-                            </div>
-                        </div>
-                        <span class="text-sky-400 font-mono">Sealed Root: e7d8a9f234...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <div id="judgeDemoContainer"></div>
-    <script src="/static/js/judge_demo.js"></script>
-    <script>
-        async function runVerification() {
-            const lotId = document.getElementById('inputLotId').value.trim();
-            if (!lotId) return;
-
-            try {
-                const res = await fetch('/api/v1/simulation/passport/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lot_id: lotId })
-                });
-                const data = await res.json();
-                document.getElementById('resLotId').innerText = data.lot_id;
-                document.getElementById('resHash').innerText = data.calculated_sha256;
-                document.getElementById('resBadge').innerHTML = '<i class="fa-solid fa-circle-check"></i> AUTHENTIC CHAIN OF CUSTODY';
-            } catch(e) {
-                console.error(e);
-            }
-        }
-    </script>
+      try {
+        const res = await fetch('/api/v1/simulation/passport/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lot_id: lotId })
+        });
+        const data = await res.json();
+        document.getElementById('resLotId').innerText = data.lot_id;
+        document.getElementById('resHash').innerText = data.calculated_sha256;
+      } catch(e) {}
+    }
+  </script>
 </body>
 </html>

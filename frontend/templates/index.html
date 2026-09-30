@@ -1,1047 +1,649 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Waste Saathi — AI-Powered Formal E-Waste Collection</title>
-  <meta name="description" content="An AI-powered, offline-first platform connecting informal e-waste collectors with fair prices, trusted recyclers, and traceable handovers. SIH26229 — Ministry of Mines (MoM).">
+  <title>E-Waste Saathi — Digital Infrastructure for E-Waste Formalization</title>
+  <meta name="description" content="AI-powered, offline-first digital platform connecting informal e-waste collectors with fair market prices, CPCB-authorized recyclers, and tamper-evident digital passports. SIH26229 — Ministry of Mines.">
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sora: ['Sora', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            brandBg: '#F7F9F8',
+            brandDark: '#101828',
+            brandSecondary: '#667085',
+            brandGreen: '#059669',
+            brandDarkGreen: '#047857',
+            brandBlue: '#2563EB',
+            brandGold: '#D89B1D',
+            brandWarning: '#F59E0B',
+            brandDanger: '#DC2626',
+            brandCard: '#FFFFFF',
+            brandBorder: '#E5E7EB',
+          }
+        }
+      }
+    }
+  </script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap');
-    
-    :root {
-      --bg-dark: #030712;
-      --graphite: #0f172a;
-      --saffron: #ff9933;
-      --india-green: #138808;
-      --chakra-blue: #0284c7;
-    }
-
     body {
-      font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-dark);
-      color: #f8fafc;
+      background-color: #F7F9F8;
+      color: #101828;
+      font-family: 'Inter', sans-serif;
       overflow-x: hidden;
-      scroll-behavior: smooth;
     }
-
-    .font-display { font-family: 'Syne', 'Space Grotesk', sans-serif; }
-    .font-mono-data { font-family: 'JetBrains Mono', monospace; }
-
-    /* Animated Holographic Background Grid & Orb */
-    .hero-mesh-bg {
+    
+    /* Subtle Technical Grid Background */
+    .bg-tech-grid {
       background-image: 
-        radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(19, 136, 8, 0.12) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(2, 132, 199, 0.08) 0px, transparent 50%);
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
     }
 
-    /* Laser Scanner Beam Keyframes */
-    @keyframes scanBeam {
-      0% { top: 0%; opacity: 0.2; }
-      50% { top: 95%; opacity: 0.9; }
-      100% { top: 0%; opacity: 0.2; }
-    }
-    .animate-scan-beam {
-      animation: scanBeam 3s ease-in-out infinite;
+    .tiranga-strip {
+      height: 3px;
+      background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.3%, #0284C7 33.3%, #0284C7 66.6%, #138808 66.6%, #138808 100%);
     }
 
-    /* Floating Data Pulse */
-    @keyframes floatSlow {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(0.5deg); }
+    .pulse-dot {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-    .animate-float-slow {
-      animation: floatSlow 6s ease-in-out infinite;
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
     }
-
-    /* 3D Interactive Card Tilt & Glass Hover */
-    .visual-3d-card {
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease, border-color 0.4s ease;
-      transform-style: preserve-3d;
-      perspective: 1000px;
-    }
-    .visual-3d-card:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.25);
-    }
-    .visual-3d-card img {
-      transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    .visual-3d-card:hover img {
-      transform: scale(1.06);
-    }
-
-    /* Holographic Edge Pulse */
-    @keyframes borderGlow {
-      0%, 100% { border-color: rgba(16, 185, 129, 0.3); }
-      50% { border-color: rgba(245, 158, 11, 0.6); }
-    }
-    .holo-glow-border {
-      animation: borderGlow 4s ease-in-out infinite;
-    }
-
-    /* Indian National Flag (Tiranga) Top Ribbon */
-    .tiranga-bar {
-      height: 3.5px;
-      background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%, #138808 100%);
-      width: 100%;
-    }
-
-    /* Cinematic 3D Sticky Canvas Stage */
-    .cinematic-stage {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    .cinematic-stage canvas {
-      pointer-events: auto;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Editorial Story Step Panels */
-    .story-step {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      z-index: 20;
-      padding: 4rem 1.5rem;
-      pointer-events: none;
-    }
-
-    .story-card {
-      pointer-events: auto;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
-    }
-
-    /* Light Theme Styling Overrides */
-    .light {
-      --bg-dark: #f8fafc;
-      --graphite: #ffffff;
-    }
-    .light body {
-      background-color: #f8fafc !important;
-      color: #0f172a !important;
-    }
-    .light .hero-mesh-bg {
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(19, 136, 8, 0.08) 0px, transparent 50%);
-    }
-    .light .cinematic-stage {
-      opacity: 0.95;
-    }
-    .light .story-card {
-      background-color: rgba(255, 255, 255, 0.92) !important;
-      border-color: #cbd5e1 !important;
-      color: #0f172a !important;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-    }
-    .light .bg-slate-900 { background-color: #ffffff !important; color: #0f172a !important; }
-    .light .bg-slate-950 { background-color: #f1f5f9 !important; color: #0f172a !important; }
-    .light .bg-slate-800 { background-color: #e2e8f0 !important; color: #1e293b !important; }
-    .light .border-slate-800, .light .border-slate-700 { border-color: #cbd5e1 !important; }
-    .light .text-white { color: #0f172a !important; }
-    .light .text-slate-100 { color: #0f172a !important; }
-    .light .text-slate-200 { color: #1e293b !important; }
-    .light .text-slate-300 { color: #334155 !important; }
-    .light .text-slate-400 { color: #64748b !important; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950 hero-mesh-bg">
+<body class="bg-brandBg text-brandDark min-h-screen bg-tech-grid selection:bg-brandGreen selection:text-white">
 
-  <!-- National Tiranga Flag Ribbon Top Border -->
+  <!-- Top Tiranga National Ribbon -->
   <div class="fixed top-0 left-0 right-0 z-50">
-    <div class="tiranga-bar"></div>
+    <div class="tiranga-strip"></div>
     
-    <!-- Real-time Live Ticker Bar -->
-    <div class="bg-slate-950/90 backdrop-blur border-b border-slate-800/80 py-1.5 px-6 text-xs flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <span class="relative flex h-2 w-2">
-          <span id="realtime-pulse-dot" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+    <!-- Real-Time Top Telemetry Ticker -->
+    <div class="bg-white/95 backdrop-blur-md border-b border-brandBorder px-4 sm:px-8 py-2 text-xs flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-brandGreen font-mono font-semibold border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-brandGreen pulse-dot"></span>
+          <span>LIVE TELEMETRY BUS</span>
         </span>
-        <span id="realtime-ticker-text" class="text-slate-300 font-medium font-mono-data">
-          <span class="text-amber-400 font-bold">⚡ LIVE:</span> Connecting to E-Waste Saathi Realtime Stream...
+        <span id="tickerMessage" class="text-brandSecondary font-mono hidden md:inline truncate max-w-xl">
+          <span class="text-brandDark font-semibold">● STREAM:</span> Monitoring active e-waste formalization across 5 city hubs (/ws/live)
         </span>
       </div>
-      <div class="flex items-center space-x-3 text-[11px] text-slate-400">
+      <div class="flex items-center gap-3 text-[11px] font-mono text-brandSecondary">
         <span class="hidden sm:inline">SIH26229 &bull; Ministry of Mines (MoM)</span>
-        <span class="text-amber-400 font-semibold font-mono-data">DEMO DATA</span>
+        <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-bold">DEMO DATA</span>
       </div>
     </div>
   </div>
 
-  <!-- Minimal Floating Navigation Header -->
-  <header class="fixed top-12 left-0 right-0 z-40 px-6 py-2 pointer-events-none">
+  <!-- Main Navigation Header -->
+  <header class="fixed top-12 left-0 right-0 z-40 px-4 sm:px-8 py-3 pointer-events-none">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <a href="/" class="pointer-events-auto flex items-center space-x-3 group">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-slate-100 to-emerald-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-          <i class="fa-solid fa-recycle text-emerald-950"></i>
+      
+      <!-- Brand Logo -->
+      <a href="/" class="pointer-events-auto flex items-center gap-3 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border border-brandBorder shadow-sm group">
+        <div class="w-8 h-8 rounded-xl bg-brandGreen text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-recycle"></i>
         </div>
         <div>
-          <span class="text-base font-black text-white leading-tight flex items-center gap-1.5 font-display tracking-tight">
-            E-Waste Saathi <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 py-0.5 rounded font-mono-data font-bold">AI</span>
-          </span>
-          <p class="text-[10px] text-slate-400 font-mono-data">Informal → Formal Ecosystem</p>
+          <div class="font-sora font-bold text-sm tracking-tight text-brandDark flex items-center gap-1.5">
+            E-Waste Saathi
+            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 text-brandBlue border border-blue-200">AI</span>
+          </div>
+          <div class="text-[10px] font-mono text-brandSecondary">Formalization Infrastructure</div>
         </div>
       </a>
 
-      <!-- Quick Portals Switcher + Theme Toggle -->
-      <div class="pointer-events-auto flex items-center space-x-2 bg-slate-900/90 border border-slate-800 backdrop-blur rounded-2xl p-1.5 shadow-2xl">
-        <a href="/dashboard/live" class="px-3 py-1.5 text-xs font-bold text-orange-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-satellite-dish mr-1.5"></i> Live Ops
+      <!-- Compact Navigation Menu -->
+      <nav class="pointer-events-auto flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-brandBorder shadow-sm text-xs font-semibold">
+        <a href="/dashboard/live" class="px-3 py-1.5 rounded-xl text-brandDark hover:text-brandGreen hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-satellite-dish text-brandBlue"></i> Live Ops
         </a>
-        <a href="/demo/live" class="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-play mr-1.5"></i> Simulation
+        <a href="/demo/live" class="px-3 py-1.5 rounded-xl text-brandDark hover:text-brandGreen hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-play text-brandGreen"></i> Simulation
         </a>
-        <a href="/anomalies" class="px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Anomalies
+        <a href="/anomalies" class="px-3 py-1.5 rounded-xl text-brandDark hover:text-brandGreen hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation text-brandDanger"></i> Anomalies
         </a>
-        <a href="/government" class="px-3 py-1.5 text-xs font-bold text-sky-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-landmark mr-1.5"></i> CPCB / Govt
+        <a href="/government" class="px-3 py-1.5 rounded-xl text-brandDark hover:text-brandGreen hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-landmark text-brandGold"></i> CPCB / Govt
         </a>
-        <a href="/impact" class="px-3 py-1.5 text-xs font-bold text-teal-400 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-leaf mr-1.5"></i> Impact
+        <a href="/impact" class="px-3 py-1.5 rounded-xl text-brandDark hover:text-brandGreen hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-leaf text-brandGreen"></i> Impact
         </a>
-        <a href="/collector" class="px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800 rounded-xl transition flex items-center">
-          <i class="fa-solid fa-mobile-screen mr-1.5"></i> Collector
+        <a href="/collector" class="px-3 py-1.5 rounded-xl text-brandDark hover:text-brandGreen hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-mobile-screen text-slate-500"></i> Collector
         </a>
-        <button onclick="window.startJudgeWalkthrough()" class="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white rounded-xl shadow-lg shadow-orange-950/40 transition flex items-center gap-1.5">
+        <button onclick="window.startJudgeWalkthrough()" class="ml-1 px-3.5 py-1.5 rounded-xl bg-brandDark hover:bg-slate-800 text-white font-bold flex items-center gap-1.5 shadow-sm transition">
           <span>🎯</span> JUDGE DEMO
         </button>
-        <button onclick="ThemeManager.toggleTheme()" class="p-2 text-xs text-slate-400 hover:text-white rounded-xl transition">
-          <i class="fa-solid fa-sun text-amber-400 theme-toggle-icon"></i>
-        </button>
-      </div>
+      </nav>
+
     </div>
   </header>
 
-  <!-- ========================================================================= -->
-  <!-- 3D WEBGL CINEMATIC CAMERA STAGE (PERSISTENT FIXED BACKGROUND SCENE)       -->
-  <!-- ========================================================================= -->
-  <div class="cinematic-stage">
-    <canvas id="cinematic-3d-canvas"></canvas>
-  </div>
-
-  <!-- HUD Telemetry Overlay (Bottom Left) -->
-  <div class="fixed bottom-6 left-6 z-40 pointer-events-none hidden md:flex items-center space-x-3 bg-slate-950/80 border border-slate-800 backdrop-blur px-4 py-2 rounded-2xl font-mono-data text-xs">
-    <div class="flex items-center space-x-2">
-      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span id="scroll-journey-stage" class="text-slate-300 font-bold">01. Discarded E-Waste Discovery</span>
-    </div>
-    <span class="text-slate-600">|</span>
-    <span class="text-amber-400 font-bold" id="scroll-journey-percent">0%</span>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- SCROLLABLE CINEMATIC NARRATIVE JOURNEY (12 CONNECTED SCENES)              -->
-  <!-- ========================================================================= -->
-  <main class="relative z-20">
-
-    <!-- SCENE 0: OPENING EDITORIAL HERO -->
-    <section class="min-h-screen flex flex-col justify-center items-start max-w-7xl mx-auto px-6 pt-32 pb-16">
-      <div class="max-w-2xl space-y-6 story-card bg-slate-900/60 border border-slate-800 p-8 sm:p-10 rounded-3xl">
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono-data">
-          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-          <span>SIH26229 &bull; Ministry of Mines (MoM)</span>
+  <!-- Hero Section -->
+  <section class="pt-36 pb-20 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Left Column: Editorial Statement -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-brandGreen text-xs font-mono font-semibold">
+          <i class="fa-solid fa-shield-check"></i> SIH26229 &bull; MINISTRY OF MINES &bull; CPCB EPR 2022
         </div>
 
-        <h1 class="font-display text-4xl sm:text-7xl font-extrabold tracking-tight text-white leading-[1.05]">
-          E-Waste Saathi
+        <h1 class="font-sora text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-brandDark leading-[1.12]">
+          Digital infrastructure for India's <span class="text-brandGreen">e-waste formalization.</span>
         </h1>
 
-        <p class="text-xl sm:text-2xl text-slate-300 font-light leading-relaxed">
-          The bridge between informal collection and India's formal recycling ecosystem.
+        <p class="text-base sm:text-lg text-brandSecondary font-normal leading-relaxed max-w-2xl">
+          From grassroots informal collection to certified industrial metallurgy. Connecting waste pickers with fair market spot rates, edge AI material identification, and tamper-evident QR digital lot passports.
         </p>
 
-        <div class="pt-2 text-xs font-mono-data text-slate-400 uppercase tracking-widest flex flex-wrap gap-4">
-          <span>AI Vision</span> &bull; <span>Fair Prices</span> &bull; <span>Trusted Recyclers</span> &bull; <span>Traceability</span>
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button onclick="window.startJudgeWalkthrough()" class="px-6 py-3.5 rounded-2xl bg-brandGreen hover:bg-brandDarkGreen text-white font-semibold text-sm shadow-md shadow-emerald-900/10 flex items-center gap-2 transition">
+            <span>🎯 Launch Judge Walkthrough (5 Min)</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+          <a href="/dashboard/live" class="px-5 py-3.5 rounded-2xl bg-white hover:bg-slate-50 border border-brandBorder text-brandDark font-semibold text-sm shadow-sm flex items-center gap-2 transition">
+            <i class="fa-solid fa-chart-line text-brandBlue"></i> Open Real-Time Ops Hub
+          </a>
         </div>
 
-        <div class="pt-4 flex items-center space-x-4">
-          <a href="#scene-1" class="px-7 py-3.5 bg-gradient-to-r from-amber-500 via-teal-400 to-emerald-500 hover:opacity-95 text-slate-950 font-black rounded-2xl shadow-xl shadow-emerald-500/20 transition-all transform hover:scale-105 text-sm flex items-center space-x-2">
-            <span>ENTER THE JOURNEY</span>
-            <i class="fa-solid fa-arrow-down ml-1"></i>
+        <!-- 4 Fast Metrics Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-brandBorder font-mono">
+          <div>
+            <div class="text-[11px] text-brandSecondary">Informal Coverage</div>
+            <div class="text-xl font-bold text-brandDark mt-0.5">95%</div>
+            <div class="text-[10px] text-brandGreen font-sans font-medium">Grassroots formalization</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-brandSecondary">Collector Delta</div>
+            <div class="text-xl font-bold text-brandGreen mt-0.5">+38.8%</div>
+            <div class="text-[10px] text-brandSecondary font-sans">Direct market pricing</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-brandSecondary">Audit Integrity</div>
+            <div class="text-xl font-bold text-brandBlue mt-0.5">SHA-256</div>
+            <div class="text-[10px] text-brandSecondary font-sans">Tamper-evident chain</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-brandSecondary">Offline Queue</div>
+            <div class="text-xl font-bold text-brandDark mt-0.5">100%</div>
+            <div class="text-[10px] text-brandSecondary font-sans">IndexedDB sync ready</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Industrial Facility Hero Image & Live Telemetry Badge -->
+      <div class="lg:col-span-5 space-y-4">
+        <div class="bg-white p-3 rounded-3xl border border-brandBorder shadow-lg overflow-hidden relative group">
+          <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+            <img src="/static/images/industrial/plant_conveyor_sorting.jpg" alt="Modern Industrial E-Waste Recycling Sorting Facility" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            
+            <!-- In-Image Overlay Card -->
+            <div class="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-brandBorder/80 shadow-md flex items-center justify-between">
+              <div>
+                <div class="text-[10px] font-mono text-brandSecondary uppercase">Authorized Facility</div>
+                <div class="text-xs font-bold text-brandDark font-sora">EcoGreen Refineries Ltd</div>
+                <div class="text-[10px] text-brandGreen font-mono">CPCB/EPR/2024/TS-089 &bull; ISO 14001</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-emerald-50 text-brandGreen font-mono text-[10px] font-bold border border-emerald-200">
+                GATE VERIFIED
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- SECTION 01 & 02: COLLECTION & AI CLASSIFICATION (TWO-COLUMN INDUSTRIAL)    -->
+  <!-- ========================================================================= -->
+  <section class="py-16 px-4 sm:px-8 max-w-7xl mx-auto border-t border-brandBorder">
+    <div class="space-y-12">
+      
+      <!-- Section Header -->
+      <div class="max-w-2xl space-y-2">
+        <div class="text-xs font-mono font-bold text-brandGreen uppercase tracking-wider">01 &bull; RECOGNITION & CLASSIFICATION</div>
+        <h2 class="font-sora text-3xl sm:text-4xl font-bold text-brandDark">
+          Edge AI material analysis & hazard isolation.
+        </h2>
+        <p class="text-sm text-brandSecondary leading-relaxed">
+          Collectors photograph scrap in informal hubs. Edge-deployed EfficientNet-B0 analyzes surface morphology to identify PCB purity, gold finger density, and hazardous brominated flame retardants.
+        </p>
+      </div>
+
+      <!-- Two Column Layout: Left Image / Right AI Inspection Card -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- Left: Realistic Macro PCB Image -->
+        <div class="lg:col-span-6 bg-white p-3 rounded-3xl border border-brandBorder shadow-md">
+          <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+            <img src="/static/images/industrial/pcb_components_macro.jpg" alt="Macro PCB Electronic Components" class="w-full h-full object-cover">
+            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg border border-brandBorder text-[11px] font-mono text-brandDark font-semibold">
+              <i class="fa-solid fa-camera text-brandBlue mr-1"></i> Edge Optical Scan: #SCAN-9941
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Classification Data Card -->
+        <div class="lg:col-span-6 bg-white p-8 rounded-3xl border border-brandBorder shadow-md space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-brandBorder">
+            <div>
+              <span class="text-xs font-mono font-bold text-brandBlue uppercase">AI Material Analysis</span>
+              <h3 class="font-sora text-2xl font-bold text-brandDark mt-0.5">Telecom Grade Motherboard PCB</h3>
+            </div>
+            <div class="text-right">
+              <span class="text-2xl font-bold font-mono text-brandGreen">96.8%</span>
+              <div class="text-[10px] font-mono text-brandSecondary">Confidence Score</div>
+            </div>
+          </div>
+
+          <!-- Model Evidence Breakdown -->
+          <div class="space-y-3 font-sans text-xs">
+            <div class="flex justify-between items-center text-slate-700">
+              <span class="font-medium">Gold (Au) Trace Density</span>
+              <span class="font-mono font-bold text-brandDark">0.35 g / kg</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="bg-brandGold h-full rounded-full" style="width: 78%"></div>
+            </div>
+
+            <div class="flex justify-between items-center text-slate-700 pt-1">
+              <span class="font-medium">Refined Copper (Cu) Content</span>
+              <span class="font-mono font-bold text-brandDark">22.5%</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="bg-brandGreen h-full rounded-full" style="width: 65%"></div>
+            </div>
+
+            <div class="flex justify-between items-center text-slate-700 pt-1">
+              <span class="font-medium">Brominated Flame Retardants (BFR)</span>
+              <span class="font-mono font-bold text-amber-600">Class 2 (Hazard Flagged)</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="bg-brandWarning h-full rounded-full" style="width: 35%"></div>
+            </div>
+          </div>
+
+          <!-- Alternative Predictions -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder space-y-2">
+            <div class="text-[11px] font-mono font-semibold text-brandSecondary uppercase">Alternative Model Predictions:</div>
+            <div class="grid grid-cols-3 gap-2 font-mono text-xs">
+              <div class="p-2 rounded-xl bg-white border border-brandBorder text-center">
+                <div class="text-brandSecondary text-[10px]">Server RAM</div>
+                <div class="font-bold text-brandDark">2.1%</div>
+              </div>
+              <div class="p-2 rounded-xl bg-white border border-brandBorder text-center">
+                <div class="text-brandSecondary text-[10px]">Copper Wire</div>
+                <div class="font-bold text-brandDark">0.8%</div>
+              </div>
+              <div class="p-2 rounded-xl bg-white border border-brandBorder text-center">
+                <div class="text-brandSecondary text-[10px]">Li-Ion Cell</div>
+                <div class="font-bold text-brandDark">0.3%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- SECTION 03: FAIR PRICE INTELLIGENCE                                       -->
+  <!-- ========================================================================= -->
+  <section class="py-16 px-4 sm:px-8 max-w-7xl mx-auto border-t border-brandBorder">
+    <div class="space-y-12">
+      
+      <!-- Section Header -->
+      <div class="max-w-2xl space-y-2">
+        <div class="text-xs font-mono font-bold text-brandGold uppercase tracking-wider">03 &bull; PRICING & MARKET TRANSPARENCY</div>
+        <h2 class="font-sora text-3xl sm:text-4xl font-bold text-brandDark">
+          Dynamic Mandi spot indices & grade multipliers.
+        </h2>
+        <p class="text-sm text-brandSecondary leading-relaxed">
+          Translates London Metal Exchange (LME) domestic scrap indices into fair floor pricing. Protects informal collectors against middleman price skimming.
+        </p>
+      </div>
+
+      <!-- Fair Price Grid: Left Macro Traces / Right Data Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- Left: Copper Traces Image -->
+        <div class="lg:col-span-5 bg-white p-3 rounded-3xl border border-brandBorder shadow-md">
+          <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+            <img src="/static/images/industrial/copper_traces_macro.jpg" alt="Macro Copper Traces" class="w-full h-full object-cover">
+            <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-brandBorder text-xs font-mono">
+              <span class="text-brandSecondary">Domestic Scrap Copper:</span> <span class="font-bold text-brandDark">₹520/kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Pricing Card & Benchmark Breakdown -->
+        <div class="lg:col-span-7 bg-white p-8 rounded-3xl border border-brandBorder shadow-md space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
+            <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder">
+              <div class="text-[11px] text-brandSecondary font-sans">Mandi Market Range</div>
+              <div class="text-xl font-bold text-brandDark mt-1">₹620–₹710</div>
+              <div class="text-[10px] text-brandSecondary mt-0.5">Per Kilogram</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+              <div class="text-[11px] text-brandGreen font-sans font-semibold">Calculated Fair Price</div>
+              <div class="text-xl font-bold text-brandGreen mt-1">₹680.00</div>
+              <div class="text-[10px] text-emerald-700 mt-0.5">Instant Floor Payout</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder">
+              <div class="text-[11px] text-brandSecondary font-sans">Typical Broker Quote</div>
+              <div class="text-xl font-bold text-rose-600 mt-1">₹490.00</div>
+              <div class="text-[10px] text-rose-600 font-sans font-semibold mt-0.5">-28.0% Skimming</div>
+            </div>
+          </div>
+
+          <!-- Total Lot Estimate Box -->
+          <div class="p-5 rounded-2xl bg-brandBg border border-brandBorder flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div class="text-xs font-mono text-brandSecondary">Sample 24.50 kg Telecom Lot Value</div>
+              <div class="text-2xl font-bold font-sora text-brandDark mt-0.5">₹16,660.00</div>
+              <div class="text-[11px] text-brandGreen font-medium font-sans mt-0.5">+₹4,655.00 extra earnings vs informal broker</div>
+            </div>
+            <a href="/collector" class="px-5 py-2.5 rounded-xl bg-brandGreen hover:bg-brandDarkGreen text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-calculator"></i> Open Price Calculator
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- SECTION 04: RECYCLER MATCHING (LEFT CARDS / RIGHT INDUSTRIAL FACILITY)     -->
+  <!-- ========================================================================= -->
+  <section class="py-16 px-4 sm:px-8 max-w-7xl mx-auto border-t border-brandBorder">
+    <div class="space-y-12">
+      
+      <!-- Section Header -->
+      <div class="max-w-2xl space-y-2">
+        <div class="text-xs font-mono font-bold text-brandBlue uppercase tracking-wider">04 &bull; RECYCLER MATCHING</div>
+        <h2 class="font-sora text-3xl sm:text-4xl font-bold text-brandDark">
+          Find the right recycler.
+        </h2>
+        <p class="text-sm text-brandSecondary leading-relaxed">
+          Match each e-waste lot with an authorized facility using distance, material compatibility, processing capacity, CPCB authorization, and pricing signals.
+        </p>
+      </div>
+
+      <!-- Two Column: Left Recycler Cards / Right Inspection Image -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left: Matching Recycler List -->
+        <div class="lg:col-span-7 space-y-4">
+          
+          <!-- Card 1: Top Match -->
+          <div class="p-6 rounded-3xl bg-white border-2 border-brandGreen shadow-md space-y-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-sora text-lg font-bold text-brandDark">EcoGreen Authorized Recyclers Pvt Ltd</h3>
+                  <span class="px-2 py-0.5 rounded bg-emerald-50 text-brandGreen font-mono text-[10px] font-bold border border-emerald-200">CPCB VERIFIED</span>
+                </div>
+                <div class="text-xs text-brandSecondary font-mono mt-0.5">Reg: CPCB/EPR/2024/TS-089 &bull; Musheerabad Hub</div>
+              </div>
+              <span class="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-50 text-brandGreen">TOP MATCH</span>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-3 gap-3 font-mono text-xs">
+              <div class="p-3 rounded-xl bg-slate-50 border border-brandBorder">
+                <div class="text-[10px] text-brandSecondary">Distance</div>
+                <div class="font-bold text-brandDark text-sm mt-0.5">3.2 km</div>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-50 border border-brandBorder">
+                <div class="text-[10px] text-brandSecondary">Top Offer</div>
+                <div class="font-bold text-brandGreen text-sm mt-0.5">₹680/kg</div>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-50 border border-brandBorder">
+                <div class="text-[10px] text-brandSecondary">Trust Score</div>
+                <div class="font-bold text-brandBlue text-sm mt-0.5">96.5 / 100</div>
+              </div>
+            </div>
+
+            <div class="text-xs text-brandSecondary font-sans">
+              <span class="font-semibold text-brandDark">Logistics:</span> Direct pickup vehicle dispatched within 45 mins. Calibrated BLE scale on board.
+            </div>
+          </div>
+
+          <!-- Card 2: Alternative Match -->
+          <div class="p-5 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-3">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-sora text-base font-bold text-brandDark">Bharat Circular Metals Refineries</h4>
+                  <span class="px-2 py-0.5 rounded bg-slate-100 text-brandSecondary font-mono text-[10px]">CPCB REGISTERED</span>
+                </div>
+                <div class="text-xs text-brandSecondary font-mono mt-0.5">Reg: CPCB/EPR/2023/MH-412 &bull; 8.4 km away</div>
+              </div>
+              <div class="font-mono font-bold text-sm text-brandDark">₹665/kg</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Industrial Facility Image -->
+        <div class="lg:col-span-5 bg-white p-3 rounded-3xl border border-brandBorder shadow-md">
+          <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+            <img src="/static/images/industrial/technician_inspection_lab.jpg" alt="Recycler Quality Control & Inspection Laboratory" class="w-full h-full object-cover">
+            <div class="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-brandBorder text-xs">
+              <div class="font-bold text-brandDark">Industrial Verification Depot</div>
+              <div class="text-[11px] text-brandSecondary font-mono">Calibrated Dual Tare Scales &bull; Automated Sampling</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- SECTION 05: DIGITAL LOT PASSPORT & CRYPTOGRAPHIC INTEGRITY                -->
+  <!-- ========================================================================= -->
+  <section class="py-16 px-4 sm:px-8 max-w-7xl mx-auto border-t border-brandBorder">
+    <div class="space-y-12">
+      
+      <!-- Section Header -->
+      <div class="max-w-2xl space-y-2">
+        <div class="text-xs font-mono font-bold text-brandBlue uppercase tracking-wider">05 &bull; DIGITAL PASSPORT & AUDIT</div>
+        <h2 class="font-sora text-3xl sm:text-4xl font-bold text-brandDark">
+          Tamper-evident QR digital lot passports.
+        </h2>
+        <p class="text-sm text-brandSecondary leading-relaxed">
+          Every handover generates a SHA-256 sealed digital passport. Proves provenance, calibrated tare weight, and dual cryptographic verification for CPCB audit trails.
+        </p>
+      </div>
+
+      <!-- Passport Visual Document Card -->
+      <div class="bg-white p-8 sm:p-10 rounded-3xl border border-brandBorder shadow-lg max-w-4xl mx-auto space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-brandBorder">
+          <div>
+            <div class="text-[11px] font-mono text-brandSecondary uppercase">E-WASTE LOT PASSPORT</div>
+            <div class="text-2xl font-bold font-mono text-brandDark mt-0.5">LOT-2026-HYD-4192</div>
+            <div class="text-xs text-brandSecondary font-sans mt-0.5">Issued under CPCB E-Waste Management Rules 2022</div>
+          </div>
+          <div class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-brandGreen font-mono text-xs font-bold flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-check"></i> CRYPTOGRAPHICALLY SEALED
+          </div>
+        </div>
+
+        <!-- 4 Row Metadata Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder">
+            <div class="text-[10px] text-brandSecondary font-sans">Material</div>
+            <div class="font-bold text-brandDark mt-0.5">Telecom PCB</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder">
+            <div class="text-[10px] text-brandSecondary font-sans">Certified Weight</div>
+            <div class="font-bold text-brandGreen mt-0.5">24.50 kg</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder">
+            <div class="text-[10px] text-brandSecondary font-sans">Collector</div>
+            <div class="font-bold text-brandDark mt-0.5">Ramesh K. (✓)</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-brandBorder">
+            <div class="text-[10px] text-brandSecondary font-sans">Recycler</div>
+            <div class="font-bold text-brandDark mt-0.5">EcoGreen (✓)</div>
+          </div>
+        </div>
+
+        <!-- SHA-256 Audit Hash -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder font-mono text-xs space-y-1">
+          <div class="text-brandSecondary text-[11px]">CANONICAL SHA-256 GENESIS AUDIT HASH:</div>
+          <div class="text-brandBlue font-semibold break-all text-[11px]">
+            e7d8a9f2348bca6129841ef902b47e2a9018cbf56182390abef381920acde941
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <div class="text-xs text-brandSecondary font-sans">
+            5-Block Verification Chain: <span class="text-brandGreen font-mono font-semibold">100% INTACT</span>
+          </div>
+          <a href="/passport/verify" class="px-5 py-2.5 rounded-xl bg-brandBlue hover:bg-blue-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-magnifying-glass"></i> Verify Passport Chain
           </a>
         </div>
       </div>
-    </section>
 
-    <!-- SCENE 1: THE DISCARDED PIECE OF E-WASTE -->
-    <section id="scene-1" class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-slate-800 p-8 sm:p-10 rounded-3xl space-y-5 holo-glow-border">
-        <!-- 3D Interactive Story Visual Card #1 -->
-        <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-slate-700/60 shadow-2xl group">
-          <img src="/static/images/gallery/story_1_discarded_device.jpg" alt="A Discarded Device" class="w-full h-52 object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
-          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-mono-data">
-            <span class="bg-slate-900/90 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg backdrop-blur">
-              <i class="fa-solid fa-triangle-exclamation mr-1"></i> Informal Dump Yard
-            </span>
-            <span class="text-slate-300 bg-slate-950/80 px-2 py-0.5 rounded">Pune Mandi</span>
-          </div>
-        </div>
+    </div>
+  </section>
 
-        <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-          01 / The Origin
-        </span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
-          YOU DON'T NEED TO KNOW WHAT IT IS.
-        </h2>
-        <p class="text-slate-400 text-base sm:text-lg leading-relaxed">
-          In India, 1.5M+ informal scrap collectors discover discarded electronics daily. Without technical grading, high-grade circuit boards are undervalued or hazardous open-air burnt.
-        </p>
-      </div>
-    </section>
-
-    <!-- SCENE 2: COMPUTER VISION SCANNING -->
-    <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl story-card bg-slate-900/80 border border-emerald-500/50 p-8 sm:p-10 rounded-3xl space-y-5 relative overflow-hidden">
-        
-        <!-- Holographic Scanning Laser Line (Animated) -->
-        <div class="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-scan-beam pointer-events-none"></div>
-
-        <!-- 3D Interactive Story Visual Grid #2 & #3 -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
-            <img src="/static/images/gallery/story_2_collector_capture.jpg" alt="Collector Camera Capture" class="w-full h-36 object-cover" />
-            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 px-2 py-0.5 rounded">
-              📸 Collector Camera
-            </div>
-          </div>
-          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
-            <img src="/static/images/gallery/story_3_ai_pcb_vision.jpg" alt="AI PCB Vision Matrix" class="w-full h-36 object-cover" />
-            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 px-2 py-0.5 rounded">
-              🧠 Vision Overlay
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            02 / Material Intelligence
-          </span>
-          <span class="text-[10px] font-mono-data bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">
-            CV-MODEL-V3
-          </span>
-        </div>
-
-        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
-          YOUR PHONE DOES.
-        </h2>
-        
-        <!-- Interactive AI Inspection HUD with Animated Laser Target -->
-        <div class="relative p-5 bg-slate-950/90 border border-emerald-500/30 rounded-2xl font-mono-data text-xs space-y-3 shadow-inner">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="text-slate-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-microchip text-emerald-400"></i> MATERIAL DETECTED:
-            </span>
-            <strong class="text-emerald-400 font-bold text-sm">Server / Telecom High-Grade PCB</strong>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-3 pt-1">
-            <div class="space-y-1">
-              <span class="text-slate-500 block text-[10px]">AI CONFIDENCE SCORE</span>
-              <div class="flex items-center space-x-2">
-                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[94.7%] animate-pulse"></div>
-                </div>
-                <strong class="text-white text-xs">94.7%</strong>
-              </div>
-            </div>
-            
-            <div class="space-y-1">
-              <span class="text-slate-500 block text-[10px]">ESTIMATED NET WEIGHT</span>
-              <strong class="text-white text-xs block">1.8 kg (Intact Board)</strong>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Hazard Level: <strong class="text-amber-400 font-semibold">Leaded Solder (Low)</strong></span>
-            <span class="text-emerald-400">✓ TSDF Mandate Compliant</span>
-          </div>
-        </div>
-
-        <p class="text-slate-400 text-sm leading-relaxed">
-          On-device edge inference evaluates physical wear, component density, and hazard category within 400ms without internet dependency.
-        </p>
-      </div>
-    </section>
-
-    <!-- SCENE 3: FAIR PRICE INTELLIGENCE -->
-    <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-amber-500/50 p-8 sm:p-10 rounded-3xl space-y-5 relative">
-        <!-- 3D Interactive Story Visual Card #4 -->
-        <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-amber-500/40 shadow-2xl group">
-          <img src="/static/images/gallery/story_4_fair_price_graph.jpg" alt="Fair Price Intelligence Graph" class="w-full h-48 object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-          <div class="absolute bottom-3 left-3 bg-slate-950/90 text-amber-400 border border-amber-500/40 px-3 py-1 rounded-lg text-xs font-mono-data backdrop-blur">
-            📈 Real-Time APMC Mandi Benchmark
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-            03 / Fair Valuation
-          </span>
-          <span class="text-[10px] font-mono-data bg-amber-950/80 text-amber-300 border border-amber-800 px-2 py-0.5 rounded">
-            MANDI-REGRESSION
-          </span>
-        </div>
-
-        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
-          NOW YOU KNOW WHAT IT'S WORTH.
-        </h2>
-
-        <div class="p-6 bg-gradient-to-br from-slate-950 to-amber-950/40 border border-amber-500/40 rounded-2xl space-y-4 font-mono-data shadow-2xl">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-400 uppercase tracking-wider">Estimated Fair Market Range</span>
-            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">
-              +62.4% vs Aggregator
-            </span>
-          </div>
-          
-          <div class="text-4xl sm:text-5xl font-black text-amber-400 tracking-tight flex items-baseline gap-2">
-            <span>₹540 — ₹620</span>
-            <span class="text-base text-slate-400 font-normal">/ kg</span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800 text-xs text-slate-300">
-            <div class="p-2 bg-slate-900/80 rounded-xl border border-slate-800">
-              <span class="text-[10px] text-slate-500 block">APMC Mandi Base</span>
-              <strong class="text-white text-sm">₹580 / kg</strong>
-            </div>
-            <div class="p-2 bg-slate-900/80 rounded-xl border border-slate-800">
-              <span class="text-[10px] text-slate-500 block">Recycler Demand</span>
-              <strong class="text-emerald-400 text-sm">High (86%)</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Why This Price Interactive Explainability HUD -->
-        <button onclick="document.getElementById('why-price-modal').classList.toggle('hidden')" class="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1.5 transition">
-          <i class="fa-solid fa-chart-line"></i>
-          <span>Inspect Explainable Pricing Factors</span>
-          <i class="fa-solid fa-chevron-down text-[10px]"></i>
-        </button>
-
-        <div id="why-price-modal" class="hidden p-5 bg-slate-950 border border-slate-800 rounded-2xl font-mono-data text-xs space-y-3">
-          <div class="flex justify-between"><span>LOCAL MARKET DEPTH:</span><span class="text-amber-400 font-bold">86%</span></div>
-          <div class="w-full bg-slate-800 h-1.5 rounded-full"><div class="bg-amber-400 h-full w-[86%] rounded-full"></div></div>
-          
-          <div class="flex justify-between"><span>RECENT SETTLED TRADES:</span><span class="text-emerald-400 font-bold">74%</span></div>
-          <div class="w-full bg-slate-800 h-1.5 rounded-full"><div class="bg-emerald-400 h-full w-[74%] rounded-full"></div></div>
-
-          <div class="flex justify-between"><span>RECYCLER BID COMPETITION:</span><span class="text-blue-400 font-bold">91%</span></div>
-          <div class="w-full bg-slate-800 h-1.5 rounded-full"><div class="bg-blue-400 h-full w-[91%] rounded-full"></div></div>
-          
-          <p class="text-[10px] text-slate-400 pt-2 border-t border-slate-800/80">
-            Formula dynamically weights verified trade history, CPCB regulatory scrap quotas, and physical board grading.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- SCENE 4: RECYCLER MATCHING NETWORK -->
-    <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl story-card bg-slate-900/80 border border-blue-500/50 p-8 sm:p-10 rounded-3xl space-y-5">
-        <!-- 3D Interactive Story Visual Card #5 -->
-        <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-blue-500/40 shadow-2xl group">
-          <img src="/static/images/gallery/story_5_recycler_map.jpg" alt="Nearby Recyclers Spatial Map" class="w-full h-48 object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-          <div class="absolute bottom-3 left-3 bg-slate-950/90 text-blue-400 border border-blue-500/40 px-3 py-1 rounded-lg text-xs font-mono-data backdrop-blur">
-            🗺️ Haversine Proximity Routing
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono-data text-blue-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-            04 / Recycler Matching
-          </span>
-          <span class="text-[10px] font-mono-data bg-blue-950/80 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">
-            MCDA-HAVERSINE
-          </span>
-        </div>
-
-        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
-          NOW FIND WHO WILL BUY IT.
-        </h2>
-
-        <!-- Best Match Recycler Badge with Verified Trust -->
-        <div class="p-5 bg-slate-950 border border-blue-500/40 rounded-2xl space-y-3 shadow-2xl">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <div class="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center text-sm">
-                <i class="fa-solid fa-industry"></i>
-              </div>
-              <h4 class="font-bold text-white text-sm">EcoGreen Recyclers Pvt Ltd</h4>
-            </div>
-            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono-data font-bold flex items-center gap-1">
-              <i class="fa-solid fa-circle-check"></i> CPCB Verified
-            </span>
-          </div>
-          
-          <div class="grid grid-cols-3 gap-2 text-xs font-mono-data text-slate-300 pt-1">
-            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800"><span class="text-[10px] text-slate-500 block">DISTANCE</span><strong>3.2 km</strong></div>
-            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800"><span class="text-[10px] text-slate-500 block">TOP OFFER</span><strong class="text-amber-400">₹610/kg</strong></div>
-            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800"><span class="text-[10px] text-slate-500 block">TRUST SCORE</span><strong class="text-emerald-400">94.8 / 100</strong></div>
-          </div>
-        </div>
-
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Multi-Criteria Decision Analysis (MCDA) pairs scrap collectors with accredited regional recyclers, optimizing route pickups and eliminating middleman exploitation.
-        </p>
-      </div>
-    </section>
-
-    <!-- SCENE 5: LOT PASSPORT & HANDOVER VERIFICATION -->
-    <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-xl ml-auto story-card bg-slate-900/80 border border-purple-500/50 p-8 sm:p-10 rounded-3xl space-y-5">
-        
-        <!-- 3D Interactive Story Visual Grid #6 & #7 -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-xl group">
-            <img src="/static/images/gallery/story_6_handover_verified.jpg" alt="Handover Scale Verification" class="w-full h-36 object-cover" />
-            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-purple-300 px-2 py-0.5 rounded">
-              ⚖️ Verified Tare Handover
-            </div>
-          </div>
-          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
-            <img src="/static/images/gallery/story_7_payment_received.jpg" alt="Direct Fair Payment Settled" class="w-full h-36 object-cover" />
-            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 px-2 py-0.5 rounded">
-              💵 ₹10,850 Instant Settlement
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono-data text-purple-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
-            05 / Digital Identity & Settlement
-          </span>
-          <span class="text-[10px] font-mono-data bg-purple-950/80 text-purple-300 border border-purple-800 px-2 py-0.5 rounded">
-            SHA-256 PASSPORT
-          </span>
-        </div>
-
-        <h2 class="font-display text-3xl sm:text-5xl font-black text-white leading-tight">
-          A PHYSICAL OBJECT BECOMES A DIGITAL RECORD.
-        </h2>
-
-        <div class="p-6 bg-slate-950 border border-purple-500/40 rounded-2xl space-y-3 font-mono-data text-xs shadow-2xl">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-            <span class="text-slate-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-passport text-purple-400"></i> LOT PASSPORT ID:
-            </span>
-            <strong class="text-purple-300 font-black text-sm tracking-wider">EW-2026-004821</strong>
-          </div>
-          
-          <div class="space-y-2 text-slate-300 pt-1">
-            <div class="flex justify-between items-center"><span class="text-slate-400">1. AI Vision Grading:</span><span class="text-emerald-400 font-bold">✓ 94.7% High-Grade PCB</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">2. Recycler Matching:</span><span class="text-emerald-400 font-bold">✓ EcoGreen Recyclers</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">3. Calibrated Scale Weighing:</span><span class="text-emerald-400 font-bold">✓ 17.6 kg (0.0% Discrepancy)</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">4. Settlement Completed:</span><span class="text-amber-400 font-black text-sm">₹10,736 (Cash/UPI)</span></div>
-          </div>
-
-          <div class="pt-2.5 border-t border-slate-800 text-[10px] text-slate-500 truncate">
-            IMMUTABLE HASH: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SCENE 6: CIRCULAR RECOVERY & NATIONAL IMPACT -->
-    <section class="story-step max-w-7xl mx-auto">
-      <div class="max-w-3xl mx-auto text-center story-card bg-slate-900/85 border border-emerald-500/40 p-8 sm:p-12 rounded-3xl space-y-6">
-        
-        <!-- 3D Interactive Story Visual Grid #8 & #9 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-emerald-500/40 shadow-xl group">
-            <img src="/static/images/gallery/story_8_mineral_recovery.jpg" alt="Strategic Mineral Hydrometallurgy" class="w-full h-44 object-cover" />
-            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 px-2 py-0.5 rounded">
-              ⚡ Hydrometallurgical Refining
-            </div>
-          </div>
-          <div class="visual-3d-card relative rounded-2xl overflow-hidden border border-blue-500/40 shadow-xl group">
-            <img src="/static/images/gallery/story_9_circular_india.jpg" alt="Circular Economy India" class="w-full h-44 object-cover" />
-            <div class="absolute bottom-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-blue-300 px-2 py-0.5 rounded">
-              🇮🇳 National Circular Sovereign Supply
-            </div>
-          </div>
-        </div>
-
-        <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase tracking-widest">06 / Strategic Recovery</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
-          WHAT LOOKS LIKE WASTE IS A RESOURCE WAITING FOR THE RIGHT SYSTEM.
-        </h2>
-        
-        <div class="grid grid-cols-3 gap-3 font-mono-data text-xs pt-4">
-          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
-            <span class="text-amber-400 block font-bold text-lg">250 ppm</span>
-            <span class="text-slate-400 text-[10px]">Gold (Au)</span>
-          </div>
-          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
-            <span class="text-orange-400 block font-bold text-lg">22.4%</span>
-            <span class="text-slate-400 text-[10px]">Copper (Cu)</span>
-          </div>
-          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
-            <span class="text-emerald-400 block font-bold text-lg">80 ppm</span>
-            <span class="text-slate-400 text-[10px]">Neodymium (Nd)</span>
-          </div>
-        </div>
-
-        <p class="text-slate-400 text-sm max-w-lg mx-auto leading-relaxed">
-          From informal street collection to accredited zero-emission hydrometallurgical refining — powering India's domestic electronics supply chain.
-        </p>
-      </div>
-    </section>
-
-    <!-- ========================================================================= -->
-    <!-- BENTO UI MASTER SUITE (ALL 9 CORE APPLICATION PANELS)                     -->
-    <!-- ========================================================================= -->
-    <section class="max-w-7xl mx-auto px-6 py-20 space-y-12">
-      <div class="border-b border-slate-800 pb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div class="space-y-2">
-          <span class="text-xs font-mono-data text-amber-400 uppercase tracking-widest font-bold">Interactive Platform Modules</span>
-          <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">
-            E-WASTE SAATHI CORE INTERFACE SUITE
-          </h2>
-          <p class="text-slate-400 text-sm">
-            Explore the 9 operational touchpoints connecting collectors, recyclers, and regulatory authorities.
-          </p>
-        </div>
-        <span class="text-xs px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full font-mono-data font-bold">
-          9-Panel Production UI
-        </span>
-      </div>
-
-      <!-- 9 Interactive Bento Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <!-- Bento 1: Hero Mission -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_1_hero_mission.jpg" alt="Mission Overview" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded">
-                01 • Platform Mission
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">From E-Waste to Better Tomorrow</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Connecting 1.5M+ informal workers with fair pricing, certified formal recyclers, and clean circular supply chains.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-amber-400 pt-2 border-t border-slate-800/80">
-            • Trusted Recyclers • Safer Communities
-          </div>
-        </div>
-
-        <!-- Bento 2: AI Material ID -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_2_ai_material_id.jpg" alt="AI Material Identification" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
-                02 • CV Gating
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">AI Material Identification</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Instant snapshot identification of telecom PCBs, server boards, and batteries with 94.7% confidence rating.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-emerald-400 pt-2 border-t border-slate-800/80">
-            • ₹540–₹620/kg Range • 1.8kg Net Est.
-          </div>
-        </div>
-
-        <!-- Bento 3: Fair Price Intelligence -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_3_fair_price_intel.jpg" alt="Fair Price Intelligence" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded">
-                03 • Price Discovery
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">Fair Price Intelligence</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Historical 30-day market trends and APMC mandi dynamic benchmarks to protect collectors from arbitrary lowballs.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-amber-400 pt-2 border-t border-slate-800/80">
-            • +12% Growth (30D) • Pune Mandi
-          </div>
-        </div>
-
-        <!-- Bento 4: Nearby Authorized Recyclers -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_4_nearby_recyclers.jpg" alt="Nearby Recyclers" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-blue-400 border border-blue-500/40 px-2 py-0.5 rounded">
-                04 • MCDA Matching
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">Nearby Authorized Recyclers</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Real-time radar radar map locating CPCB-verified formal recycling facilities offering top transparent quotes.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-blue-400 pt-2 border-t border-slate-800/80">
-            • GreenEarth (₹600) • EcoCycle (₹580)
-          </div>
-        </div>
-
-        <!-- Bento 5: Lot Passport QR -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_5_lot_passport_qr.jpg" alt="Digital Lot Passport" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-purple-400 border border-purple-500/40 px-2 py-0.5 rounded">
-                05 • Chain of Custody
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">Digital Lot Passport</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Every scrap bag receives a cryptographic QR code passport tracing grading, weigh-in, transit, and final smelting.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-purple-400 pt-2 border-t border-slate-800/80">
-            • EW-2026-004821 • SHA-256 Validated
-          </div>
-        </div>
-
-        <!-- Bento 6: Earnings Made Simple -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_6_earnings_simple.jpg" alt="Collector Earnings Ledger" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
-                06 • Financial Ledger
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">Earnings Made Simple</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Transparent monthly ledger tracking daily weights, unit prices, UPI transfers, and cumulative earnings.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-emerald-400 pt-2 border-t border-slate-800/80">
-            • ₹12,450 Total Income • 100% Direct Payout
-          </div>
-        </div>
-
-        <!-- Bento 7: Safety First Vernacular -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_7_safety_first_vernacular.jpg" alt="Safety First Protocols" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded">
-                07 • Health & Vernacular
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">Safety First Voice Guide</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Voice-assisted hazard instructions in Hindi (हिंदी में सुनें), Marathi, and English to eliminate open toxic burning.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-amber-400 pt-2 border-t border-slate-800/80">
-            • Avoid Burning • Battery Safety Alerts
-          </div>
-        </div>
-
-        <!-- Bento 8: Works Offline -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-teal-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_8_works_offline.jpg" alt="Offline Sync Engine" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-teal-400 border border-teal-500/40 px-2 py-0.5 rounded">
-                08 • Offline First
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">Works Offline Everywhere</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Zero connectivity? No problem. Photos save locally and sync seamlessly to the national ledger when reconnected.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-teal-400 pt-2 border-t border-slate-800/80">
-            • IndexedDB Cache • Conflict-Free Sync
-          </div>
-        </div>
-
-        <!-- Bento 9: Waste to Resources -->
-        <div class="visual-3d-card bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
-              <img src="/static/images/gallery/bento_9_waste_to_resources.jpg" alt="Strategic Critical Minerals" class="w-full h-44 object-cover" />
-              <span class="absolute top-2 left-2 bg-slate-950/80 text-[10px] font-mono-data text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded">
-                09 • Sovereign Minerals
-              </span>
-            </div>
-            <h3 class="text-lg font-bold text-white">From Waste to Resources</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              High-value mineral recovery extracting Copper, Gold, Cobalt, and Rare Earths for India's self-reliant green future.
-            </p>
-          </div>
-          <div class="text-[11px] font-mono-data text-emerald-400 pt-2 border-t border-slate-800/80">
-            • Cu • Au • Co • Nd Rare Earths
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================================================= -->
-    <!-- CORE PRODUCT CAPABILITY LAYERS (SIX INTELLIGENCE ENGINES)                 -->
-    <!-- ========================================================================= -->
-    <section class="max-w-7xl mx-auto px-6 py-24 space-y-16">
+  <!-- ========================================================================= -->
+  <!-- SECTION 06: STRATEGIC CRITICAL MINERAL RECOVERY (MINISTRY OF MINES)        -->
+  <!-- ========================================================================= -->
+  <section class="py-16 px-4 sm:px-8 max-w-7xl mx-auto border-t border-brandBorder">
+    <div class="space-y-12">
       
-      <div class="border-b border-slate-800 pb-8 space-y-2">
-        <span class="text-xs font-mono-data text-amber-400 uppercase tracking-widest font-bold">System Architecture</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">
-          ONE PLATFORM. SIX INTELLIGENCE LAYERS.
+      <!-- Section Header -->
+      <div class="max-w-2xl space-y-2">
+        <div class="text-xs font-mono font-bold text-brandGold uppercase tracking-wider">06 &bull; CIRCULAR CRITICAL MINERALS</div>
+        <h2 class="font-sora text-3xl sm:text-4xl font-bold text-brandDark">
+          Strategic domestic mineral recovery.
         </h2>
+        <p class="text-sm text-brandSecondary leading-relaxed">
+          Urban mining of electronic hardware recovers critical minerals (Gold, Copper, Palladium, Lithium) directly into India's strategic reserves while displacing virgin mining ore.
+        </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Two Column: Left Image / Right Yield Dashboard -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
-        <!-- Layer 1 -->
-        <div class="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-4 hover:border-amber-500/40 transition">
-          <span class="text-xs font-mono-data text-amber-400 font-bold">01 / COMPUTER VISION</span>
-          <h3 class="text-xl font-bold text-white">Material Intelligence</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            12-class on-device neural classifier identifies PCBs, batteries, motors, and CRT tubes with confidence gating and automated fallback.
-          </p>
-          <div class="text-xs font-mono-data text-emerald-400 pt-2">&bull; Latency: &lt;400ms &bull; 100% Offline</div>
-        </div>
-
-        <!-- Layer 2 -->
-        <div class="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-4 hover:border-amber-500/40 transition">
-          <span class="text-xs font-mono-data text-amber-400 font-bold">02 / MANDI REGRESSION</span>
-          <h3 class="text-xl font-bold text-white">Fair Price Intelligence</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Fair Price Score (0–100) and localized price discovery algorithm prevents scrap middleman lowballing with explainable valuation metrics.
-          </p>
-          <div class="text-xs font-mono-data text-amber-400 pt-2">&bull; +62.4% Collector Margin</div>
-        </div>
-
-        <!-- Layer 3 -->
-        <div class="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-4 hover:border-blue-500/40 transition">
-          <span class="text-xs font-mono-data text-blue-400 font-bold">03 / MCDA MATCHING</span>
-          <h3 class="text-xl font-bold text-white">Recycler Network</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Geospatial Haversine distance ranking coupled with CPCB regulatory licensing verification and payment reliability scoring.
-          </p>
-          <div class="text-xs font-mono-data text-blue-400 pt-2">&bull; Dynamic Route Optimization</div>
-        </div>
-
-        <!-- Layer 4 -->
-        <div class="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-4 hover:border-purple-500/40 transition">
-          <span class="text-xs font-mono-data text-purple-400 font-bold">04 / DIGITAL PASSPORT</span>
-          <h3 class="text-xl font-bold text-white">Lot Passports</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Cryptographic SHA-256 chain-of-custody tracking from field pickup to recycler scale calibration and final smelter recovery.
-          </p>
-          <div class="text-xs font-mono-data text-purple-400 pt-2">&bull; Tamper-Proof Audit Trail</div>
-        </div>
-
-        <!-- Layer 5 -->
-        <div class="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-4 hover:border-rose-500/40 transition">
-          <span class="text-xs font-mono-data text-rose-400 font-bold">05 / AUDIT & ANOMALY</span>
-          <h3 class="text-xl font-bold text-white">Transaction Security</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Perceptual dHash image duplicate fraud detection, scale tare weight discrepancy filters, and dispute resolution workflows.
-          </p>
-          <div class="text-xs font-mono-data text-rose-400 pt-2">&bull; CPCB EPR Compliance</div>
-        </div>
-
-        <!-- Layer 6 -->
-        <div class="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-4 hover:border-emerald-500/40 transition">
-          <span class="text-xs font-mono-data text-emerald-400 font-bold">06 / ACCESSIBILITY</span>
-          <h3 class="text-xl font-bold text-white">Offline + Voice First</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            "बोलकर चलाओ" voice navigation in Hindi, Marathi, and English. Fully functioning IndexedDB offline sync queue for zero-connectivity yards.
-          </p>
-          <div class="text-xs font-mono-data text-emerald-400 pt-2">&bull; Low-Literacy Inclusive</div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ========================================================================= -->
-    <!-- INTERACTIVE E-WASTE INTELLIGENCE GRAPH (SIGNATURE DATA VISUALIZATION)     -->
-    <!-- ========================================================================= -->
-    <section class="max-w-7xl mx-auto px-6 py-12 space-y-6">
-      <div class="p-8 bg-slate-900 border border-slate-800 rounded-3xl space-y-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-          <div>
-            <span class="text-xs font-mono-data text-amber-400 font-bold uppercase">Dynamic Spatial Graph</span>
-            <h3 class="font-display text-2xl sm:text-3xl font-bold text-white mt-1">E-Waste Intelligence Network</h3>
-            <p class="text-xs text-slate-400">Click any entity node to inspect end-to-end circular economy relationships.</p>
-          </div>
-          <span class="text-xs px-3 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-full font-mono-data">
-            ● Realtime Network Synced
-          </span>
-        </div>
-
-        <div class="relative w-full h-80 sm:h-96 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
-          <canvas id="intelligence-graph-canvas" class="w-full h-full cursor-pointer"></canvas>
-        </div>
-
-        <div id="graph-node-detail" class="text-xs font-mono-data text-slate-400">
-          Click any node above (Collector, Material, Price, Lot, Recycler, Handover, Recovery) to inspect live telemetry.
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================================================= -->
-    <!-- NATIONAL PRODUCTION ROLE PORTALS                                         -->
-    <!-- ========================================================================= -->
-    <section class="max-w-7xl mx-auto px-6 py-16 space-y-8">
-      
-      <div class="text-center space-y-3">
-        <span class="text-xs font-mono-data text-amber-400 font-bold uppercase tracking-widest">Interactive Production Portals</span>
-        <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">
-          EXPERIENCE THE PLATFORM
-        </h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <!-- Role 1: Admin Hub (Orange / Saffron) -->
-        <a href="/admin" class="group bg-slate-900 hover:bg-slate-850 border border-amber-500/30 hover:border-amber-400 rounded-3xl p-7 transition flex flex-col justify-between shadow-xl text-left">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-shield-halved"></i>
+        <!-- Left: Gold Recovery Pins Image -->
+        <div class="lg:col-span-5 bg-white p-3 rounded-3xl border border-brandBorder shadow-md">
+          <div class="rounded-2xl overflow-hidden aspect-[4/3] relative">
+            <img src="/static/images/industrial/gold_recovery_pins.jpg" alt="Technician Harvesting Gold Pins from Circuit Boards" class="w-full h-full object-cover">
+            <div class="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-brandBorder text-xs font-mono">
+              <span class="text-brandGold font-bold">Gold Pin Harvesting:</span> 99.4% Purity Electrolytic Refining
             </div>
-            <span class="text-xs font-mono-data text-amber-400 font-bold uppercase">Role 1: Ministry of Mines</span>
-            <h3 class="text-xl font-bold text-white">Admin & Intelligence Hub</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Regulatory workbench for anomaly alerts, critical mineral tracking (Cu, Au, Nd), EPR certificates, and audit logs.
-            </p>
           </div>
-          <div class="mt-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center text-xs rounded-xl transition">
-            Launch Ministry Portal <i class="fa-solid fa-arrow-right ml-1"></i>
-          </div>
-        </a>
+        </div>
 
-        <!-- Role 2: Recycler Hub (Blue / White) -->
-        <a href="/recycler" class="group bg-slate-900 hover:bg-slate-850 border border-blue-500/30 hover:border-blue-400 rounded-3xl p-7 transition flex flex-col justify-between shadow-xl text-left">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-industry"></i>
+        <!-- Right: Mineral Recovery Metrics -->
+        <div class="lg:col-span-7 bg-white p-8 rounded-3xl border border-brandBorder shadow-md space-y-6">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 font-mono">
+            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+              <div class="text-[11px] text-amber-800 font-sans">Gold (Au) Recovered</div>
+              <div class="text-2xl font-bold text-brandGold mt-1">314.80 g</div>
+              <div class="text-[10px] text-amber-700 mt-0.5">₹21.4 Lakh Value</div>
             </div>
-            <span class="text-xs font-mono-data text-blue-400 font-bold uppercase">Role 2: Formal Recyclers</span>
-            <h3 class="text-xl font-bold text-white">Authorized Recycler Portal</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Industrial intake workbench for scanning QR Lot Passports, tare-scale weighing, bidding, and route optimization.
-            </p>
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+              <div class="text-[11px] text-emerald-800 font-sans">Refined Copper (Cu)</div>
+              <div class="text-2xl font-bold text-brandGreen mt-1">980.20 kg</div>
+              <div class="text-[10px] text-emerald-700 mt-0.5">99.2% Pure Metallurgy</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 col-span-2 sm:col-span-1">
+              <div class="text-[11px] text-blue-800 font-sans">Lithium Precursors</div>
+              <div class="text-2xl font-bold text-brandBlue mt-1">142.50 kg</div>
+              <div class="text-[10px] text-blue-700 mt-0.5">Battery Grade</div>
+            </div>
           </div>
-          <div class="mt-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-black text-center text-xs rounded-xl transition">
-            Launch Recycler Portal <i class="fa-solid fa-arrow-right ml-1"></i>
-          </div>
-        </a>
 
-        <!-- Role 3: Collector App (Green) -->
-        <a href="/collector" class="group bg-slate-900 hover:bg-slate-850 border border-emerald-500/30 hover:border-emerald-400 rounded-3xl p-7 transition flex flex-col justify-between shadow-xl text-left">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-mobile-screen"></i>
+          <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder flex items-center justify-between text-xs">
+            <div class="text-brandSecondary">
+              Environmental Offset: <span class="font-bold text-brandDark">14.35 Tons CO₂e Avoided</span>
             </div>
-            <span class="text-xs font-mono-data text-emerald-400 font-bold uppercase">Role 3: Informal Collectors</span>
-            <h3 class="text-xl font-bold text-white">Collector App (कबाड़ी साथी)</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Vernacular (Hindi/Marathi/English), voice-enabled, offline-first tool for AI material camera scanning and instant price checks.
-            </p>
+            <a href="/government" class="text-brandGreen font-bold hover:underline">
+              View National Registry &rarr;
+            </a>
           </div>
-          <div class="mt-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-center text-xs rounded-xl transition">
-            Launch Collector App <i class="fa-solid fa-arrow-right ml-1"></i>
-          </div>
-        </a>
+        </div>
 
       </div>
 
-    </section>
+    </div>
+  </section>
 
-  </main>
-
-  <!-- Clean Editorial Footer -->
-  <footer class="border-t border-slate-800 bg-slate-950 py-8 px-6 relative z-30 font-mono-data text-xs text-slate-500">
+  <!-- Footer -->
+  <footer class="bg-white border-t border-brandBorder py-12 px-4 sm:px-8 text-xs text-brandSecondary font-sans">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center space-x-2">
-        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-        <span class="text-slate-300">E-Waste Saathi • Smart India Hackathon 2026 (SIH26229)</span>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-brandGreen"></div>
+        <span class="font-bold text-brandDark font-sora">E-Waste Saathi</span>
+        <span>&bull; Smart India Hackathon 2026 (SIH26229)</span>
       </div>
-      <div>Ministry of Mines (MoM) &bull; Circular Economy & Critical Minerals</div>
+      <div>Ministry of Mines (MoM) &bull; Central Pollution Control Board (CPCB)</div>
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Global Judge Demo Modal Container -->
   <div id="judgeDemoContainer"></div>
   <script src="/static/js/judge_demo.js"></script>
-  <script src="/static/js/theme.js"></script>
-  <script src="/static/js/realtime.js"></script>
-  <script src="/static/js/three_visualizer.js"></script>
-  <script src="/static/js/intelligence_graph.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // 1. Initialize Continuous Cinematic 3D Journey Canvas
-      ThreeVisualizer.initCinematicJourney("cinematic-3d-canvas");
+    // Connect WebSocket for top ticker
+    function initTickerWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws/live`;
+      const ws = new WebSocket(wsUrl);
 
-      // 2. Initialize E-Waste Spatial Intelligence Graph
-      IntelligenceGraph.init("intelligence-graph-canvas");
-
-      // 3. Connect Realtime WebSocket Stream
-      if (window.RealtimeStream) {
-        RealtimeStream.init((event) => {
-          const ticker = document.getElementById("realtime-ticker-text");
-          if (ticker && event.message) {
-            ticker.innerHTML = `<span class="text-amber-400 font-bold">⚡ LIVE:</span> ${event.message}`;
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.summary) {
+            document.getElementById('tickerMessage').innerHTML = `<span class="text-brandDark font-semibold">● STREAM:</span> ${data.summary}`;
           }
-        });
-      }
+        } catch(e) {}
+      };
 
-      // 4. Interactive 3D Card Parallax Tilt on Pointer Move
-      const cards = document.querySelectorAll('.visual-3d-card');
-      cards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const centerX = rect.width / 2;
-          const centerY = rect.height / 2;
-          const rotateX = ((y - centerY) / centerY) * -7;
-          const rotateY = ((x - centerX) / centerX) * 7;
-          card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-6px) scale(1.02)`;
-        });
-        card.addEventListener('mouseleave', () => {
-          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)';
-        });
-      });
-    });
+      ws.onclose = () => {
+        setTimeout(initTickerWebSocket, 3000);
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', initTickerWebSocket);
   </script>
 </body>
 </html>

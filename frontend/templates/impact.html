@@ -1,194 +1,210 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circular Impact Analytics & Life-Cycle Assessment | E-Waste Saathi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        saffron: { 500: '#f97316', 600: '#ea580c', 700: '#c2410c' },
-                        chakra: { 500: '#0284c7', 600: '#0369a1', 700: '#075985' },
-                        indiaGreen: { 500: '#10b981', 600: '#059669', 700: '#047857' },
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circular Impact & Life-Cycle Assessment (LCA) | E-Waste Saathi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sora: ['Sora', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace'],
+          },
+          colors: {
+            brandBg: '#F7F9F8',
+            brandDark: '#101828',
+            brandSecondary: '#667085',
+            brandGreen: '#059669',
+            brandDarkGreen: '#047857',
+            brandBlue: '#2563EB',
+            brandGold: '#D89B1D',
+            brandWarning: '#F59E0B',
+            brandDanger: '#DC2626',
+            brandCard: '#FFFFFF',
+            brandBorder: '#E5E7EB',
+          }
         }
-    </script>
-    <style>
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F7F9F8;
+      color: #101828;
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-tech-grid {
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-saffron-500 selection:text-white">
+<body class="bg-brandBg text-brandDark min-h-screen bg-tech-grid selection:bg-brandGreen selection:text-white">
 
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="/" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 p-[2px]">
-                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-leaf text-emerald-400 text-sm"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-teal-200 to-sky-400 bg-clip-text text-transparent">E-Waste Saathi</span>
-                        <span class="text-[10px] block font-mono text-slate-400 tracking-wider">CIRCULAR IMPACT & LCA ANALYTICS</span>
-                    </div>
-                </a>
-            </div>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brandBorder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brandGreen text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            <i class="fa-solid fa-leaf"></i>
+          </div>
+          <div>
+            <div class="font-sora font-bold text-sm text-brandDark">E-Waste Saathi</div>
+            <div class="text-[10px] font-mono text-brandSecondary">Circular Impact & LCA Analytics</div>
+          </div>
+        </a>
+      </div>
 
-            <div class="flex items-center gap-3">
-                <a href="/dashboard/live" class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-                    <i class="fa-solid fa-satellite-dish text-orange-400 mr-1.5"></i>Live Ops
-                </a>
-                <button onclick="window.startJudgeWalkthrough()" class="text-xs font-bold px-4 py-2 rounded-lg bg-gradient-to-r from-saffron-600 to-orange-500 hover:from-saffron-500 text-white flex items-center gap-1.5">
-                    <span>🎯</span> JUDGE DEMO
-                </button>
-            </div>
+      <nav class="flex items-center gap-2 text-xs font-semibold">
+        <a href="/dashboard/live" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-brandDark border border-brandBorder transition">
+          <i class="fa-solid fa-satellite-dish text-brandBlue mr-1"></i> Live Ops
+        </a>
+        <button onclick="window.startJudgeWalkthrough()" class="px-3.5 py-2 rounded-xl bg-brandDark hover:bg-slate-800 text-white font-bold transition flex items-center gap-1.5 shadow-sm">
+          <span>🎯</span> JUDGE DEMO
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+
+    <!-- Top Banner -->
+    <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-brandGreen font-bold border border-emerald-200">LCA METHODOLOGY (CPCB 2022)</span>
+          <span class="text-brandSecondary">Estimated & Modeled</span>
         </div>
-    </header>
+        <h1 class="font-sora text-2xl font-bold text-brandDark mt-1">Environmental Life-Cycle Assessment (LCA) & Resource Savings</h1>
+        <p class="text-xs text-brandSecondary mt-0.5">Quantifying carbon offsets, water conservation, and virgin ore preservation through formalized recycling.</p>
+      </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-        <!-- Banner -->
-        <div class="p-6 rounded-2xl glass-panel border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">LCA METHODOLOGY (CPCB 2022 STANDARDS)</span>
-                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">ESTIMATED / SIMULATED</span>
-                </div>
-                <h1 class="text-xl font-bold text-white mt-1">Environmental Life-Cycle Assessment (LCA) & Resource Savings</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Quantifying carbon offset, water conservation, and virgin ore preservation through formalized recycling.</p>
-            </div>
-            <button onclick="openMethodologyModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-white flex items-center gap-2 transition">
-                <i class="fa-solid fa-calculator text-emerald-400"></i> View Calculation Formulas
-            </button>
-        </div>
-
-        <!-- 4 Impact KPI Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">CO₂e Emissions Avoided</div>
-                <div class="text-2xl font-bold font-mono text-emerald-400 mt-1">14.35 Tons</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">3.12 kg CO₂ / kg e-waste</div>
-            </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Virgin Copper Ore Saved</div>
-                <div class="text-2xl font-bold font-mono text-amber-400 mt-1">196.0 Tons</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Displaced open-pit mining</div>
-            </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Freshwater Conserved</div>
-                <div class="text-2xl font-bold font-mono text-sky-400 mt-1">280,000 L</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Zero toxic hydromet runoff</div>
-            </div>
-            <div class="p-4 rounded-xl glass-panel border border-slate-800">
-                <div class="text-xs text-slate-400 font-medium">Toxic Lead & Dioxins Prevented</div>
-                <div class="text-2xl font-bold font-mono text-teal-400 mt-1">840 kg</div>
-                <div class="text-[10px] text-emerald-400/80 mt-0.5">Zero open-fire burning</div>
-            </div>
-        </div>
-
-        <!-- Comparison Table: Informal Primitive Burning vs E-Waste Saathi Formal Flow -->
-        <div class="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
-            <h2 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
-                <i class="fa-solid fa-code-compare text-emerald-400"></i>
-                Formalized Recovery vs Primitive Acid Leaching
-            </h2>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left">
-                    <thead class="text-slate-400 font-mono border-b border-slate-800 bg-slate-900/40">
-                        <tr>
-                            <th class="py-3 px-4">Metric / Dimension</th>
-                            <th class="py-3 px-4 text-rose-400">Primitive Informal Methods (Current)</th>
-                            <th class="py-3 px-4 text-emerald-400">E-Waste Saathi Formalized Flow</th>
-                            <th class="py-3 px-4 text-sky-400">Net Improvement</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60 font-sans">
-                        <tr>
-                            <td class="py-3 px-4 font-semibold text-white">Precious Gold Recovery Yield</td>
-                            <td class="py-3 px-4 text-rose-300">25–35% (Cyanide / Aqua Regia acid baths)</td>
-                            <td class="py-3 px-4 text-emerald-300 font-bold">95–98% (Pyrometallurgical smelting)</td>
-                            <td class="py-3 px-4 text-sky-300 font-mono font-bold">+200% Gold Yield</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-4 font-semibold text-white">Collector Payout Transparency</td>
-                            <td class="py-3 px-4 text-rose-300">Opaque (Middleman cut 40–50%)</td>
-                            <td class="py-3 px-4 text-emerald-300 font-bold">Direct Market Spot Rates + UPI Escrow</td>
-                            <td class="py-3 px-4 text-sky-300 font-mono font-bold">+28–42% Take-Home</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-4 font-semibold text-white">Worker Respiratory Hazard</td>
-                            <td class="py-3 px-4 text-rose-300">Critical Dioxin & Lead Vapour Exposure</td>
-                            <td class="py-3 px-4 text-emerald-300 font-bold">Closed Vacuum Shredders + Wet Scrubber</td>
-                            <td class="py-3 px-4 text-sky-300 font-mono font-bold">100% Hazard Neutralized</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-4 font-semibold text-white">CPCB Regulatory Traceability</td>
-                            <td class="py-3 px-4 text-rose-300">0% (Unregistered Black Market)</td>
-                            <td class="py-3 px-4 text-emerald-300 font-bold">SHA-256 Tamper-Proof Digital Passports</td>
-                            <td class="py-3 px-4 text-sky-300 font-mono font-bold">100% Real-Time Auditable</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Methodology Modal -->
-    <div id="methodologyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div class="max-w-xl w-full bg-slate-900 border border-slate-700 rounded-2xl p-6 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-base font-bold text-white">LCA Impact Calculation Formulas</h3>
-                <button onclick="closeMethodologyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-3 text-xs text-slate-300 font-mono">
-                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
-                    <span class="text-emerald-400 font-bold">CO₂ Avoided:</span><br>
-                    Avoided_CO2 = Weight_kg × 3.12 kg CO₂e/kg (CPCB Benchmark vs virgin ore refining)
-                </div>
-                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
-                    <span class="text-amber-400 font-bold">Virgin Ore Preserved:</span><br>
-                    Ore_Saved = (Recovered_Cu_kg / 0.005) (Assuming average 0.5% copper ore concentration)
-                </div>
-                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
-                    <span class="text-sky-400 font-bold">Disclaimer:</span><br>
-                    Calculated using standard LCA coefficients published under CPCB E-Waste Management Rules 2022 and UNEP Circular Economy Guidelines.
-                </div>
-            </div>
-            <button onclick="closeMethodologyModal()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">
-                Close
-            </button>
-        </div>
+      <button onclick="openMethodologyModal()" class="px-4 py-2.5 rounded-2xl bg-brandDark hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-2 transition shadow-sm">
+        <i class="fa-solid fa-calculator text-brandGreen"></i> View Calculation Formulas
+      </button>
     </div>
 
-    <div id="judgeDemoContainer"></div>
-    <script src="/static/js/judge_demo.js"></script>
-    <script>
-        function openMethodologyModal() {
-            document.getElementById('methodologyModal').classList.remove('hidden');
-        }
-        function closeMethodologyModal() {
-            document.getElementById('methodologyModal').classList.add('hidden');
-        }
-    </script>
+    <!-- 4 Impact KPI Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+      <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+        <div class="text-[11px] text-emerald-800 font-sans">CO₂e Emissions Avoided</div>
+        <div class="text-2xl font-bold text-brandGreen mt-1">14.35 Tons</div>
+        <div class="text-[10px] text-emerald-700 font-sans mt-0.5">3.12 kg CO₂ / kg e-waste</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+        <div class="text-[11px] text-amber-800 font-sans">Virgin Copper Ore Saved</div>
+        <div class="text-2xl font-bold text-brandGold mt-1">196.0 Tons</div>
+        <div class="text-[10px] text-amber-700 font-sans mt-0.5">Displaced open-pit mining</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200">
+        <div class="text-[11px] text-blue-800 font-sans">Freshwater Conserved</div>
+        <div class="text-2xl font-bold text-brandBlue mt-1">280,000 L</div>
+        <div class="text-[10px] text-blue-700 font-sans mt-0.5">Zero toxic acid leaching</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-slate-50 border border-brandBorder">
+        <div class="text-[11px] text-brandSecondary font-sans">Toxic Lead Contained</div>
+        <div class="text-2xl font-bold text-brandDark mt-1">840 kg</div>
+        <div class="text-[10px] text-brandGreen font-sans mt-0.5">Zero open burning</div>
+      </div>
+    </div>
+
+    <!-- Comparison Table: Informal Burning vs E-Waste Saathi Formal Flow -->
+    <div class="p-6 rounded-3xl bg-white border border-brandBorder shadow-sm space-y-4">
+      <h2 class="font-sora text-base font-bold text-brandDark pb-3 border-b border-brandBorder">
+        Formalized Metallurgy vs Primitive Acid Leaching
+      </h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="text-brandSecondary font-mono border-b border-brandBorder bg-slate-50">
+            <tr>
+              <th class="py-3 px-4">Metric / Dimension</th>
+              <th class="py-3 px-4 text-brandDanger">Primitive Informal Methods (Current)</th>
+              <th class="py-3 px-4 text-brandGreen">E-Waste Saathi Formalized Flow</th>
+              <th class="py-3 px-4 text-brandBlue">Net Improvement</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-brandBorder font-sans">
+            <tr>
+              <td class="py-3.5 px-4 font-semibold text-brandDark">Precious Gold Recovery Yield</td>
+              <td class="py-3.5 px-4 text-brandDanger font-mono">25–35% (Cyanide acid baths)</td>
+              <td class="py-3.5 px-4 text-brandGreen font-mono font-bold">95–98% (Smelting refineries)</td>
+              <td class="py-3.5 px-4 text-brandBlue font-mono font-bold">+200% Gold Yield</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-semibold text-brandDark">Collector Payout Transparency</td>
+              <td class="py-3.5 px-4 text-brandDanger font-mono">Opaque (-40% middleman cut)</td>
+              <td class="py-3.5 px-4 text-brandGreen font-mono font-bold">Direct Market Spot Rates + UPI</td>
+              <td class="py-3.5 px-4 text-brandBlue font-mono font-bold">+28–42% Take-Home</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-semibold text-brandDark">Worker Occupational Hazard</td>
+              <td class="py-3.5 px-4 text-brandDanger font-mono">Critical Lead & Dioxin Vapour</td>
+              <td class="py-3.5 px-4 text-brandGreen font-mono font-bold">Enclosed Vacuum Shredders</td>
+              <td class="py-3.5 px-4 text-brandBlue font-mono font-bold">100% Hazard Isolated</td>
+            </tr>
+            <tr>
+              <td class="py-3.5 px-4 font-semibold text-brandDark">CPCB Audit Traceability</td>
+              <td class="py-3.5 px-4 text-brandDanger font-mono">0% (Unregistered Black Market)</td>
+              <td class="py-3.5 px-4 text-brandGreen font-mono font-bold">SHA-256 Tamper-Proof Passports</td>
+              <td class="py-3.5 px-4 text-brandBlue font-mono font-bold">100% Real-Time Audit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Methodology Modal -->
+  <div id="methodologyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="max-w-xl w-full bg-white border border-brandBorder rounded-3xl p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-brandBorder">
+        <h3 class="font-sora text-base font-bold text-brandDark">LCA Impact Calculation Formulas</h3>
+        <button onclick="closeMethodologyModal()" class="text-brandSecondary hover:text-brandDark"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="space-y-3 text-xs text-slate-700 font-mono">
+        <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
+          <span class="text-brandGreen font-bold">CO₂e Avoided:</span><br>
+          Avoided_CO2 = Weight_kg × 3.12 kg CO₂e/kg (CPCB benchmark vs virgin refining)
+        </div>
+        <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder">
+          <span class="text-brandGold font-bold">Virgin Copper Ore Displaced:</span><br>
+          Ore_Saved = (Recovered_Cu_kg / 0.005) (Assuming standard 0.5% open-pit copper ore concentration)
+        </div>
+        <div class="p-3 rounded-2xl bg-slate-50 border border-brandBorder text-[11px] text-brandSecondary">
+          <span class="font-bold text-brandDark">Standard Citation:</span> Published under CPCB E-Waste Management Rules 2022 and UNEP Circular Economy Assessment Guidelines.
+        </div>
+      </div>
+      <button onclick="closeMethodologyModal()" class="w-full py-2.5 rounded-2xl bg-brandDark hover:bg-slate-800 text-white font-semibold text-xs transition">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <div id="judgeDemoContainer"></div>
+  <script src="/static/js/judge_demo.js"></script>
+
+  <script>
+    function openMethodologyModal() {
+      document.getElementById('methodologyModal').classList.remove('hidden');
+    }
+    function closeMethodologyModal() {
+      document.getElementById('methodologyModal').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
