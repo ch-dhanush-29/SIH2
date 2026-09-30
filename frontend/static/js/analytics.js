@@ -646,6 +646,8 @@ async function fetchSystemTelemetry() {
   }
 }
 
+let realtimeDebounceTimer = null;
+
 function handleRealtimeAnalyticsEvent(evt) {
   liveEventsBuffer.unshift(evt);
   if (liveEventsBuffer.length > 50) liveEventsBuffer.pop();
@@ -661,7 +663,7 @@ function handleRealtimeAnalyticsEvent(evt) {
     if (w > 0) {
       liveState.totalWeight += w;
       renderSummaryKPIs();
-      if (collectionChart && collectionChart.data.datasets[0].data.length > 0) {
+      if (collectionChart && collectionChart.data.datasets && collectionChart.data.datasets[0].data.length > 0) {
         const lastIdx = collectionChart.data.datasets[0].data.length - 1;
         collectionChart.data.datasets[0].data[lastIdx] += w;
         collectionChart.update('none');
@@ -680,6 +682,16 @@ function handleRealtimeAnalyticsEvent(evt) {
     liveState.anomalies++;
     renderSummaryKPIs();
   }
+
+  // Debounced background refresh to synchronize live graphs & tables
+  if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+  realtimeDebounceTimer = setTimeout(() => {
+    fetchCollectionTrend(currentTrendInterval);
+    fetchMaterialsMix();
+    fetchAnomalyAnalytics();
+    fetchFunnelAnalytics();
+    fetchImpactAnalytics();
+  }, 1000);
 }
 
 function renderMiniEventStream() {
