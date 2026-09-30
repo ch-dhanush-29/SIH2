@@ -170,21 +170,31 @@
   </header>
 
   <!-- ========================================================================= -->
-  <!-- HERO SECTION WITH 3D BACKGROUND WEBGL STAGE & 3D RENDERING INTEGRATION    -->
+  <!-- HERO SECTION WITH INDUSTRIAL FACILITY BACKGROUND IMAGE & GRACEFUL OVERLAY -->
   <!-- ========================================================================= -->
-  <section id="heroSection" class="relative pt-36 pb-20 px-4 sm:px-8 max-w-7xl mx-auto overflow-hidden">
+  <section id="heroSection" class="relative pt-36 pb-20 px-4 sm:px-8 max-w-7xl mx-auto overflow-hidden rounded-3xl mt-2 border border-brandBorder shadow-sm">
     
-    <!-- 3D WebGL Background Canvas (Interactive Orbit & Particles) -->
-    <div class="absolute inset-0 pointer-events-none z-0 opacity-40">
+    <!-- Layer 0: Dedicated Industrial Facility Background Image -->
+    <div 
+      class="absolute inset-0 z-0 bg-cover bg-no-repeat pointer-events-none"
+      style="background-image: url('/static/images/industrial/plant_conveyor_sorting.jpg'); background-position: center right;"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Layer 1: Seamless Gradient Overlay (Keeps left text 100% readable while revealing facility on the right) -->
+    <div 
+      class="absolute inset-0 z-[1] pointer-events-none"
+      style="background: linear-gradient(90deg, rgba(247,249,248,0.98) 0%, rgba(247,249,248,0.85) 45%, rgba(247,249,248,0.30) 100%);"
+    ></div>
+
+    <!-- Layer 2: Subtle Technical Grid & Interactive 3D WebGL Canvas -->
+    <div class="absolute inset-0 z-[2] bg-tech-grid pointer-events-none opacity-60"></div>
+    <div class="absolute inset-0 z-[2] pointer-events-none opacity-35">
       <canvas id="hero-3d-bg-canvas" class="w-full h-full"></canvas>
     </div>
 
-    <!-- 3D Rendered Asset Atmospheric Backdrop Layer -->
-    <div class="absolute top-10 right-0 w-[550px] h-[450px] pointer-events-none z-0 opacity-15 rounded-3xl overflow-hidden blur-[1px] animate-float-slow">
-      <img src="/static/images/narrative/hero_device_banner.jpg" alt="3D Device Rendering Backdrop" class="w-full h-full object-cover">
-    </div>
-
-    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+    <!-- Layer 3: Hero Content -->
+    <div class="relative z-[3] grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       
       <!-- Left Column: Editorial Statement -->
       <div class="lg:col-span-7 space-y-6">
