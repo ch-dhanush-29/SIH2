@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #04060a;
+    --text-main: #e2e8f0;
+    --border-glow: rgba(0, 240, 255, 0.2);
+    --cyan-glow: #00f0ff;
+    --amber-glow: #ffaa00;
+    --red-glow: #ff3366;
+    --green-glow: #00ff88;
+  }
+
+  html:not(.dark) {
+    --bg-main: #f4f6fa;
+    --text-main: #090d16;
+    --border-glow: rgba(2, 132, 199, 0.25);
+    --cyan-glow: #0284c7;
+    --amber-glow: #d97706;
+    --red-glow: #e11d48;
+    --green-glow: #059669;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.font-display {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: rgba(4, 6, 10, 0.9);
+}
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: rgba(240, 243, 248, 0.9);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.25);
+  border-radius: 2px;
+}
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: rgba(2, 132, 199, 0.35);
+  border-radius: 2px;
+}
+
+/* Ultra-Premium Glassmorphism & Mission Control HUD Surfaces */
+.dark .mission-hud {
+  background: rgba(6, 10, 18, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 240, 255, 0.16);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+html:not(.dark) .mission-hud {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(2, 132, 199, 0.22);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.dark .mission-card {
+  background: rgba(8, 12, 22, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+}
+
+html:not(.dark) .mission-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Tactical Corner Accents for Mission Control Frames */
+.corner-accent {
+  position: relative;
+}
+.corner-accent::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid #00f0ff;
+  border-left: 2px solid #00f0ff;
+  pointer-events: none;
+}
+.corner-accent::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border-bottom: 2px solid #00f0ff;
+  border-right: 2px solid #00f0ff;
+  pointer-events: none;
+}
+
+/* Technical CRT Scanline overlay */
+.scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Subtle Technical Grid Background */
+.tech-grid-bg {
+  background-image: radial-gradient(rgba(0, 240, 255, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Glow effects */
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+}
+.glow-amber {
+  text-shadow: 0 0 10px rgba(255, 170, 0, 0.7);
+}
+.glow-red {
+  text-shadow: 0 0 10px rgba(255, 51, 102, 0.8);
+}
+.glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.7);
+}
+
+@keyframes sweep-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+.animate-sweep {
+  animation: sweep-line 4s linear infinite;
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.96); opacity: 0.8; }
+  50% { transform: scale(1.04); opacity: 1; filter: drop-shadow(0 0 14px rgba(255, 51, 102, 0.9)); }
+  100% { transform: scale(0.96); opacity: 0.8; }
+}
+.animate-radar {
+  animation: radar-pulse 2s infinite ease-in-out;
+}
+
+@keyframes latent-pulse {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 5px rgba(255, 170, 0, 0.5)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 16px rgba(255, 170, 0, 0.95)); }
+}
+.animate-latent {
+  animation: latent-pulse 1.6s infinite ease-in-out;
+}
