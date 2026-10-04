@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -15,7 +15,7 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
   pointerX,
   pointerY,
   isStarting,
-  scale = 1.0,
+  scale = 0.75,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const emblemRef = useRef<THREE.Group>(null);
@@ -67,19 +67,21 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
     return { particlePositions: pos, particleColors: col };
   }, [isDark]);
 
-  // Entrance scale animation
-  const currentScaleRef = useRef(0.2);
+  // Entrance scale animation (smoothly reaches 75% render scale)
+  const currentScaleRef = useRef(0.15);
 
   useFrame(({ clock }, delta) => {
     const t = clock.getElapsedTime();
 
-    // Smooth entrance scale-up
+    // 1. RENDER AT 75% SCALE IN 3D
+    const targetScale = isStarting ? 3.0 : scale;
     currentScaleRef.current = THREE.MathUtils.lerp(
       currentScaleRef.current,
-      isStarting ? 3.2 : scale,
-      delta * (isStarting ? 4.0 : 3.5)
+      targetScale,
+      delta * (isStarting ? 4.0 : 3.8)
     );
 
+    // 2. 3D POSITION PARALLAX: Translate based on mouse movement at 75% amplitude
     if (groupRef.current) {
       groupRef.current.scale.setScalar(currentScaleRef.current);
 
@@ -87,52 +89,88 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
         // High-velocity forward camera warp into chamber on Start
         groupRef.current.position.z += delta * 20.0;
       } else {
-        // Subtle floating 3D bobbing
-        groupRef.current.position.y = 0.28 + Math.sin(t * 1.5) * 0.09;
+        // 75% mouse parallax translation in 3D space with gentle vertical breathing
+        const targetPosX = pointerX * 0.75;
+        const targetPosY = 0.28 + (-pointerY * (0.75 * 0.6)) + Math.sin(t * 1.5) * 0.08;
+        const targetPosZ = (1 - (Math.abs(pointerX) + Math.abs(pointerY)) * 0.5) * 0.75 * 0.5;
+
+        groupRef.current.position.x = THREE.MathUtils.lerp(
+          groupRef.current.position.x,
+          targetPosX,
+          delta * 6.5
+        );
+        groupRef.current.position.y = THREE.MathUtils.lerp(
+          groupRef.current.position.y,
+          targetPosY,
+          delta * 6.5
+        );
+        groupRef.current.position.z = THREE.MathUtils.lerp(
+          groupRef.current.position.z,
+          targetPosZ,
+          delta * 6.5
+        );
       }
     }
 
-    // 3D Continuous Orbit Rotation & Pointer-Responsive 3D Tilt
+    // 3. 3D ROTATION BASED ON MOUSE MOVEMENT AT 75%
     if (emblemRef.current) {
       if (isStarting) {
         // Rapid acceleration spin on start
-        emblemRef.current.rotation.y += delta * 12.0;
+        emblemRef.current.rotation.y += delta * 14.0;
       } else {
-        // Continuous smooth rotation around Y axis (360-degree true 3D revolution)
-        emblemRef.current.rotation.y += delta * 0.65;
+        // 3A. Y-Axis 3D Rotation based on horizontal mouse movement:
+        // Sweeps 75% of a full 360° circle (-135° to +135° = 270° = 0.75 * 360°)
+        const idleSwayY = Math.sin(t * 0.8) * 0.07;
+        const targetRotY = pointerX * (0.75 * Math.PI) + idleSwayY;
 
-        // Pointer-following 3D pitch/roll tilt with smooth spring damping
-        const targetTiltX = -pointerY * 0.32;
-        const targetTiltZ = -pointerX * 0.26;
+        // 3B. X-Axis 3D Pitch based on vertical mouse movement at 75% perspective:
+        // Tilts up/down smoothly with cursor
+        const idleSwayX = Math.cos(t * 1.0) * 0.04;
+        const targetRotX = -pointerY * (0.75 * (Math.PI / 3.4)) + idleSwayX;
+
+        // 3C. Z-Axis 3D Roll based on mouse movement at 75% banking angle:
+        const targetRotZ = -pointerX * (0.75 * (Math.PI / 7.5));
+
+        // Fast, tactile spring interpolation (factor 8.0) for instant reactivity
+        emblemRef.current.rotation.y = THREE.MathUtils.lerp(
+          emblemRef.current.rotation.y,
+          targetRotY,
+          delta * 8.0
+        );
         emblemRef.current.rotation.x = THREE.MathUtils.lerp(
           emblemRef.current.rotation.x,
-          targetTiltX,
-          delta * 4.5
+          targetRotX,
+          delta * 8.0
         );
         emblemRef.current.rotation.z = THREE.MathUtils.lerp(
           emblemRef.current.rotation.z,
-          targetTiltZ,
-          delta * 4.5
+          targetRotZ,
+          delta * 8.0
         );
       }
     }
 
-    // 3D Orbital Scientific Rings rotation at differential velocities
+    // 4. 3D SCIENTIFIC RINGS: Rotate & tilt based on mouse movement at 75%
     if (ring1Ref.current) {
-      ring1Ref.current.rotation.z += delta * (isStarting ? 4.0 : 0.45);
-      ring1Ref.current.rotation.x = Math.sin(t * 0.8) * 0.2;
+      ring1Ref.current.rotation.z += delta * (isStarting ? 5.0 : 0.45);
+      ring1Ref.current.rotation.x = (Math.PI / 5) - pointerY * (0.75 * 0.65);
+      ring1Ref.current.rotation.y = pointerX * (0.75 * 0.55);
     }
     if (ring2Ref.current) {
-      ring2Ref.current.rotation.z -= delta * (isStarting ? 3.0 : 0.32);
-      ring2Ref.current.rotation.y = Math.cos(t * 0.6) * 0.25;
+      ring2Ref.current.rotation.z -= delta * (isStarting ? 4.0 : 0.35);
+      ring2Ref.current.rotation.x = (-Math.PI / 3.5) + pointerY * (0.75 * 0.45);
+      ring2Ref.current.rotation.y = -pointerX * (0.75 * 0.5);
     }
     if (ring3Ref.current) {
-      ring3Ref.current.rotation.z += delta * (isStarting ? 2.5 : 0.18);
+      ring3Ref.current.rotation.z += delta * (isStarting ? 3.0 : 0.2);
+      ring3Ref.current.rotation.x = pointerY * (0.75 * 0.3);
+      ring3Ref.current.rotation.y = pointerX * (0.75 * 0.35);
     }
 
-    // 3D Orbiting Swarm Particles
+    // 5. 3D TELEMETRY SWARM: Skews and orbits with mouse movement at 75%
     if (particlesRef.current) {
-      particlesRef.current.rotation.y -= delta * (isStarting ? 6.0 : 0.3);
+      particlesRef.current.rotation.y += delta * (isStarting ? 7.0 : 0.35) + pointerX * 0.05;
+      particlesRef.current.rotation.x = -pointerY * (0.75 * 0.32);
     }
   });
 
@@ -142,10 +180,10 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
   return (
     <group ref={groupRef} position={[0, 0.28, 0]}>
       {/* ========================================================================= */}
-      {/* 1. CENTRAL ROTATING 3D EMBLEM MEDALLION                                  */}
+      {/* 1. CENTRAL ROTATING 3D EMBLEM MEDALLION (75% MOUSE RESPONSIVE)           */}
       {/* ========================================================================= */}
       <group ref={emblemRef}>
-        {/* 1A. Medallion 3D Cylindrical Body (Oriented with cylinder axis along Z) */}
+        {/* 1A. Medallion 3D Cylindrical Body (Cylinder axis along Z) */}
         <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[cylinderRadius, cylinderRadius, cylinderThickness, 64]} />
           <meshStandardMaterial

@@ -177,13 +177,13 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
             pointerY={pointer.smoothY}
           />
 
-          {/* 3D Rotating & Animating ISRO Emblem */}
+          {/* 3D Rotating & Animating ISRO Emblem (75% Render Scale & Mouse-Driven 3D Rotation) */}
           <IntroLogo3D
             theme={theme}
             pointerX={pointer.smoothX}
             pointerY={pointer.smoothY}
             isStarting={isStarting}
-            scale={window.innerWidth < 768 ? 0.85 : 1.05}
+            scale={window.innerWidth < 768 ? 0.65 : 0.75}
           />
         </Canvas>
       </div>
