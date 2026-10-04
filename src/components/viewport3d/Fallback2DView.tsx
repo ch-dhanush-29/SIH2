@@ -1,7 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useBurnInStore } from '../../state/useBurnInStore';
 import { PARAMETER_CONFIGS } from '../../types/burnIn';
-import { Search, Filter, AlertTriangle, XCircle, Clock, CheckCircle2, Crosshair, Cpu, Eye } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  AlertTriangle,
+  XCircle,
+  Clock,
+  CheckCircle2,
+  Crosshair,
+  Cpu,
+  RotateCcw,
+  ZoomIn,
+} from 'lucide-react';
 
 export const Fallback2DView: React.FC = () => {
   const chips = useBurnInStore((state) => state.chips);
@@ -14,6 +25,18 @@ export const Fallback2DView: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'ALL' | 'SUSPECT' | 'REJECT' | 'PASS'>('ALL');
+
+  // Pointer-Anchored Zoom & Pan State
+  const [zoomScale, setZoomScale] = useState(1.0);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ startX: number; startY: number; initPanX: number; initPanY: number }>({
+    startX: 0,
+    startY: 0,
+    initPanX: 0,
+    initPanY: 0,
+  });
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   const pcfg = PARAMETER_CONFIGS[parameter];
   const selectedChip = chips.find((c) => c.part_id === selectedChipId);
@@ -28,6 +51,74 @@ export const Fallback2DView: React.FC = () => {
       return true;
     });
   }, [chips, searchTerm, filterType]);
+
+  // Pointer-Anchored Wheel Zoom
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const container = viewportRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const pointerX = e.clientX - rect.left;
+    const pointerY = e.clientY - rect.top;
+
+    const zoomSpeed = 0.0018;
+    const factor = Math.exp(-e.deltaY * zoomSpeed);
+    const newScale = Math.min(Math.max(1.0, zoomScale * factor), 5.0);
+
+    if (newScale === zoomScale) return;
+
+    if (newScale <= 1.02) {
+      setZoomScale(1.0);
+      setPanOffset({ x: 0, y: 0 });
+      return;
+    }
+
+    // Anchor zoom at pointer location:
+    const newPanX = pointerX - (pointerX - panOffset.x) * (newScale / zoomScale);
+    const newPanY = pointerY - (pointerY - panOffset.y) * (newScale / zoomScale);
+
+    setZoomScale(newScale);
+    setPanOffset({ x: newPanX, y: newPanY });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (zoomScale <= 1.0) return;
+    if ((e.target as HTMLElement).tagName === 'BUTTON') return;
+
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    panStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initPanX: panOffset.x,
+      initPanY: panOffset.y,
+    };
+    setIsPanning(true);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPanning) return;
+    const dx = e.clientX - panStartRef.current.startX;
+    const dy = e.clientY - panStartRef.current.startY;
+    setPanOffset({
+      x: panStartRef.current.initPanX + dx,
+      y: panStartRef.current.initPanY + dy,
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isPanning) {
+      setIsPanning(false);
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+  };
+
+  const handleResetZoom = () => {
+    setZoomScale(1.0);
+    setPanOffset({ x: 0, y: 0 });
+  };
 
   const getChipStyle = (chip: typeof chips[0]) => {
     const isSelected = chip.part_id === selectedChipId;
@@ -97,6 +188,22 @@ export const Fallback2DView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Zoom Readout & Reset */}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] font-mono text-[10px]">
+            <ZoomIn className="w-3 h-3 text-[var(--accent)]" />
+            <span className="text-[var(--text-muted)]">ZOOM:</span>
+            <span className="text-[var(--accent)] font-bold">{zoomScale.toFixed(1)}X</span>
+            {zoomScale > 1.05 && (
+              <button
+                onClick={handleResetZoom}
+                className="ml-1 p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                title="Reset Zoom to 1.0X"
+              >
+                <RotateCcw className="w-2.5 h-2.5" />
+              </button>
+            )}
+          </div>
+
           {/* Quick Search */}
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -105,7 +212,7 @@ export const Fallback2DView: React.FC = () => {
               placeholder="Search IC ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-[var(--surface)] border border-[var(--border)] rounded-[6px] pl-7 pr-2.5 py-1 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] font-mono w-36 transition-colors"
+              className="bg-[var(--surface)] border border-[var(--border)] rounded-[6px] pl-7 pr-2.5 py-1 text-xs text-[var(--text-primary)] focus:outline-hidden focus:border-[var(--accent)] font-mono w-36 transition-colors"
             />
           </div>
 
@@ -128,8 +235,18 @@ export const Fallback2DView: React.FC = () => {
         </div>
       </div>
 
-      {/* Wafer Carrier Grid Viewport with Quadrant Divisions */}
-      <div className="flex-1 overflow-auto my-2.5 p-3 rounded-[10px] bg-[var(--surface)] border border-[var(--border)] custom-scrollbar relative shadow-[var(--shadow-panel)]">
+      {/* Wafer Carrier Grid Viewport with Pointer-Anchored Zoom & Pan */}
+      <div
+        ref={viewportRef}
+        onWheel={handleWheel}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className={`flex-1 overflow-hidden my-2.5 p-3 rounded-[10px] bg-[var(--surface)] border border-[var(--border)] relative shadow-[var(--shadow-panel)] select-none ${
+          zoomScale > 1.0 ? 'cursor-grab active:cursor-grabbing' : ''
+        }`}
+        title="Point mouse pointer and scroll to zoom into that location. Drag to pan."
+      >
         {/* Subtle Tray Quadrant Division Crosshairs */}
         <div className="absolute inset-0 pointer-events-none grid grid-cols-2 grid-rows-2">
           <div className="border-r border-b border-[var(--border)] opacity-30" />
@@ -138,8 +255,15 @@ export const Fallback2DView: React.FC = () => {
           <div className="opacity-30" />
         </div>
 
-        {/* 1,000 Component Micro-Package Grid */}
-        <div className="grid grid-cols-10 sm:grid-cols-20 md:grid-cols-25 lg:grid-cols-40 gap-1 relative z-10">
+        {/* 1,000 Component Micro-Package Grid with Pointer-Anchored Transform */}
+        <div
+          style={{
+            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomScale})`,
+            transformOrigin: '0 0',
+            transition: isPanning ? 'none' : 'transform 0.08s ease-out',
+          }}
+          className="grid grid-cols-10 sm:grid-cols-20 md:grid-cols-25 lg:grid-cols-40 gap-1 relative z-10 w-full h-full"
+        >
           {filteredChips.map((chip) => {
             const isSelected = chip.part_id === selectedChipId;
             const style = getChipStyle(chip);
@@ -152,7 +276,7 @@ export const Fallback2DView: React.FC = () => {
                 title={`${chip.part_id} (R${chip.row}:C${chip.col})\nMeasured: ${val.toFixed(2)} ${pcfg.unit}\nStatus: ${chip.verdict}\nZ-Score: +${chip.robustZScore.toFixed(1)}σ`}
                 className={`relative aspect-square rounded-[3px] border transition-all duration-150 flex items-center justify-center text-[8px] font-mono group cursor-pointer ${
                   style.bg
-                } ${style.border} ${style.textColor} hover:scale-125 hover:z-20 hover:shadow-lg focus:outline-none`}
+                } ${style.border} ${style.textColor} hover:scale-125 hover:z-20 hover:shadow-lg focus:outline-hidden`}
               >
                 {/* Micro Silicon Die Corner Notch */}
                 <span className="absolute top-[1.5px] left-[1.5px] w-[2px] h-[2px] rounded-full bg-white/40 pointer-events-none" />
@@ -208,10 +332,11 @@ export const Fallback2DView: React.FC = () => {
           </div>
         ) : (
           <span className="text-[10px] text-[var(--text-muted)]">
-            Click any semiconductor package to inspect telemetry
+            Point pointer & scroll to zoom into any semiconductor package
           </span>
         )}
       </div>
     </div>
   );
 };
+export default Fallback2DView;
