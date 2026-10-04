@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBurnInStore } from '../../state/useBurnInStore';
 import { CheckpointHour, CHECKPOINTS } from '../../types/burnIn';
+import { DraggableWindow } from '../common/DraggableWindow';
 import {
   Play,
   Pause,
@@ -26,23 +27,23 @@ export const CinematicTimeline: React.FC = () => {
   > = {
     0: {
       title: '0h Baseline',
-      desc: 'Room temp insertion & initial 125°C ramp',
+      desc: 'Room temp insertion & ramp',
       icon: <Clock className="w-3 h-3 text-[var(--accent)]" />,
     },
     24: {
       title: '24h Early Gate',
-      desc: 'AI screening intercept • 144h saved per defect',
+      desc: 'AI screening intercept • 144h saved',
       icon: <Sparkles className="w-3 h-3 text-[var(--warning)] animate-pulse" />,
       isGate: true,
     },
     96: {
       title: '96h Midway',
-      desc: 'Secondary stabilization & oxide check',
+      desc: 'Stabilization & oxide check',
       icon: <AlertTriangle className="w-3 h-3 text-[var(--text-muted)]" />,
     },
     168: {
       title: '168h Final',
-      desc: 'Full qualification completion limit',
+      desc: 'Qualification completion limit',
       icon: <ShieldCheck className="w-3 h-3 text-[var(--success)]" />,
     },
   };
@@ -53,18 +54,48 @@ export const CinematicTimeline: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-full max-w-3xl px-4 pointer-events-auto">
-      <div className="mission-hud p-2.5 rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-floating)] space-y-2 backdrop-blur-xl">
+    <DraggableWindow
+      id="checkpoint-timeline"
+      title="CHECKPOINT & TIMELINE"
+      icon={<Clock className="w-4 h-4" />}
+      width="w-[720px] max-w-[calc(100vw-32px)]"
+      maxHeight="max-h-64"
+      minimizedContent={
+        <div className="flex items-center gap-2">
+          <span className="text-cyan-400 font-bold font-mono">T+{checkpoint}h</span>
+          <span className="text-slate-500">•</span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPlaying(!isPlaying);
+            }}
+            className="p-1 rounded bg-[var(--accent-soft)] hover:bg-[var(--accent)] hover:text-slate-950 text-[var(--accent)] transition-colors"
+            title={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
+          </button>
+        </div>
+      }
+      headerRight={
+        <div className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--accent)] mr-1">
+          <span>{isPlaying ? 'SIMULATING' : 'READY'}</span>
+        </div>
+      }
+    >
+      <div className="p-3 space-y-2.5">
         {/* Upper Track Bar: Time & Playback Controls */}
         <div className="flex items-center justify-between text-xs text-[var(--text-primary)]">
           <div className="flex items-center gap-2">
             {/* Play / Pause Toggle */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="p-1.5 rounded-[7px] bg-[var(--accent-soft)] hover:opacity-90 text-[var(--accent)] border border-[var(--border-accent)] transition-all shadow-sm"
+              className="p-1.5 rounded-[7px] bg-[var(--accent-soft)] hover:opacity-90 text-[var(--accent)] border border-[var(--border-accent)] transition-all shadow-sm flex items-center gap-1.5"
               title={isPlaying ? 'Pause Burn-In Simulation' : 'Play Burn-In Simulation'}
             >
-              {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              <span className="font-display font-semibold text-[11px] hidden sm:inline">
+                {isPlaying ? 'PAUSE' : 'PLAY'}
+              </span>
             </button>
 
             {/* Replay */}
@@ -105,9 +136,9 @@ export const CinematicTimeline: React.FC = () => {
         </div>
 
         {/* Visual Timeline Track with Event Nodes */}
-        <div className="relative pt-1 pb-1">
-          {/* Background Connecting Rail (centered on 16px pin dots at top-[9px]) */}
-          <div className="absolute top-[9px] left-4 right-4 h-1 bg-slate-200 dark:bg-slate-800/80 rounded-full overflow-hidden z-0">
+        <div className="relative pt-2 pb-1">
+          {/* Background Connecting Rail */}
+          <div className="absolute top-[13px] left-4 right-4 h-1 bg-slate-200 dark:bg-slate-800/80 rounded-full overflow-hidden z-0">
             <div
               className={`h-full transition-all duration-300 ${
                 theme === 'dark'
@@ -165,7 +196,7 @@ export const CinematicTimeline: React.FC = () => {
                     >
                       {ev.title}
                     </div>
-                    <div className="text-[9px] font-sans text-[var(--text-muted)] hidden sm:block max-w-[110px] truncate leading-tight">
+                    <div className="text-[9px] font-sans text-[var(--text-muted)] hidden sm:block max-w-[120px] truncate leading-tight">
                       {ev.desc}
                     </div>
                   </div>
@@ -175,6 +206,7 @@ export const CinematicTimeline: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DraggableWindow>
   );
 };
+export default CinematicTimeline;

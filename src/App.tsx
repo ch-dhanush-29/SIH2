@@ -14,6 +14,7 @@ import { AuditLogModal } from './components/panels/AuditLogModal';
 import { AiAssistantModal } from './components/panels/AiAssistantModal';
 import { EngineeringModal } from './components/panels/EngineeringModal';
 import { HeroExplanationDock } from './components/ui/HeroExplanationDock';
+import { LotOutlierDock } from './components/ui/LotOutlierDock';
 import { DemoStoryPhase } from './types/burnIn';
 
 export const App: React.FC = () => {
@@ -195,6 +196,9 @@ export const App: React.FC = () => {
 
       {/* 5. Floating Cinematic Timeline & Screening Gate (Bottom-Center) */}
       <CinematicTimeline />
+
+      {/* 6. Floating LOT Outlier & Latent Defect Detection Window */}
+      <LotOutlierDock />
 
       {/* 7. Dedicated Glass-Box Explanation & Early Reject Action Dock */}
       <HeroExplanationDock />

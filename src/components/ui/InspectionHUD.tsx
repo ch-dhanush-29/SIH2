@@ -3,9 +3,9 @@ import { useBurnInStore } from '../../state/useBurnInStore';
 import { PARAMETER_CONFIGS, ScreeningVerdict } from '../../types/burnIn';
 import { exportSinglePartQAPdf } from '../../services/pdfExport';
 import { submitDecisionOverride } from '../../services/apiClient';
+import { DraggableWindow } from '../common/DraggableWindow';
 import {
   Cpu,
-  X,
   Sparkles,
   Download,
   Edit3,
@@ -98,8 +98,8 @@ export const InspectionHUD: React.FC = () => {
   // SHAP feature attribution data
   const shapData = [
     {
-      feature: 'Drift Slope vs Safety',
-      impact: Math.min(100, Math.max(10, Math.round((chip.predictedSlope / Math.max(stats?.safetySlope ?? 0.022, 1e-4)) * 40))),
+      feature: 'Predicted 168h Drift',
+      impact: Math.min(100, Math.max(10, Math.round(Math.abs(chip.predictedSlope) * 180))),
     },
     {
       feature: 'Robust Z-Score (MAD)',
@@ -116,255 +116,241 @@ export const InspectionHUD: React.FC = () => {
   ];
 
   return (
-    <div className="fixed top-[152px] right-3 z-40 w-96 sm:w-[480px] max-h-[calc(100vh-165px)] overflow-y-auto custom-scrollbar mission-hud rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] p-3.5 flex flex-col gap-3 pointer-events-auto backdrop-blur-2xl">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-[var(--border)] text-xs">
-        <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-[var(--accent)]" />
-          <span className="font-display font-bold text-[var(--text-primary)] text-sm tracking-tight">{chip.part_id}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[4px] bg-slate-200/80 dark:bg-slate-800 text-[var(--text-secondary)]">
-            R{chip.row}:C{chip.col}
-          </span>
-        </div>
-        <button
-          onClick={() => setIsInspectionOpen(false)}
-          className="p-1 rounded-[6px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
-          title="Close Inspector"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Prominent Verdict Banner */}
-      <div className={`p-2.5 rounded-[8px] border flex items-center justify-between text-xs ${vStyle.bg}`}>
-        <div className="flex items-center gap-2">
-          {vStyle.icon}
-          <div>
-            <div className="font-display font-bold tracking-tight text-[11px]">{vStyle.title}</div>
-            <div className="text-[9px] font-sans opacity-85">Zero False Negative Protocol Enforced</div>
-          </div>
-        </div>
-        {chip.earlyReject && (
-          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 font-bold shrink-0">
-            -144h
-          </span>
-        )}
-      </div>
-
-      {/* Plain-English Glass-Box Justification */}
-      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1">
-        <div className="text-[10px] font-display text-[var(--accent)] font-bold flex items-center gap-1.5 tracking-wide">
-          <Sparkles className="w-3 h-3" />
-          <span>AI DECISION EXPLANATION</span>
-        </div>
-        <p className="text-[11px] leading-relaxed text-[var(--text-secondary)] font-sans">
-          {chip.justification}
-        </p>
-      </div>
-
-      {/* 5-Stage Latent-Defect Screening Pipeline Audit */}
-      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1.5 text-[10px]">
-        <div className="flex items-center justify-between text-[10px] font-display font-bold text-[var(--accent)] border-b border-[var(--border)] pb-1">
-          <span>5-STAGE LATENT DEFECT PIPELINE</span>
-          <span className="text-[var(--text-muted)] font-mono text-[9px]">MIL-STD-883 / AEC-Q100</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">1. Static Limit Check:</span>
-          <span className={`font-mono ${chip.passesStaticLimit ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}`}>
-            {val.toFixed(1)} &lt; {pcfg.staticLimit} µA {chip.passesStaticLimit ? '(PASS)' : '(FAIL)'}
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">2. Dynamic Anomaly:</span>
-          <span className={`font-mono ${chip.robustZScore >= 3.0 ? 'text-amber-500 font-bold' : 'text-emerald-500'}`}>
-            +{chip.robustZScore.toFixed(1)}σ MAD {chip.robustZScore >= 3.0 ? '(OUTLIER)' : '(NOMINAL)'}
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">3. Future Drift (168h):</span>
-          <span className={`font-mono ${chip.predicted168h > pcfg.staticLimit ? 'text-rose-500 font-bold' : 'text-[var(--text-primary)]'}`}>
-            {chip.predicted168h.toFixed(1)} µA {chip.predicted168h > pcfg.staticLimit ? '(RUNAWAY)' : '(BOUNDED)'}
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">4. Safety-Slope Risk:</span>
-          <span className={`font-mono ${chip.earlyReject ? 'text-fuchsia-500 font-bold' : 'text-emerald-500'}`}>
-            +{chip.predictedSlope.toFixed(3)}/h {chip.earlyReject ? '(EXCEEDED)' : '(SAFE)'}
-          </span>
-        </div>
-        <div className="flex justify-between items-center pt-1 border-t border-[var(--border)]">
-          <span className="font-sans text-[var(--text-muted)]">5. Actionable Verdict:</span>
-          <span className="font-display font-bold text-[var(--text-primary)]">
+    <DraggableWindow
+      id="inspection-hud"
+      title={`DIE ${chip.part_id} INSPECTION`}
+      icon={<Cpu className="w-4 h-4 text-[var(--accent)]" />}
+      width="w-96 sm:w-[480px]"
+      maxHeight="max-h-[calc(100vh-165px)]"
+      closable={true}
+      onClose={() => setIsInspectionOpen(false)}
+      minimizedContent={
+        <div className="flex items-center gap-2 font-mono">
+          <span className="text-cyan-400 font-bold">{chip.part_id}</span>
+          <span className="text-slate-500">•</span>
+          <span className={chip.verdict === 'PASS' ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
             {chip.verdict}
           </span>
+          <span className="text-slate-500">•</span>
+          <span className="text-amber-400">{val.toFixed(1)} {pcfg.unit}</span>
         </div>
-      </div>
-
-      {/* Critical Telemetry Metric Grid */}
-      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px]">
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">Current ({checkpoint}h):</span>
-          <strong className="font-mono text-[var(--text-primary)]">
-            {val.toFixed(2)} {pcfg.unit}
-          </strong>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">Robust Z:</span>
-          <strong className={`font-mono ${chip.robustZScore >= 3.0 ? 'text-[var(--warning)]' : 'text-[var(--text-primary)]'}`}>
-            {chip.robustZScore.toFixed(2)}σ
-          </strong>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">Drift Rate:</span>
-          <strong className={`font-mono ${chip.predictedSlope > (stats?.safetySlope ?? 0.02) ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}`}>
-            {chip.predictedSlope.toFixed(4)}/h
-          </strong>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">Forecast 168h:</span>
-          <strong className={`font-mono ${chip.predicted168h > pcfg.staticLimit ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}`}>
-            {chip.predicted168h.toFixed(1)} {pcfg.unit}
-          </strong>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">Datasheet:</span>
-          <span className={`font-mono ${chip.passesStaticLimit ? 'text-[var(--success)] font-semibold' : 'text-[var(--danger)] font-bold'}`}>
-            {chip.passesStaticLimit ? 'PASS (<50µA)' : 'FAIL (>50µA)'}
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="font-sans text-[var(--text-muted)]">Anomaly Score:</span>
-          <strong className={`font-mono ${chip.ensembleScore >= 45 ? 'text-[var(--danger)]' : 'text-[var(--success)]'}`}>
-            {chip.ensembleScore} / 100
-          </strong>
-        </div>
-      </div>
-
-      {/* SHAP Feature Attribution Mini Bar Chart */}
-      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1">
-        <div className="text-[10px] flex items-center justify-between">
-          <span className="font-display font-bold text-[var(--text-muted)]">SHAP FEATURE ATTRIBUTION</span>
-          <span className="font-mono text-[9px] text-[var(--accent)]">Relative Impact %</span>
-        </div>
-        <div className="h-20 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart layout="vertical" data={shapData} margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
-              <XAxis type="number" hide domain={[0, 100]} />
-              <YAxis
-                dataKey="feature"
-                type="category"
-                stroke={theme === 'dark' ? '#94a3b8' : '#475569'}
-                tick={{ fontSize: 8, fill: theme === 'dark' ? '#94a3b8' : '#475569' }}
-                width={90}
-              />
-              <Tooltip
-                content={({ payload }) => {
-                  if (!payload || !payload[0]) return null;
-                  return (
-                    <div className="mission-card p-1 text-[9px] font-mono border border-[var(--border)]">
-                      Impact: {payload[0].value}%
-                    </div>
-                  );
-                }}
-              />
-              <Bar dataKey="impact" radius={[0, 4, 4, 0]}>
-                {shapData.map((_, index) => (
-                  <Cell
-                    key={index}
-                    fill={
-                      index === 0
-                        ? theme === 'dark' ? '#ff3366' : '#e11d48'
-                        : index === 1
-                        ? theme === 'dark' ? '#ffaa00' : '#d97706'
-                        : theme === 'dark' ? '#00f0ff' : '#0284c7'
-                    }
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Human-in-the-Loop Override Expandable Section */}
-      {isOverrideFormOpen && (
-        <div className="p-2.5 rounded-[8px] border border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30 space-y-2 text-[10px]">
-          <div className="text-amber-600 dark:text-amber-300 font-display font-bold">QA INSPECTOR DECISION OVERRIDE</div>
+      }
+      headerRight={
+        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[4px] bg-slate-200/80 dark:bg-slate-800 text-[var(--text-secondary)] mr-1">
+          R{chip.row}:C{chip.col}
+        </span>
+      }
+    >
+      <div className="p-3.5 flex flex-col gap-3 font-sans text-xs">
+        {/* Prominent Verdict Banner */}
+        <div className={`p-2.5 rounded-[8px] border flex items-center justify-between text-xs ${vStyle.bg}`}>
           <div className="flex items-center gap-2">
-            <label className="font-sans text-[var(--text-muted)]">Verdict:</label>
-            <select
-              value={overrideVerdict}
-              onChange={(e) => setOverrideVerdict(e.target.value as ScreeningVerdict)}
-              className="bg-white dark:bg-slate-900 border border-[var(--border)] text-[var(--text-primary)] rounded-[4px] px-2 py-0.5 font-mono text-[10px]"
-            >
-              <option value="PASS">PASS (Flight Cleared)</option>
-              <option value="LATENT_SUSPECT">LATENT_SUSPECT (Hold for DPA)</option>
-              <option value="HARD_REJECT">HARD_REJECT (Permanent Reject)</option>
-              <option value="EARLY_REJECT">EARLY_REJECT (Premature Drift Reject)</option>
-            </select>
+            {vStyle.icon}
+            <div>
+              <div className="font-display font-bold tracking-tight text-[11px]">{vStyle.title}</div>
+              <div className="text-[9px] font-sans opacity-85">Zero False Negative Protocol Enforced</div>
+            </div>
           </div>
-          <input
-            type="text"
-            placeholder="Engineering justification..."
-            value={overrideReason}
-            onChange={(e) => setOverrideReason(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900 border border-[var(--border)] rounded-[4px] px-2 py-1 text-[var(--text-primary)] font-sans text-[10px]"
-          />
-          <div className="flex justify-end gap-1.5">
-            <button
-              onClick={() => setIsOverrideFormOpen(false)}
-              className="px-2 py-0.5 rounded-[4px] bg-slate-200 dark:bg-slate-800 text-[var(--text-muted)] font-sans"
+          {chip.earlyReject && (
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 font-bold shrink-0">
+              -144h
+            </span>
+          )}
+        </div>
+
+        {/* Plain-English Glass-Box Justification */}
+        <div className="p-2.5 rounded-[8px] bg-[var(--surface)] border border-[var(--border)] space-y-1">
+          <div className="text-[10px] font-display text-[var(--accent)] font-bold flex items-center gap-1.5 tracking-wide">
+            <Sparkles className="w-3 h-3" />
+            <span>AI DECISION EXPLANATION</span>
+          </div>
+          <p className="text-[11px] leading-relaxed text-[var(--text-secondary)] font-sans">
+            {chip.justification ||
+              'Part conforms strictly within nominal multi-hour drift margins. No gate-oxide degradation detected across burn-in.'}
+          </p>
+        </div>
+
+        {/* Measurements & Drift Comparison Table */}
+        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div className="p-2 rounded-[7px] bg-[var(--surface)] border border-[var(--border)]">
+            <div className="text-[10px] text-[var(--text-muted)] uppercase">0h Baseline</div>
+            <div className="font-display font-bold text-sm text-[var(--text-primary)]">
+              {chip.measurements[parameter].v_0h.toFixed(2)} {pcfg.unit}
+            </div>
+          </div>
+          <div className="p-2 rounded-[7px] bg-[var(--surface)] border border-[var(--border)]">
+            <div className="text-[10px] text-[var(--text-muted)] uppercase">
+              Current ({checkpoint}h)
+            </div>
+            <div
+              className={`font-display font-bold text-sm ${
+                val > pcfg.staticLimit
+                  ? 'text-rose-500'
+                  : stats && val > stats.dynamicUpperLimit
+                  ? 'text-amber-500'
+                  : 'text-emerald-500'
+              }`}
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleCommitOverride}
-              className="px-2.5 py-0.5 rounded-[4px] bg-amber-500 text-slate-950 font-display font-bold flex items-center gap-1"
+              {val.toFixed(2)} {pcfg.unit}
+            </div>
+          </div>
+          <div className="p-2 rounded-[7px] bg-[var(--surface)] border border-[var(--border)]">
+            <div className="text-[10px] text-[var(--text-muted)] uppercase">24h Forecast Slope</div>
+            <div
+              className={`font-display font-bold text-sm ${
+                chip.predictedSlope > (stats?.safetySlope ?? 0.02) ? 'text-amber-500' : 'text-emerald-500'
+              }`}
             >
-              <Check className="w-3 h-3" /> Commit
-            </button>
+              +{chip.predictedSlope.toFixed(4)}/h
+            </div>
+          </div>
+          <div className="p-2 rounded-[7px] bg-[var(--surface)] border border-[var(--border)]">
+            <div className="text-[10px] text-[var(--text-muted)] uppercase">168h Extrapolation</div>
+            <div
+              className={`font-display font-bold text-sm ${
+                chip.predicted168h > pcfg.staticLimit ? 'text-rose-500' : 'text-emerald-500'
+              }`}
+            >
+              {chip.predicted168h.toFixed(2)} {pcfg.unit}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Action Command Row */}
-      <div className="grid grid-cols-4 gap-1.5 pt-1">
-        <button
-          onClick={() => setCameraViewMode('CLOSEUP')}
-          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--accent)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-sm"
-          title="Isolate in 3D Chamber"
-        >
-          <Compass className="w-3.5 h-3.5 mb-0.5" />
-          <span>ISOLATE</span>
-        </button>
+        {/* Dynamic SHAP Feature Importance Attribution */}
+        <div className="space-y-1.5 pt-1 border-t border-[var(--border)]">
+          <div className="flex items-center justify-between text-[10px] font-mono uppercase text-[var(--text-muted)]">
+            <span>KEY ANOMALY ATTRIBUTIONS (SHAP)</span>
+            <span className="text-[var(--accent)] font-semibold">ENHANCED INTERPRETABILITY</span>
+          </div>
 
-        <button
-          onClick={() => setIsOverrideFormOpen(!isOverrideFormOpen)}
-          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--warning)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-sm"
-          title="QA Inspector Override"
-        >
-          <Edit3 className="w-3.5 h-3.5 mb-0.5" />
-          <span>OVERRIDE</span>
-        </button>
+          <div className="h-28 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={shapData} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
+                <XAxis type="number" domain={[0, 100]} hide />
+                <YAxis
+                  type="category"
+                  dataKey="feature"
+                  tick={{ fontSize: 9, fill: theme === 'dark' ? '#94a3b8' : '#475569' }}
+                  width={110}
+                />
+                <Tooltip
+                  formatter={(val: any) => [`${val}% attribution`, 'Impact']}
+                  contentStyle={{
+                    backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff',
+                    borderColor: theme === 'dark' ? '#334155' : '#cbd5e1',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                  }}
+                />
+                <Bar dataKey="impact" radius={[0, 4, 4, 0]}>
+                  {shapData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        chip.verdict === 'PASS'
+                          ? '#10b981'
+                          : index === 0
+                          ? '#f43f5e'
+                          : index === 1
+                          ? '#f59e0b'
+                          : '#06b6d4'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-        <button
-          onClick={() => exportSinglePartQAPdf(chip, stats, parameter)}
-          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--text-primary)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-sm"
-          title="Export QA Certificate PDF"
-        >
-          <Download className="w-3.5 h-3.5 mb-0.5" />
-          <span>PDF CERT</span>
-        </button>
+        {/* Lead Engineer Decision Override Drawer */}
+        {isOverrideFormOpen && (
+          <div className="p-3 rounded-[8px] bg-[var(--surface)] border border-[var(--border)] space-y-2 animate-in slide-in-from-top-2 duration-150">
+            <div className="font-display font-semibold text-xs text-[var(--text-primary)]">
+              Manual Decision Override
+            </div>
+            <div className="grid grid-cols-3 gap-1 text-[11px] font-display">
+              {(['PASS', 'LATENT_SUSPECT', 'HARD_REJECT'] as ScreeningVerdict[]).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setOverrideVerdict(v)}
+                  className={`py-1 rounded-[5px] transition-colors border ${
+                    overrideVerdict === v
+                      ? 'bg-[var(--accent)] text-slate-950 font-bold border-[var(--accent)] shadow-xs'
+                      : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)]'
+                  }`}
+                >
+                  {v === 'LATENT_SUSPECT' ? 'REVIEW' : v.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
 
-        <button
-          onClick={() => setIsAiCopilotOpen(true)}
-          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-[var(--accent-soft)] hover:opacity-90 text-[var(--accent)] border border-[var(--border-accent)] text-[9px] font-display font-semibold transition-colors shadow-sm"
-          title="Ask AI Copilot"
-        >
-          <Bot className="w-3.5 h-3.5 mb-0.5" />
-          <span>COPILOT</span>
-        </button>
+            <input
+              type="text"
+              placeholder="Reason for override (e.g. Verified harmless passivation artifact)..."
+              value={overrideReason}
+              onChange={(e) => setOverrideReason(e.target.value)}
+              className="w-full px-2.5 py-1.5 rounded-[6px] bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-primary)] text-xs placeholder:text-[var(--text-muted)] focus:outline-hidden focus:border-[var(--accent)] font-sans"
+            />
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setIsOverrideFormOpen(false)}
+                className="px-2.5 py-1 rounded-[5px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors text-xs font-display"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCommitOverride}
+                className="px-3 py-1 rounded-[5px] bg-[var(--accent)] text-slate-950 hover:opacity-90 font-display font-semibold text-xs flex items-center gap-1 shadow-xs transition-opacity"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Save Override</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Action Button Strip */}
+        <div className="grid grid-cols-4 gap-1.5 pt-1 border-t border-[var(--border)]">
+          <button
+            onClick={() => setCameraViewMode('CLOSEUP')}
+            className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] text-[var(--text-primary)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-xs"
+            title="Orbit 3D Camera Closeup on this Die"
+          >
+            <Compass className="w-3.5 h-3.5 mb-0.5 text-[var(--accent)]" />
+            <span>ORBIT 3D</span>
+          </button>
+
+          <button
+            onClick={() => setIsOverrideFormOpen(!isOverrideFormOpen)}
+            className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] text-[var(--text-primary)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-xs"
+            title="Manual Decision Override"
+          >
+            <Edit3 className="w-3.5 h-3.5 mb-0.5 text-[var(--warning)]" />
+            <span>OVERRIDE</span>
+          </button>
+
+          <button
+            onClick={() => exportSinglePartQAPdf(chip, stats, parameter)}
+            className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] text-[var(--text-primary)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-xs"
+            title="Export QA Certificate PDF"
+          >
+            <Download className="w-3.5 h-3.5 mb-0.5" />
+            <span>PDF CERT</span>
+          </button>
+
+          <button
+            onClick={() => setIsAiCopilotOpen(true)}
+            className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-[var(--accent-soft)] hover:opacity-90 text-[var(--accent)] border border-[var(--border-accent)] text-[9px] font-display font-semibold transition-colors shadow-xs"
+            title="Ask AI Copilot"
+          >
+            <Bot className="w-3.5 h-3.5 mb-0.5" />
+            <span>COPILOT</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </DraggableWindow>
   );
 };
+export default InspectionHUD;

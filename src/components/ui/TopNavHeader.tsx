@@ -33,8 +33,12 @@ import {
   BrainCircuit,
   Sliders,
   Settings,
+  LayoutGrid,
+  Minus,
+  Maximize2,
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { useWindowManagerStore } from '../../state/useWindowManagerStore';
 
 interface PhaseMeta {
   phase: DemoStoryPhase;
@@ -142,15 +146,25 @@ export const TopNavHeader: React.FC = () => {
   const stats = useBurnInStore((state) => state.stats);
 
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isWindowsMenuOpen, setIsWindowsMenuOpen] = useState(false);
   const [isExpandedMath, setIsExpandedMath] = useState(false);
   const [isProvenanceModalOpen, setIsProvenanceModalOpen] = useState(false);
   const toolsMenuRef = useRef<HTMLDivElement>(null);
+  const windowsMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close tools popover when clicking outside
+  const managedWindows = useWindowManagerStore((state) => state.windows);
+  const resetAllWindowPositions = useWindowManagerStore((state) => state.resetAllPositions);
+  const toggleWindowOpen = useWindowManagerStore((state) => state.toggleOpen);
+  const toggleWindowMinimize = useWindowManagerStore((state) => state.toggleMinimize);
+
+  // Close popovers when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (toolsMenuRef.current && !toolsMenuRef.current.contains(e.target as Node)) {
         setIsToolsOpen(false);
+      }
+      if (windowsMenuRef.current && !windowsMenuRef.current.contains(e.target as Node)) {
+        setIsWindowsMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -303,6 +317,83 @@ export const TopNavHeader: React.FC = () => {
             <ShieldCheck className="w-3.5 h-3.5" />
             <span className="hidden md:inline">AUDIT</span>
           </button>
+
+          {/* Workspace Windows Layout Manager Dropdown */}
+          <div className="relative" ref={windowsMenuRef}>
+            <button
+              onClick={() => setIsWindowsMenuOpen(!isWindowsMenuOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors font-sans"
+              title="Manage Floating HUD Windows & Workspace Layout"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-[var(--accent)]" />
+              <span className="hidden xl:inline">WINDOWS</span>
+              <ChevronDown className="w-2.5 h-2.5 text-[var(--text-muted)]" />
+            </button>
+
+            {isWindowsMenuOpen && (
+              <div className="absolute right-0 mt-1 w-64 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-[10px] shadow-[var(--shadow-floating)] p-2 z-50 animate-in fade-in zoom-in-95 duration-150 font-sans text-xs space-y-2">
+                <div className="flex items-center justify-between pb-1.5 border-b border-[var(--border)] text-[10px] font-mono uppercase text-[var(--text-muted)]">
+                  <span>WORKSPACE DOCKS</span>
+                  <button
+                    onClick={() => {
+                      resetAllWindowPositions();
+                      setIsWindowsMenuOpen(false);
+                    }}
+                    className="flex items-center gap-1 text-[var(--accent)] hover:underline font-bold"
+                    title="Reset all windows back to default screen positions"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>RESET ALL</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  {[
+                    { id: 'chamber-instrumentation', label: 'Chamber Instrumentation' },
+                    { id: 'checkpoint-timeline', label: 'Checkpoint & Timeline' },
+                    { id: 'lot-outlier', label: 'LOT Outlier Matrix' },
+                    { id: 'vision-monitor', label: 'Live Optical Inspection' },
+                    { id: 'inspection-hud', label: 'Die Inspection HUD' },
+                  ].map((win) => {
+                    const cfg = managedWindows[win.id];
+                    const isOpen = cfg?.isOpen ?? true;
+                    const isMin = cfg?.isMinimized ?? false;
+
+                    return (
+                      <div
+                        key={win.id}
+                        className="flex items-center justify-between p-1.5 rounded-[6px] hover:bg-[var(--surface)] text-[var(--text-primary)] transition-colors"
+                      >
+                        <button
+                          onClick={() => toggleWindowOpen(win.id)}
+                          className="flex items-center gap-2 flex-1 text-left"
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              isOpen ? 'bg-emerald-500' : 'bg-slate-500'
+                            }`}
+                          />
+                          <span className={isOpen ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)] line-through'}>
+                            {win.label}
+                          </span>
+                        </button>
+
+                        {isOpen && (
+                          <button
+                            onClick={() => toggleWindowMinimize(win.id)}
+                            className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-elevated)] transition-colors"
+                            title={isMin ? 'Expand Window' : 'Minimize Window'}
+                          >
+                            {isMin ? <Maximize2 className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Theme Switcher */}
           <ThemeSwitcher />
