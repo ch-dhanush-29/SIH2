@@ -45,9 +45,11 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
     const pos = new Float32Array(particleCount * 3);
     const col = new Float32Array(particleCount * 3);
 
-    const cyan = new THREE.Color(isDark ? '#20d6e8' : '#0284c7');
-    const amber = new THREE.Color('#f37023'); // ISRO signature orange
-    const white = new THREE.Color(isDark ? '#ffffff' : '#94a3b8');
+    // Indian flag palette particles: saffron, India Green, Ashoka Navy, white
+    const saffron = new THREE.Color('#FF9933');
+    const green   = new THREE.Color('#138808');
+    const navy    = new THREE.Color('#000080');
+    const white   = new THREE.Color('#ffffff');
 
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -58,7 +60,8 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
       pos[i * 3 + 1] = height;
       pos[i * 3 + 2] = Math.sin(angle) * radius;
 
-      const pickColor = Math.random() > 0.6 ? amber : Math.random() > 0.3 ? cyan : white;
+      const r = Math.random();
+      const pickColor = r > 0.65 ? saffron : r > 0.35 ? green : r > 0.15 ? navy : white;
       col[i * 3] = pickColor.r;
       col[i * 3 + 1] = pickColor.g;
       col[i * 3 + 2] = pickColor.b;
@@ -187,32 +190,32 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
         <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[cylinderRadius, cylinderRadius, cylinderThickness, 64]} />
           <meshStandardMaterial
-            color={isDark ? '#1a2634' : '#e2e8f0'}
+            color={isDark ? '#120800' : '#f0e0c0'}
             metalness={0.92}
             roughness={0.2}
           />
         </mesh>
 
         {/* 1B. Outer Chamfered Torus Rims (Front & Back) */}
-        {/* Front Chamfer Rim */}
+        {/* Front Chamfer Rim — Saffron */}
         <mesh position={[0, 0, cylinderThickness / 2]}>
           <torusGeometry args={[cylinderRadius, 0.065, 16, 64]} />
           <meshStandardMaterial
-            color={isDark ? '#20d6e8' : '#087ea4'}
+            color='#FF9933'
             metalness={0.95}
             roughness={0.12}
-            emissive={isDark ? '#20d6e8' : '#087ea4'}
-            emissiveIntensity={isDark ? 0.5 : 0.25}
+            emissive='#FF9933'
+            emissiveIntensity={isDark ? 0.55 : 0.28}
           />
         </mesh>
-        {/* Back Chamfer Rim */}
+        {/* Back Chamfer Rim — India Green */}
         <mesh position={[0, 0, -cylinderThickness / 2]}>
           <torusGeometry args={[cylinderRadius, 0.065, 16, 64]} />
           <meshStandardMaterial
-            color={isDark ? '#20d6e8' : '#087ea4'}
+            color='#138808'
             metalness={0.95}
             roughness={0.12}
-            emissive={isDark ? '#20d6e8' : '#087ea4'}
+            emissive='#138808'
             emissiveIntensity={isDark ? 0.5 : 0.25}
           />
         </mesh>
@@ -261,7 +264,7 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
           />
         </mesh>
 
-        {/* 1E. 4 Cardinal 3D Sensor Pins / Gold Contact Lugs */}
+        {/* 1E. 4 Cardinal 3D Sensor Pins — Saffron (N/S) & India Green (E/W) */}
         {[0, Math.PI / 2, Math.PI, (Math.PI * 3) / 2].map((angle, i) => (
           <mesh
             key={i}
@@ -274,9 +277,9 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
           >
             <boxGeometry args={[0.16, 0.1, cylinderThickness * 0.85]} />
             <meshStandardMaterial
-              color="#ffb020"
-              emissive="#ffb020"
-              emissiveIntensity={0.85}
+              color={i % 2 === 0 ? '#FF9933' : '#138808'}
+              emissive={i % 2 === 0 ? '#FF9933' : '#138808'}
+              emissiveIntensity={0.90}
               metalness={0.9}
               roughness={0.2}
             />
@@ -287,34 +290,22 @@ export const IntroLogo3D: React.FC<IntroLogo3DProps> = ({
       {/* ========================================================================= */}
       {/* 2. CONCENTRIC 3D SCIENTIFIC CALIBRATION RINGS                           */}
       {/* ========================================================================= */}
-      {/* Ring 1: Inner Cyan Torus Orbit */}
+      {/* Ring 1: Inner Saffron Torus — Indian flag saffron */}
       <mesh ref={ring1Ref} rotation={[Math.PI / 5, 0, 0]}>
         <torusGeometry args={[2.85, 0.024, 16, 96]} />
-        <meshBasicMaterial
-          color={isDark ? '#20d6e8' : '#087ea4'}
-          transparent
-          opacity={0.7}
-        />
+        <meshBasicMaterial color='#FF9933' transparent opacity={0.75} />
       </mesh>
 
-      {/* Ring 2: Intermediate Orbital Track */}
+      {/* Ring 2: Middle India Green Orbital Track */}
       <mesh ref={ring2Ref} rotation={[-Math.PI / 3.5, 0, 0]}>
         <torusGeometry args={[3.55, 0.02, 16, 96]} />
-        <meshBasicMaterial
-          color={isDark ? '#38bdf8' : '#0284c7'}
-          transparent
-          opacity={0.5}
-        />
+        <meshBasicMaterial color='#138808' transparent opacity={0.55} />
       </mesh>
 
-      {/* Ring 3: Outer Horizon Ring */}
+      {/* Ring 3: Outer Ashoka Navy Horizon Ring */}
       <mesh ref={ring3Ref} rotation={[0, 0, 0]}>
         <torusGeometry args={[4.25, 0.016, 16, 96]} />
-        <meshBasicMaterial
-          color={isDark ? '#64748b' : '#94a3b8'}
-          transparent
-          opacity={0.35}
-        />
+        <meshBasicMaterial color='#000080' transparent opacity={0.45} />
       </mesh>
 
       {/* ========================================================================= */}

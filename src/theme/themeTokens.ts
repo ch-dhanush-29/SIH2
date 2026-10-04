@@ -2,6 +2,21 @@ import * as THREE from 'three';
 
 export type ThemeMode = 'dark' | 'light';
 
+/**
+ * BURNWATCH 3D — INDIAN FLAG COLOUR SYSTEM
+ *
+ * Palette (exclusive — nothing outside this list):
+ *   Saffron      #FF9933   primary accent (Bhagwa)
+ *   Saffron dim  #CC7A29   deep saffron shade
+ *   Saffron tint #FFB566   highlight tint
+ *   India Green  #138808   success / healthy
+ *   Green dim    #0D5C06   deep green shade
+ *   Ashoka Navy  #000080   secondary accent (Chakra blue)
+ *   Navy tint    #3333BB   lighter navy
+ *   White        #FFFFFF   text / surface
+ *   Black        #000000   background
+ */
+
 export interface ThemeColors {
   bgPrimary: string;
   bgSecondary: string;
@@ -94,172 +109,183 @@ export const THEME_CONFIG: Record<
     charts: ThemeChartConfig;
   }
 > = {
+  /* =========================================================
+     DARK THEME — Black backgrounds + Indian flag colours
+  ========================================================= */
   dark: {
     tokens: {
-      bgPrimary: '#05080D',
-      bgSecondary: '#08111A',
-      surface: 'rgba(11, 21, 32, 0.88)',
-      surfaceElevated: 'rgba(16, 28, 40, 0.96)',
-      textPrimary: '#E8F0F7',
-      textSecondary: '#7D92A5',
-      textMuted: '#4B5E71',
-      border: 'rgba(32, 214, 232, 0.16)',
-      borderAccent: 'rgba(32, 214, 232, 0.45)',
-      accent: '#20D6E8',
-      accentSoft: 'rgba(32, 214, 232, 0.12)',
-      success: '#19D38A',
-      warning: '#FFB020',
-      danger: '#FF4268',
-      shadow: '0 8px 24px -2px rgba(0, 0, 0, 0.6)',
+      bgPrimary:       '#000000',
+      bgSecondary:     '#0a0a0a',
+      surface:         'rgba(15, 10, 5, 0.92)',
+      surfaceElevated: 'rgba(22, 14, 6, 0.97)',
+      textPrimary:     '#ffffff',
+      textSecondary:   '#d9a96e',
+      textMuted:       '#7a5c3a',
+      border:          'rgba(255, 153, 51, 0.20)',
+      borderAccent:    'rgba(255, 153, 51, 0.55)',
+      accent:          '#FF9933',        // Saffron
+      accentSoft:      'rgba(255, 153, 51, 0.14)',
+      success:         '#138808',        // India Green
+      warning:         '#FF9933',        // Saffron
+      danger:          '#CC2200',        // Deep red-saffron
+      shadow:          '0 8px 24px -2px rgba(0,0,0,0.85)',
     },
     three: {
-      bgColor: '#05080D',
-      ambientColor: '#CCE6FF',
-      ambientIntensity: 0.5,
-      dirLightColor: '#E0F2FE',
-      dirLightIntensity: 1.5,
-      fillLightColor: '#FFEDD5',
-      fillLightIntensity: 0.4,
+      bgColor:           '#000000',
+      ambientColor:      '#FF9933',      // Saffron warmth
+      ambientIntensity:  0.35,
+      dirLightColor:     '#FFE5C0',      // Warm saffron-white
+      dirLightIntensity: 1.4,
+      fillLightColor:    '#138808',      // India Green fill from below
+      fillLightIntensity: 0.25,
 
-      trayGrateColor: '#0C0F17',
-      trayGrateMetalness: 0.92,
-      trayGrateRoughness: 0.25,
-      busRailColor: '#D4AF37',
-      wallColor: '#07090E',
-      cornerStrutColor: '#0A0D14',
-      gridColorCenter: '#20D6E8',
-      gridColorGrid: '#1E293B',
-      coilColor: '#FF4400',
-      heaterPointColor: '#FF7700',
-      heaterIntensity: 3.2,
-      hudPlateColor: '#020305',
-      hudTextColor: '#FFB020',
-      hudSubtextColor: '#20D6E8',
-      laserScanColor: '#20D6E8',
+      trayGrateColor:      '#0f0800',
+      trayGrateMetalness:  0.92,
+      trayGrateRoughness:  0.25,
+      busRailColor:        '#FF9933',    // Saffron bus rails
+      wallColor:           '#060300',
+      cornerStrutColor:    '#0a0500',
+      gridColorCenter:     '#FF9933',    // Saffron centre grid
+      gridColorGrid:       '#1a0d00',
+      coilColor:           '#FF6600',    // Deep saffron-orange
+      heaterPointColor:    '#FF9933',
+      heaterIntensity:     3.0,
+      hudPlateColor:       '#000000',
+      hudTextColor:        '#FF9933',    // Saffron HUD text
+      hudSubtextColor:     '#138808',    // India Green HUD sub
+      laserScanColor:      '#FF9933',
 
-      chipNormalColor: new THREE.Color('#20D6E8'),
-      chipNormalEmissive: new THREE.Color('#002B33'),
-      chipNormalEmissiveIntensity: 0.25,
+      // Normal chip → Ashoka Navy (cool, healthy, stable)
+      chipNormalColor:             new THREE.Color('#000080'),
+      chipNormalEmissive:          new THREE.Color('#000033'),
+      chipNormalEmissiveIntensity: 0.4,
 
-      chipSuspectColor: new THREE.Color('#FFB020'),
-      chipSuspectEmissive: new THREE.Color('#7A4500'),
-      chipSuspectEmissiveIntensity: 0.65,
+      // Suspect chip → Saffron warning
+      chipSuspectColor:             new THREE.Color('#FF9933'),
+      chipSuspectEmissive:          new THREE.Color('#7a3a00'),
+      chipSuspectEmissiveIntensity: 0.7,
 
-      chipRejectColor: new THREE.Color('#FF4268'),
-      chipRejectEmissive: new THREE.Color('#800020'),
-      chipRejectEmissiveIntensity: 0.85,
+      // Reject chip → Deep red-saffron
+      chipRejectColor:             new THREE.Color('#CC2200'),
+      chipRejectEmissive:          new THREE.Color('#660000'),
+      chipRejectEmissiveIntensity: 0.9,
 
-      chipEarlyRejectColor: new THREE.Color('#FF00AA'),
-      chipEarlyRejectEmissive: new THREE.Color('#7A004C'),
+      // Early-reject chip → Vivid saffron-orange
+      chipEarlyRejectColor:             new THREE.Color('#FF6600'),
+      chipEarlyRejectEmissive:          new THREE.Color('#7a2200'),
       chipEarlyRejectEmissiveIntensity: 0.85,
 
-      chipSelectedColor: new THREE.Color('#FFFFFF'),
-      chipLeadPinColor: '#D1D5DB',
+      chipSelectedColor:  new THREE.Color('#FFFFFF'),
+      chipLeadPinColor:   '#ccaa77',
 
-      anomalySubduedColor: new THREE.Color('#151B28'),
-      thermalParticleColor: '#FF6600',
-      thermalParticleSize: 0.35,
-      laserRingColor: '#20D6E8',
-      dataBeamNormal: '#20D6E8',
-      dataBeamReject: '#FF4268',
+      anomalySubduedColor:  new THREE.Color('#1a0d00'),
+      thermalParticleColor: '#FF9933',
+      thermalParticleSize:  0.35,
+      laserRingColor:       '#FF9933',
+      dataBeamNormal:       '#000080',   // Ashoka Navy data beam
+      dataBeamReject:       '#CC2200',
     },
     charts: {
-      gridStroke: '#1E293B',
-      axisStroke: '#475569',
-      tickColor: '#94A3B8',
-      tooltipBg: '#090D16',
-      tooltipBorder: 'rgba(32, 214, 232, 0.35)',
-      tooltipText: '#F1F5F9',
-      nominalLine: '#20D6E8',
-      driftBandFill: 'rgba(32, 214, 232, 0.15)',
-      safetySlopeLine: '#FFB020',
-      datasheetLimitLine: '#FF4268',
-      shapPositive: '#FF4268',
-      shapNegative: '#19D38A',
+      gridStroke:         '#1a0d00',
+      axisStroke:         '#4d2600',
+      tickColor:          '#7a5c3a',
+      tooltipBg:          '#0a0500',
+      tooltipBorder:      'rgba(255, 153, 51, 0.40)',
+      tooltipText:        '#ffffff',
+      nominalLine:        '#000080',     // Ashoka Navy nominal line
+      driftBandFill:      'rgba(0, 0, 128, 0.15)',
+      safetySlopeLine:    '#FF9933',     // Saffron safety slope
+      datasheetLimitLine: '#CC2200',
+      shapPositive:       '#CC2200',
+      shapNegative:       '#138808',     // India Green (good SHAP)
     },
   },
+
+  /* =========================================================
+     LIGHT THEME — Warm parchment + Indian flag colours
+  ========================================================= */
   light: {
     tokens: {
-      bgPrimary: '#F5F8FB',
-      bgSecondary: '#E8EEF4',
-      surface: 'rgba(255, 255, 255, 0.92)',
-      surfaceElevated: 'rgba(248, 250, 252, 0.98)',
-      textPrimary: '#102033',
-      textSecondary: '#475569',
-      textMuted: '#64748B',
-      border: 'rgba(8, 126, 164, 0.16)',
-      borderAccent: 'rgba(8, 126, 164, 0.45)',
-      accent: '#087EA4',
-      accentSoft: 'rgba(8, 126, 164, 0.10)',
-      success: '#059669',
-      warning: '#D97706',
-      danger: '#DC264F',
-      shadow: '0 4px 16px -2px rgba(16, 32, 51, 0.06)',
+      bgPrimary:       '#fff8f0',
+      bgSecondary:     '#ffeedd',
+      surface:         'rgba(255, 255, 255, 0.95)',
+      surfaceElevated: 'rgba(255, 252, 245, 0.99)',
+      textPrimary:     '#1a0d00',
+      textSecondary:   '#7a3d00',
+      textMuted:       '#a05a20',
+      border:          'rgba(255, 153, 51, 0.22)',
+      borderAccent:    'rgba(255, 153, 51, 0.55)',
+      accent:          '#CC6600',        // Deep saffron for light mode
+      accentSoft:      'rgba(204, 102, 0, 0.12)',
+      success:         '#0d5c06',        // Deep India Green
+      warning:         '#CC6600',
+      danger:          '#AA1100',
+      shadow:          '0 4px 16px -2px rgba(80,30,0,0.10)',
     },
     three: {
-      bgColor: '#F5F8FB',
-      ambientColor: '#FFFFFF',
-      ambientIntensity: 0.95,
-      dirLightColor: '#F8FAFC',
-      dirLightIntensity: 1.35,
-      fillLightColor: '#E2E8F0',
-      fillLightIntensity: 0.6,
+      bgColor:           '#fff8f0',
+      ambientColor:      '#FFFFFF',
+      ambientIntensity:  0.95,
+      dirLightColor:     '#FFF5E0',
+      dirLightIntensity: 1.3,
+      fillLightColor:    '#0d5c06',
+      fillLightIntensity: 0.5,
 
-      trayGrateColor: '#D8E2EC',
-      trayGrateMetalness: 0.65,
-      trayGrateRoughness: 0.4,
-      busRailColor: '#C59B27',
-      wallColor: '#E2E8F0',
-      cornerStrutColor: '#CBD5E1',
-      gridColorCenter: '#0284C7',
-      gridColorGrid: '#94A3B8',
-      coilColor: '#D97706',
-      heaterPointColor: '#F59E0B',
-      heaterIntensity: 2.4,
-      hudPlateColor: '#0F172A',
-      hudTextColor: '#F59E0B',
-      hudSubtextColor: '#38BDF8',
-      laserScanColor: '#0284C7',
+      trayGrateColor:      '#e8d4b8',
+      trayGrateMetalness:  0.55,
+      trayGrateRoughness:  0.45,
+      busRailColor:        '#CC6600',
+      wallColor:           '#f0e0c8',
+      cornerStrutColor:    '#d4c0a0',
+      gridColorCenter:     '#CC6600',
+      gridColorGrid:       '#cc9966',
+      coilColor:           '#CC6600',
+      heaterPointColor:    '#FF9933',
+      heaterIntensity:     2.2,
+      hudPlateColor:       '#1a0d00',
+      hudTextColor:        '#CC6600',
+      hudSubtextColor:     '#0d5c06',
+      laserScanColor:      '#CC6600',
 
-      chipNormalColor: new THREE.Color('#0284C7'), // Deep technical cobalt blue for high contrast
-      chipNormalEmissive: new THREE.Color('#013B59'),
-      chipNormalEmissiveIntensity: 0.15,
+      chipNormalColor:             new THREE.Color('#000080'),
+      chipNormalEmissive:          new THREE.Color('#00003a'),
+      chipNormalEmissiveIntensity: 0.2,
 
-      chipSuspectColor: new THREE.Color('#D97706'),
-      chipSuspectEmissive: new THREE.Color('#663700'),
-      chipSuspectEmissiveIntensity: 0.35,
+      chipSuspectColor:             new THREE.Color('#CC6600'),
+      chipSuspectEmissive:          new THREE.Color('#663300'),
+      chipSuspectEmissiveIntensity: 0.4,
 
-      chipRejectColor: new THREE.Color('#E11D48'),
-      chipRejectEmissive: new THREE.Color('#6E0017'),
-      chipRejectEmissiveIntensity: 0.45,
+      chipRejectColor:             new THREE.Color('#AA1100'),
+      chipRejectEmissive:          new THREE.Color('#550000'),
+      chipRejectEmissiveIntensity: 0.5,
 
-      chipEarlyRejectColor: new THREE.Color('#C026D3'),
-      chipEarlyRejectEmissive: new THREE.Color('#5E0066'),
+      chipEarlyRejectColor:             new THREE.Color('#FF6600'),
+      chipEarlyRejectEmissive:          new THREE.Color('#662200'),
       chipEarlyRejectEmissiveIntensity: 0.45,
 
-      chipSelectedColor: new THREE.Color('#0F172A'), // Dark contrast chip when selected in light theme
-      chipLeadPinColor: '#64748B',
+      chipSelectedColor: new THREE.Color('#1a0d00'),
+      chipLeadPinColor:  '#7a5c3a',
 
-      anomalySubduedColor: new THREE.Color('#CBD5E1'),
-      thermalParticleColor: '#D97706',
-      thermalParticleSize: 0.28,
-      laserRingColor: '#0284C7',
-      dataBeamNormal: '#0284C7',
-      dataBeamReject: '#E11D48',
+      anomalySubduedColor:  new THREE.Color('#f0dfc0'),
+      thermalParticleColor: '#CC6600',
+      thermalParticleSize:  0.28,
+      laserRingColor:       '#CC6600',
+      dataBeamNormal:       '#000080',
+      dataBeamReject:       '#AA1100',
     },
     charts: {
-      gridStroke: '#E2E8F0',
-      axisStroke: '#94A3B8',
-      tickColor: '#475569',
-      tooltipBg: '#FFFFFF',
-      tooltipBorder: 'rgba(2, 132, 199, 0.4)',
-      tooltipText: '#0B132B',
-      nominalLine: '#0284C7',
-      driftBandFill: 'rgba(2, 132, 199, 0.12)',
-      safetySlopeLine: '#D97706',
-      datasheetLimitLine: '#E11D48',
-      shapPositive: '#E11D48',
-      shapNegative: '#059669',
+      gridStroke:         '#f0d8b0',
+      axisStroke:         '#cc9966',
+      tickColor:          '#7a5c3a',
+      tooltipBg:          '#ffffff',
+      tooltipBorder:      'rgba(204, 102, 0, 0.45)',
+      tooltipText:        '#1a0d00',
+      nominalLine:        '#000080',
+      driftBandFill:      'rgba(0, 0, 128, 0.10)',
+      safetySlopeLine:    '#CC6600',
+      datasheetLimitLine: '#AA1100',
+      shapPositive:       '#AA1100',
+      shapNegative:       '#0d5c06',
     },
   },
 };
