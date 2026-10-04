@@ -36,7 +36,7 @@ export const Fallback2DView: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full pt-24 pb-20 px-4 md:pl-80 md:pr-80 flex flex-col bg-slate-50 dark:bg-slate-950/90 overflow-hidden transition-colors duration-200">
+    <div className="w-full h-full pt-[124px] pb-16 px-4 md:pl-80 md:pr-80 flex flex-col bg-slate-50 dark:bg-slate-950/90 overflow-hidden transition-colors duration-200">
       {/* Header controls */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-cyan-500/20">
         <div className="flex items-center gap-2">

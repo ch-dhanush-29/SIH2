@@ -47,7 +47,7 @@ export const VisionMonitor: React.FC = () => {
 
   if (isCollapsed) {
     return (
-      <div className="fixed top-20 right-3 z-30 pointer-events-auto">
+      <div className="fixed top-[118px] right-3 z-30 pointer-events-auto">
         <button
           onClick={() => setIsCollapsed(false)}
           className="mission-hud p-2.5 rounded-xl border border-[var(--border)] shadow-2xl text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all flex flex-col items-center gap-2 group"
@@ -81,7 +81,7 @@ export const VisionMonitor: React.FC = () => {
 
   return (
     <div
-      className={`fixed top-20 right-3 z-30 transition-all duration-300 pointer-events-auto ${
+      className={`fixed top-[118px] right-3 z-30 transition-all duration-300 pointer-events-auto ${
         shouldExpand ? 'w-96' : 'w-72'
       }`}
     >

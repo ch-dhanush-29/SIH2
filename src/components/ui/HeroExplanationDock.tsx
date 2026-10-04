@@ -51,7 +51,7 @@ export const HeroExplanationDock: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-20 right-3 z-40 w-80 sm:w-96 max-h-[calc(100vh-110px)] overflow-y-auto custom-scrollbar pointer-events-auto font-sans animate-in slide-in-from-right-8 duration-300">
+    <div className="fixed top-[118px] right-3 z-40 w-80 sm:w-96 max-h-[calc(100vh-135px)] overflow-y-auto custom-scrollbar pointer-events-auto font-sans animate-in slide-in-from-right-8 duration-300">
       <div className="mission-hud rounded-2xl border-2 border-amber-500/50 bg-[var(--surface-elevated)]/95 backdrop-blur-2xl shadow-2xl p-4 text-[var(--text-primary)] flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">

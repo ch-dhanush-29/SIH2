@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useBurnInStore } from './state/useBurnInStore';
 import { CHECKPOINTS, CheckpointHour } from './types/burnIn';
 import { BurnInCanvas } from './components/viewport3d/BurnInCanvas';
-import { MissionBar } from './components/ui/MissionBar';
+import { TopNavHeader } from './components/ui/TopNavHeader';
 import { LeftMissionDock } from './components/ui/LeftMissionDock';
 import { VisionMonitor } from './components/ui/VisionMonitor';
 import { CinematicTimeline } from './components/ui/CinematicTimeline';
@@ -13,9 +13,7 @@ import { GoldenDemoModal } from './components/panels/GoldenDemoModal';
 import { AuditLogModal } from './components/panels/AuditLogModal';
 import { AiAssistantModal } from './components/panels/AiAssistantModal';
 import { EngineeringModal } from './components/panels/EngineeringModal';
-import { MissionNarrativeBar } from './components/ui/MissionNarrativeBar';
 import { HeroExplanationDock } from './components/ui/HeroExplanationDock';
-import { PipelineWorkflowBanner } from './components/ui/PipelineWorkflowBanner';
 import { DemoStoryPhase } from './types/burnIn';
 
 export const App: React.FC = () => {
@@ -186,15 +184,8 @@ export const App: React.FC = () => {
         <BurnInCanvas />
       </div>
 
-      {/* 2. Top Aerospace Mission HUD Bar */}
-      <MissionBar />
-
-      {/* 2.5. Central Innovation: 5-Stage Latent-Defect Detection Pipeline vs Hero Narrative */}
-      {isHeroNarrativeActive ? (
-        <MissionNarrativeBar />
-      ) : (
-        <PipelineWorkflowBanner />
-      )}
+      {/* 2. Unified 3-Line Top Navigation Header (Line 1: Mission Bar, Line 2: View Modes, Line 3: 5-Stage Pipeline / Hero Story) */}
+      <TopNavHeader />
 
       {/* 3. Consolidated Unified Left Dock (Chamber ESS, Parameter Limits, Radar, Zero-FN Guarantee) */}
       <LeftMissionDock />

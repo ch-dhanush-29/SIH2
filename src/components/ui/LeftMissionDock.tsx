@@ -44,10 +44,10 @@ export const LeftMissionDock: React.FC = () => {
 
   if (isCollapsed) {
     return (
-      <div className="fixed top-20 left-3 z-30 pointer-events-auto">
+      <div className="fixed top-[118px] left-3 z-30 pointer-events-auto">
         <button
           onClick={() => setIsCollapsed(false)}
-          className="mission-hud p-2.5 rounded-xl border border-[var(--border)] shadow-2xl text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all flex flex-col items-center gap-2 group"
+          className="mission-hud p-2 rounded-xl border border-[var(--border)] shadow-2xl text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all flex flex-col items-center gap-2 group"
           title="Expand Left Telemetry Dock"
         >
           <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -61,11 +61,11 @@ export const LeftMissionDock: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-20 left-3 max-h-[calc(100vh-105px)] z-30 w-72 flex flex-col pointer-events-auto font-sans transition-opacity duration-300 ${
+      className={`fixed top-[118px] left-3 max-h-[calc(100vh-135px)] z-30 w-72 flex flex-col pointer-events-auto font-sans transition-opacity duration-300 ${
         isHeroNarrativeActive ? 'opacity-30 hover:opacity-100' : 'opacity-100'
       }`}
     >
-      <div className="mission-hud rounded-2xl border border-[var(--border)] shadow-2xl flex flex-col overflow-hidden max-h-[calc(100vh-105px)] bg-[var(--surface-elevated)]/95 backdrop-blur-xl">
+      <div className="mission-hud rounded-2xl border border-[var(--border)] shadow-2xl flex flex-col overflow-hidden max-h-[calc(100vh-135px)] bg-[var(--surface-elevated)]/95 backdrop-blur-xl">
         {/* Dock Header with Collapse Button */}
         <div className="flex items-center justify-between px-3 py-2 bg-slate-100/90 dark:bg-black/60 border-b border-[var(--border)] text-[10px] font-mono shrink-0">
           <div className="flex items-center gap-1.5 text-[var(--success)] font-bold tracking-wider">
