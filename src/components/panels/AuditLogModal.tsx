@@ -36,39 +36,39 @@ export const AuditLogModal: React.FC<AuditLogModalProps> = ({ isOpen, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-4xl bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-[var(--text-primary)]">
+      <div className="w-full max-w-4xl bg-[var(--surface-elevated)] border border-[var(--border)] rounded-[10px] shadow-[var(--shadow-floating)] overflow-hidden flex flex-col max-h-[85vh] text-[var(--text-primary)]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-slate-100/90 dark:bg-slate-950/80">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] bg-slate-100/90 dark:bg-slate-950/80">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--accent)]">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--accent)]">
+              <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold font-mono tracking-tight flex items-center gap-2">
+              <h2 className="text-sm font-display font-bold tracking-tight flex items-center gap-2">
                 System Audit Trail & QA Compliance Log
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[4px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
                   Immutable
                 </span>
               </h2>
-              <p className="text-xs text-[var(--text-muted)]">
+              <p className="text-xs font-sans text-[var(--text-muted)]">
                 Aerospace Traceability — All screening runs, threshold changes, and inspector overrides recorded
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={loadLogs}
               disabled={loading}
-              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-[7px] text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               title="Refresh Logs"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-[7px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>

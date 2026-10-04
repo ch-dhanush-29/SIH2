@@ -39,30 +39,30 @@ export const GoldenDemoModal: React.FC<GoldenDemoModalProps> = ({ isOpen, onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-3xl bg-[var(--surface-elevated)] border border-amber-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[var(--text-primary)]">
+      <div className="w-full max-w-3xl bg-[var(--surface-elevated)] border border-amber-500/40 rounded-[10px] shadow-[var(--shadow-floating)] overflow-hidden flex flex-col max-h-[90vh] text-[var(--text-primary)]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/40">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/40">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-500">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+            <div className="w-8 h-8 rounded-[7px] bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-500">
+              <Sparkles className="w-4 h-4 animate-pulse" />
             </div>
             <div>
-              <h2 className="text-base font-bold font-mono tracking-tight flex items-center gap-2">
+              <h2 className="text-sm font-display font-bold tracking-tight flex items-center gap-2">
                 SIH Golden Star Demo: Part CHIP-LOT04-042
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[4px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
                   Critical Latent Defect
                 </span>
               </h2>
-              <p className="text-xs text-[var(--text-muted)]">
+              <p className="text-xs font-sans text-[var(--text-muted)]">
                 Environmental Stress Screening (ESS) at 125°C — Why Static Datasheet Limits Fail
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-[7px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 

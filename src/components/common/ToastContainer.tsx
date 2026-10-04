@@ -28,21 +28,21 @@ export const ToastContainer: React.FC = () => {
         return (
           <div
             key={toast.id}
-            className={`pointer-events-auto p-3 rounded-xl border shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all ${style}`}
+            className={`pointer-events-auto p-2.5 rounded-[8px] border shadow-[var(--shadow-floating)] backdrop-blur-md flex items-start gap-2.5 transition-all ${style}`}
           >
             <div className="shrink-0 mt-0.5">{icon}</div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold font-mono tracking-wide">
+                <span className="text-xs font-bold font-display tracking-tight">
                   {toast.title}
                 </span>
                 <span className="text-[10px] opacity-60 font-mono">{toast.timestamp}</span>
               </div>
-              <p className="text-xs opacity-90 mt-0.5 leading-snug">{toast.message}</p>
+              <p className="text-xs font-sans opacity-90 mt-0.5 leading-snug">{toast.message}</p>
             </div>
             <button
               onClick={() => dismissToast(toast.id)}
-              className="text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0"
+              className="text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0 mt-0.5"
             >
               <X className="w-3.5 h-3.5" />
             </button>

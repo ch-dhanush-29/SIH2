@@ -21,28 +21,28 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-2xl mission-hud border border-[var(--border)] shadow-2xl overflow-hidden bg-[var(--surface-elevated)] text-[var(--text-primary)]">
+      <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-[10px] mission-hud border border-[var(--border)] shadow-[var(--shadow-floating)] overflow-hidden bg-[var(--surface-elevated)] text-[var(--text-primary)]">
         {/* Top Header with Tab Switcher */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-slate-100/80 dark:bg-slate-950/60">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] bg-slate-100/90 dark:bg-slate-950/80">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)]">
-              <ShieldAlert className="w-5 h-5" />
+            <div className="p-2 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)]">
+              <ShieldAlert className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold font-mono text-[var(--accent)] tracking-wider uppercase">
+              <h2 className="text-sm font-display font-bold text-[var(--accent)] tracking-wider uppercase">
                 Engineering Diagnostics & Reliability Lab
               </h2>
-              <p className="text-xs text-[var(--text-muted)] font-mono">
+              <p className="text-xs text-[var(--text-muted)] font-sans">
                 ISRO Space-Grade Environmental Stress Screening (SIH26170)
               </p>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-200/70 dark:bg-slate-900 border border-[var(--border)] font-mono text-xs">
+          <div className="flex items-center gap-1.5 p-1 rounded-[8px] bg-slate-200/70 dark:bg-slate-900 border border-[var(--border)] font-display text-xs">
             <button
               onClick={() => onTabChange('UPLOAD')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] transition-all ${
                 activeTab === 'UPLOAD'
                   ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-300/40 dark:hover:bg-slate-800/50'
@@ -54,7 +54,7 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
 
             <button
               onClick={() => onTabChange('EVALUATION')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] transition-all ${
                 activeTab === 'EVALUATION'
                   ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-300/40 dark:hover:bg-slate-800/50'
@@ -66,7 +66,7 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
 
             <button
               onClick={() => onTabChange('COMPARISON')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] transition-all ${
                 activeTab === 'COMPARISON'
                   ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-300/40 dark:hover:bg-slate-800/50'
@@ -80,7 +80,7 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition-all"
+            className="p-1.5 rounded-[7px] text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition-all"
             title="Close dialog (Esc)"
           >
             <X className="w-4 h-4" />

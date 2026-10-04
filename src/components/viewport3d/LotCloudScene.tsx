@@ -3,12 +3,7 @@ import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 import { useBurnInStore } from '../../state/useBurnInStore';
 import { PARAMETER_CONFIGS } from '../../types/burnIn';
-
-const COLOR_NORMAL = new THREE.Color('#00ff88');
-const COLOR_SUSPECT = new THREE.Color('#ffaa00');
-const COLOR_REJECT = new THREE.Color('#ff3366');
-const COLOR_EARLY_REJECT = new THREE.Color('#ff00aa');
-const COLOR_SELECTED = new THREE.Color('#00f0ff');
+import { getThemeConfig } from '../../theme/themeTokens';
 
 const CB_NORMAL = new THREE.Color('#0072b2');
 const CB_SUSPECT = new THREE.Color('#e69f00');
@@ -17,8 +12,6 @@ const CB_EARLY_REJECT = new THREE.Color('#cc79a7');
 const CB_SELECTED = new THREE.Color('#56b4e9');
 
 const tempObject = new THREE.Object3D();
-
-import { getThemeConfig } from '../../theme/themeTokens';
 
 export const LotCloudScene: React.FC = () => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -36,37 +29,43 @@ export const LotCloudScene: React.FC = () => {
   const pcfg = PARAMETER_CONFIGS[parameter];
   const chipCount = chips.length;
 
-  // Geometry for lot cloud points
-  const sphereGeo = useMemo(() => new THREE.SphereGeometry(0.24, 16, 16), []);
+  // Geometry for lot cloud points - subtle, precise points
+  const sphereGeo = useMemo(() => new THREE.SphereGeometry(0.18, 16, 16), []);
 
   useEffect(() => {
     if (!meshRef.current || chipCount === 0 || !stats) return;
 
-    // Normalization factors for 3D coordinates
-    // X-axis: 0 to staticLimit*1.2 mapped to [-12, 12]
-    // Y-axis: Drift slope 0 to safetySlope*2.5 mapped to [-6, 10]
-    // Z-axis: Time (0h to 168h) mapped to [-8, 8]
-    const xMin = 0;
-    const xMax = pcfg.staticLimit * 1.15;
-    const yMax = Math.max(0.4, (stats.safetySlope || 0.1) * 2.8);
+    // Coordinate mapping: Centered around (0, 0, 0)
+    // X: Parameter value (centered on lot median)
+    // Y: Drift slope
+    // Z: Checkpoint time
+    const median = stats.median || 10.4;
+    const xSpread = pcfg.staticLimit * 0.6;
+    const yMax = Math.max(0.35, (stats.safetySlope || 0.05) * 3.2);
 
     for (let i = 0; i < chipCount; i++) {
       const chip = chips[i];
       const val = chip.currentValue;
       const slope = chip.predictedSlope;
 
-      const posX = ((val - xMin) / (xMax - xMin) - 0.5) * 24;
-      const posY = Math.max(-5, (slope / yMax) * 12 - 3);
-      const posZ = ((checkpoint / 168) - 0.5) * 14;
+      // Centered spatial coordinates
+      const posX = ((val - median) / xSpread) * 10;
+      const posY = (slope / yMax) * 8 - 2.5;
+      const posZ = ((checkpoint / 168) - 0.5) * 10;
 
       tempObject.position.set(posX, posY, posZ);
 
+      // Scaled point size based on risk and selection (Section 17)
       if (chip.part_id === selectedChipId) {
-        tempObject.scale.set(2.2, 2.2, 2.2);
+        tempObject.scale.set(2.4, 2.4, 2.4);
       } else if (chip.part_id === hoveredChipId) {
-        tempObject.scale.set(1.6, 1.6, 1.6);
+        tempObject.scale.set(1.8, 1.8, 1.8);
+      } else if (chip.verdict === 'HARD_REJECT' || chip.verdict === 'EARLY_REJECT') {
+        tempObject.scale.set(1.4, 1.4, 1.4);
+      } else if (chip.verdict === 'LATENT_SUSPECT') {
+        tempObject.scale.set(1.2, 1.2, 1.2);
       } else {
-        tempObject.scale.set(1.0, 1.0, 1.0);
+        tempObject.scale.set(0.85, 0.85, 0.85); // Normal points are small and restrained
       }
 
       tempObject.updateMatrix();
@@ -95,61 +94,63 @@ export const LotCloudScene: React.FC = () => {
     }
   }, [chips, stats, parameter, checkpoint, selectedChipId, hoveredChipId, isColorblindMode, chipCount, pcfg, theme]);
 
-  // Static limit position on X-axis
-  const staticLimitX = stats
-    ? ((pcfg.staticLimit / (pcfg.staticLimit * 1.15)) - 0.5) * 24
-    : 8;
+  // Static limit position on X-axis relative to center
+  const median = stats?.median || 10.4;
+  const xSpread = pcfg.staticLimit * 0.6;
+  const staticLimitX = ((pcfg.staticLimit - median) / xSpread) * 10;
 
   // Dynamic safety slope position on Y-axis
-  const yMax = stats ? Math.max(0.4, stats.safetySlope * 2.8) : 0.5;
-  const safetySlopeY = stats ? (stats.safetySlope / yMax) * 12 - 3 : 2;
+  const yMax = stats ? Math.max(0.35, stats.safetySlope * 3.2) : 0.4;
+  const safetySlopeY = stats ? (stats.safetySlope / yMax) * 8 - 2.5 : 1.2;
 
-  const textColor = theme === 'dark' ? '#00f0ff' : '#0284c7';
-  const gridColor1 = theme === 'dark' ? '#00f0ff' : '#0284c7';
-  const gridColor2 = theme === 'dark' ? '#1f293d' : '#cbd5e1';
+  const textColor = theme === 'dark' ? '#7D92A5' : '#475569';
+  const gridColor1 = theme === 'dark' ? '#20D6E8' : '#087EA4';
+  const gridColor2 = theme === 'dark' ? '#101C28' : '#CBD5E1';
 
   return (
     <group position={[0, 0, 0]}>
-      {/* 3D Coordinate Grid Planes */}
-      <gridHelper args={[26, 26, gridColor1, gridColor2]} position={[0, -5, 0]} />
+      {/* 3D Scientific Coordinate Grid Ground */}
+      <gridHelper args={[22, 22, gridColor1, gridColor2]} position={[0, -3.5, 0]} />
 
-      {/* Static Datasheet Limit Plane (Vertical Red Boundary) */}
-      <mesh position={[staticLimitX, 2, 0]}>
-        <boxGeometry args={[0.06, 14, 16]} />
-        <meshBasicMaterial color="#ff3366" transparent opacity={0.22} wireframe />
+      {/* Static Datasheet Limit Plane (Vertical Restrained Boundary) */}
+      <mesh position={[staticLimitX, 1.5, 0]}>
+        <boxGeometry args={[0.04, 10, 14]} />
+        <meshBasicMaterial color="#FF4268" transparent opacity={0.12} wireframe />
       </mesh>
       <Text
-        position={[staticLimitX, 9.2, 0]}
-        fontSize={0.65}
-        color="#ff3366"
+        position={[staticLimitX, 6.8, 0]}
+        fontSize={0.34}
+        color="#FF4268"
         anchorX="center"
+        fillOpacity={0.8}
       >
-        {`STATIC DATASHEET LIMIT (${pcfg.staticLimit} ${pcfg.unit})`}
+        {`STATIC CEILING: ${pcfg.staticLimit} ${pcfg.unit}`}
       </Text>
 
-      {/* Dynamic Lot Safety Slope Plane (Horizontal Amber Boundary) */}
+      {/* Dynamic Lot Safety Slope Plane (Horizontal Amber Threshold) */}
       <mesh position={[0, safetySlopeY, 0]}>
-        <boxGeometry args={[26, 0.06, 16]} />
-        <meshBasicMaterial color="#ffaa00" transparent opacity={0.22} wireframe />
+        <boxGeometry args={[22, 0.04, 14]} />
+        <meshBasicMaterial color="#FFB020" transparent opacity={0.12} wireframe />
       </mesh>
       <Text
-        position={[0, safetySlopeY + 0.45, 8.2]}
-        fontSize={0.6}
-        color="#ffaa00"
+        position={[0, safetySlopeY + 0.35, 6.8]}
+        fontSize={0.32}
+        color="#FFB020"
         anchorX="center"
+        fillOpacity={0.8}
       >
-        {`DYNAMIC SAFETY SLOPE BOUNDARY (${stats?.safetySlope.toFixed(3) || '0.1'} ${pcfg.unit}/h)`}
+        {`SAFETY SLOPE THRESHOLD: ${stats?.safetySlope.toFixed(4) || '0.022'} ${pcfg.unit}/h`}
       </Text>
 
-      {/* Axis Labels */}
-      <Text position={[13.5, -4.8, 0]} fontSize={0.65} color={textColor} anchorX="left">
-        {`X: ${pcfg.label} (${pcfg.unit}) →`}
+      {/* Compact Scientific Axis Labels (Section 18) */}
+      <Text position={[10.5, -3.2, 0]} fontSize={0.36} color={textColor} anchorX="left" fillOpacity={0.75}>
+        {`X / ${pcfg.label.split(' ')[0]} (${pcfg.unit}) →`}
       </Text>
-      <Text position={[-13.5, 9, 0]} fontSize={0.65} color={textColor} anchorX="left">
-        {`Y: Drift Slope (${pcfg.unit}/h) ↑`}
+      <Text position={[-10.5, 6.5, 0]} fontSize={0.36} color={textColor} anchorX="left" fillOpacity={0.75}>
+        {`Y / DRIFT (${pcfg.unit}/h) ↑`}
       </Text>
-      <Text position={[0, -4.8, 9.5]} fontSize={0.65} color={textColor} anchorX="center">
-        {`Z: Burn-In Checkpoint: ${checkpoint}h`}
+      <Text position={[0, -3.2, 7.5]} fontSize={0.36} color={textColor} anchorX="center" fillOpacity={0.75}>
+        {`Z / TIME: ${checkpoint}h`}
       </Text>
 
       {/* Instanced lot cloud points */}
@@ -174,7 +175,7 @@ export const LotCloudScene: React.FC = () => {
           setHoveredChip(null);
         }}
       >
-        <meshStandardMaterial roughness={0.3} metalness={0.8} />
+        <meshStandardMaterial roughness={0.35} metalness={0.7} />
       </instancedMesh>
     </group>
   );

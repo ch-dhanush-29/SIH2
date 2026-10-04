@@ -116,19 +116,19 @@ export const InspectionHUD: React.FC = () => {
   ];
 
   return (
-    <div className="fixed top-[118px] right-3 z-40 w-80 sm:w-96 max-h-[calc(100vh-135px)] overflow-y-auto custom-scrollbar mission-hud rounded-2xl border border-[var(--border)] shadow-2xl p-3.5 flex flex-col gap-3 pointer-events-auto backdrop-blur-2xl">
+    <div className="fixed top-[118px] right-3 z-40 w-80 sm:w-96 max-h-[calc(100vh-135px)] overflow-y-auto custom-scrollbar mission-hud rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] p-3 flex flex-col gap-2.5 pointer-events-auto backdrop-blur-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-[var(--border)] text-xs font-mono">
+      <div className="flex items-center justify-between pb-2 border-b border-[var(--border)] text-xs">
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-[var(--accent)]" />
-          <span className="font-bold text-[var(--text-primary)] text-sm">{chip.part_id}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[var(--text-secondary)]">
+          <span className="font-display font-bold text-[var(--text-primary)] text-sm tracking-tight">{chip.part_id}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[4px] bg-slate-200/80 dark:bg-slate-800 text-[var(--text-secondary)]">
             R{chip.row}:C{chip.col}
           </span>
         </div>
         <button
           onClick={() => setIsInspectionOpen(false)}
-          className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
+          className="p-1 rounded-[6px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
           title="Close Inspector"
         >
           <X className="w-4 h-4" />
@@ -136,24 +136,24 @@ export const InspectionHUD: React.FC = () => {
       </div>
 
       {/* Prominent Verdict Banner */}
-      <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-mono ${vStyle.bg}`}>
+      <div className={`p-2.5 rounded-[8px] border flex items-center justify-between text-xs ${vStyle.bg}`}>
         <div className="flex items-center gap-2">
           {vStyle.icon}
           <div>
-            <div className="font-bold">{vStyle.title}</div>
-            <div className="text-[9px] opacity-80">Zero False Negative Protocol Enforced</div>
+            <div className="font-display font-bold tracking-tight text-[11px]">{vStyle.title}</div>
+            <div className="text-[9px] font-sans opacity-85">Zero False Negative Protocol Enforced</div>
           </div>
         </div>
         {chip.earlyReject && (
-          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 font-bold shrink-0">
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-[4px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 font-bold shrink-0">
             -144h
           </span>
         )}
       </div>
 
       {/* Plain-English Glass-Box Justification */}
-      <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1">
-        <div className="text-[10px] font-mono text-[var(--accent)] font-bold flex items-center gap-1.5">
+      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1">
+        <div className="text-[10px] font-display text-[var(--accent)] font-bold flex items-center gap-1.5 tracking-wide">
           <Sparkles className="w-3 h-3" />
           <span>AI DECISION EXPLANATION</span>
         </div>
@@ -163,88 +163,88 @@ export const InspectionHUD: React.FC = () => {
       </div>
 
       {/* 5-Stage Latent-Defect Screening Pipeline Audit */}
-      <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1.5 font-mono text-[10px]">
-        <div className="flex items-center justify-between text-[10px] font-bold text-[var(--accent)] border-b border-[var(--border)] pb-1">
+      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1.5 text-[10px]">
+        <div className="flex items-center justify-between text-[10px] font-display font-bold text-[var(--accent)] border-b border-[var(--border)] pb-1">
           <span>5-STAGE LATENT DEFECT PIPELINE</span>
-          <span className="text-[var(--text-muted)]">MIL-STD-883 / AEC-Q100</span>
+          <span className="text-[var(--text-muted)] font-mono text-[9px]">MIL-STD-883 / AEC-Q100</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--text-muted)]">1. Static Limit Check:</span>
-          <span className={chip.passesStaticLimit ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+          <span className="font-sans text-[var(--text-muted)]">1. Static Limit Check:</span>
+          <span className={`font-mono ${chip.passesStaticLimit ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}`}>
             {val.toFixed(1)} &lt; {pcfg.staticLimit} µA {chip.passesStaticLimit ? '(PASS)' : '(FAIL)'}
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--text-muted)]">2. Dynamic Anomaly:</span>
-          <span className={chip.robustZScore >= 3.0 ? 'text-amber-500 font-bold' : 'text-emerald-500'}>
+          <span className="font-sans text-[var(--text-muted)]">2. Dynamic Anomaly:</span>
+          <span className={`font-mono ${chip.robustZScore >= 3.0 ? 'text-amber-500 font-bold' : 'text-emerald-500'}`}>
             +{chip.robustZScore.toFixed(1)}σ MAD {chip.robustZScore >= 3.0 ? '(OUTLIER)' : '(NOMINAL)'}
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--text-muted)]">3. Future Drift (168h):</span>
-          <span className={chip.predicted168h > pcfg.staticLimit ? 'text-rose-500 font-bold' : 'text-[var(--text-primary)]'}>
+          <span className="font-sans text-[var(--text-muted)]">3. Future Drift (168h):</span>
+          <span className={`font-mono ${chip.predicted168h > pcfg.staticLimit ? 'text-rose-500 font-bold' : 'text-[var(--text-primary)]'}`}>
             {chip.predicted168h.toFixed(1)} µA {chip.predicted168h > pcfg.staticLimit ? '(RUNAWAY)' : '(BOUNDED)'}
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--text-muted)]">4. Safety-Slope Risk:</span>
-          <span className={chip.earlyReject ? 'text-fuchsia-500 font-bold' : 'text-emerald-500'}>
+          <span className="font-sans text-[var(--text-muted)]">4. Safety-Slope Risk:</span>
+          <span className={`font-mono ${chip.earlyReject ? 'text-fuchsia-500 font-bold' : 'text-emerald-500'}`}>
             +{chip.predictedSlope.toFixed(3)}/h {chip.earlyReject ? '(EXCEEDED)' : '(SAFE)'}
           </span>
         </div>
         <div className="flex justify-between items-center pt-1 border-t border-[var(--border)]">
-          <span className="text-[var(--text-muted)]">5. Actionable Verdict:</span>
-          <span className="font-bold text-[var(--text-primary)]">
+          <span className="font-sans text-[var(--text-muted)]">5. Actionable Verdict:</span>
+          <span className="font-display font-bold text-[var(--text-primary)]">
             {chip.verdict}
           </span>
         </div>
       </div>
 
       {/* Critical Telemetry Metric Grid */}
-      <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] font-mono">
-        <div className="flex justify-between">
-          <span className="text-[var(--text-muted)]">Current ({checkpoint}h):</span>
-          <strong className="text-[var(--text-primary)]">
+      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px]">
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[var(--text-muted)]">Current ({checkpoint}h):</span>
+          <strong className="font-mono text-[var(--text-primary)]">
             {val.toFixed(2)} {pcfg.unit}
           </strong>
         </div>
-        <div className="flex justify-between">
-          <span className="text-[var(--text-muted)]">Robust Z:</span>
-          <strong className={chip.robustZScore >= 3.0 ? 'text-[var(--warning)]' : 'text-[var(--text-primary)]'}>
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[var(--text-muted)]">Robust Z:</span>
+          <strong className={`font-mono ${chip.robustZScore >= 3.0 ? 'text-[var(--warning)]' : 'text-[var(--text-primary)]'}`}>
             {chip.robustZScore.toFixed(2)}σ
           </strong>
         </div>
-        <div className="flex justify-between">
-          <span className="text-[var(--text-muted)]">Drift Rate:</span>
-          <strong className={chip.predictedSlope > (stats?.safetySlope ?? 0.02) ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}>
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[var(--text-muted)]">Drift Rate:</span>
+          <strong className={`font-mono ${chip.predictedSlope > (stats?.safetySlope ?? 0.02) ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}`}>
             {chip.predictedSlope.toFixed(4)}/h
           </strong>
         </div>
-        <div className="flex justify-between">
-          <span className="text-[var(--text-muted)]">Forecast 168h:</span>
-          <strong className={chip.predicted168h > pcfg.staticLimit ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}>
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[var(--text-muted)]">Forecast 168h:</span>
+          <strong className={`font-mono ${chip.predicted168h > pcfg.staticLimit ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}`}>
             {chip.predicted168h.toFixed(1)} {pcfg.unit}
           </strong>
         </div>
-        <div className="flex justify-between">
-          <span className="text-[var(--text-muted)]">Datasheet Limit:</span>
-          <span className={chip.passesStaticLimit ? 'text-[var(--success)] font-semibold' : 'text-[var(--danger)] font-bold'}>
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[var(--text-muted)]">Datasheet:</span>
+          <span className={`font-mono ${chip.passesStaticLimit ? 'text-[var(--success)] font-semibold' : 'text-[var(--danger)] font-bold'}`}>
             {chip.passesStaticLimit ? 'PASS (<50µA)' : 'FAIL (>50µA)'}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-[var(--text-muted)]">Anomaly Score:</span>
-          <strong className={chip.ensembleScore >= 45 ? 'text-[var(--danger)]' : 'text-[var(--success)]'}>
+        <div className="flex justify-between items-center">
+          <span className="font-sans text-[var(--text-muted)]">Anomaly Score:</span>
+          <strong className={`font-mono ${chip.ensembleScore >= 45 ? 'text-[var(--danger)]' : 'text-[var(--success)]'}`}>
             {chip.ensembleScore} / 100
           </strong>
         </div>
       </div>
 
       {/* SHAP Feature Attribution Mini Bar Chart */}
-      <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1">
-        <div className="text-[10px] font-mono text-[var(--text-muted)] flex items-center justify-between">
-          <span>SHAP FEATURE ATTRIBUTION</span>
-          <span className="text-[9px] text-[var(--accent)]">Relative Impact %</span>
+      <div className="p-2.5 rounded-[8px] bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1">
+        <div className="text-[10px] flex items-center justify-between">
+          <span className="font-display font-bold text-[var(--text-muted)]">SHAP FEATURE ATTRIBUTION</span>
+          <span className="font-mono text-[9px] text-[var(--accent)]">Relative Impact %</span>
         </div>
         <div className="h-20 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -288,14 +288,14 @@ export const InspectionHUD: React.FC = () => {
 
       {/* Human-in-the-Loop Override Expandable Section */}
       {isOverrideFormOpen && (
-        <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30 space-y-2 font-mono text-[10px]">
-          <div className="text-amber-600 dark:text-amber-300 font-bold">QA INSPECTOR DECISION OVERRIDE</div>
+        <div className="p-2.5 rounded-[8px] border border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30 space-y-2 text-[10px]">
+          <div className="text-amber-600 dark:text-amber-300 font-display font-bold">QA INSPECTOR DECISION OVERRIDE</div>
           <div className="flex items-center gap-2">
-            <label className="text-[var(--text-muted)]">Verdict:</label>
+            <label className="font-sans text-[var(--text-muted)]">Verdict:</label>
             <select
               value={overrideVerdict}
               onChange={(e) => setOverrideVerdict(e.target.value as ScreeningVerdict)}
-              className="bg-white dark:bg-slate-900 border border-[var(--border)] text-[var(--text-primary)] rounded px-2 py-0.5"
+              className="bg-white dark:bg-slate-900 border border-[var(--border)] text-[var(--text-primary)] rounded-[4px] px-2 py-0.5 font-mono text-[10px]"
             >
               <option value="PASS">PASS (Flight Cleared)</option>
               <option value="LATENT_SUSPECT">LATENT_SUSPECT (Hold for DPA)</option>
@@ -308,18 +308,18 @@ export const InspectionHUD: React.FC = () => {
             placeholder="Engineering justification..."
             value={overrideReason}
             onChange={(e) => setOverrideReason(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900 border border-[var(--border)] rounded px-2 py-1 text-[var(--text-primary)] text-[10px]"
+            className="w-full bg-white dark:bg-slate-900 border border-[var(--border)] rounded-[4px] px-2 py-1 text-[var(--text-primary)] font-sans text-[10px]"
           />
           <div className="flex justify-end gap-1.5">
             <button
               onClick={() => setIsOverrideFormOpen(false)}
-              className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[var(--text-muted)]"
+              className="px-2 py-0.5 rounded-[4px] bg-slate-200 dark:bg-slate-800 text-[var(--text-muted)] font-sans"
             >
               Cancel
             </button>
             <button
               onClick={handleCommitOverride}
-              className="px-2.5 py-0.5 rounded bg-amber-500 text-slate-950 font-bold flex items-center gap-1"
+              className="px-2.5 py-0.5 rounded-[4px] bg-amber-500 text-slate-950 font-display font-bold flex items-center gap-1"
             >
               <Check className="w-3 h-3" /> Commit
             </button>
@@ -331,7 +331,7 @@ export const InspectionHUD: React.FC = () => {
       <div className="grid grid-cols-4 gap-1.5 pt-1">
         <button
           onClick={() => setCameraViewMode('CLOSEUP')}
-          className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--accent)] border border-[var(--border)] text-[9px] font-mono transition-colors shadow-sm"
+          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--accent)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-sm"
           title="Isolate in 3D Chamber"
         >
           <Compass className="w-3.5 h-3.5 mb-0.5" />
@@ -340,7 +340,7 @@ export const InspectionHUD: React.FC = () => {
 
         <button
           onClick={() => setIsOverrideFormOpen(!isOverrideFormOpen)}
-          className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--warning)] border border-[var(--border)] text-[9px] font-mono transition-colors shadow-sm"
+          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--warning)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-sm"
           title="QA Inspector Override"
         >
           <Edit3 className="w-3.5 h-3.5 mb-0.5" />
@@ -349,7 +349,7 @@ export const InspectionHUD: React.FC = () => {
 
         <button
           onClick={() => exportSinglePartQAPdf(chip, stats, parameter)}
-          className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--text-primary)] border border-[var(--border)] text-[9px] font-mono transition-colors shadow-sm"
+          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-[var(--text-primary)] border border-[var(--border)] text-[9px] font-display font-semibold transition-colors shadow-sm"
           title="Export QA Certificate PDF"
         >
           <Download className="w-3.5 h-3.5 mb-0.5" />
@@ -358,7 +358,7 @@ export const InspectionHUD: React.FC = () => {
 
         <button
           onClick={() => setIsAiCopilotOpen(true)}
-          className="flex flex-col items-center justify-center p-2 rounded-xl bg-[var(--accent-soft)] hover:opacity-90 text-[var(--accent)] border border-[var(--border-accent)] text-[9px] font-mono transition-colors shadow-sm"
+          className="flex flex-col items-center justify-center p-2 rounded-[7px] bg-[var(--accent-soft)] hover:opacity-90 text-[var(--accent)] border border-[var(--border-accent)] text-[9px] font-display font-semibold transition-colors shadow-sm"
           title="Ask AI Copilot"
         >
           <Bot className="w-3.5 h-3.5 mb-0.5" />

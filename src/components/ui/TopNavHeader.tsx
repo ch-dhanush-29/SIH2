@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useBurnInStore, NARRATIVE_PHASES } from '../../state/useBurnInStore';
 import { View3DMode, PARAMETER_CONFIGS, DemoStoryPhase } from '../../types/burnIn';
 import {
@@ -25,11 +25,14 @@ import {
   TrendingUp,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Play,
   Pause,
   X,
   Database,
   BrainCircuit,
+  Sliders,
+  Settings,
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
@@ -108,7 +111,6 @@ const PHASES_META: PhaseMeta[] = [
 ];
 
 export const TopNavHeader: React.FC = () => {
-  // Store selectors
   const selectedLotConfig = useBurnInStore((state) => state.selectedLotConfig);
   const presetLots = useBurnInStore((state) => state.presetLots);
   const selectLot = useBurnInStore((state) => state.selectLot);
@@ -124,7 +126,6 @@ export const TopNavHeader: React.FC = () => {
   const setActivePanelTab = useBurnInStore((state) => state.setActivePanelTab);
   const resetCamera = useBurnInStore((state) => state.resetCamera);
 
-  // Hero Narrative state
   const isHeroNarrativeActive = useBurnInStore((state) => state.isHeroNarrativeActive);
   const narrativePhase = useBurnInStore((state) => state.narrativePhase);
   const narrativeAutoPlay = useBurnInStore((state) => state.narrativeAutoPlay);
@@ -134,27 +135,38 @@ export const TopNavHeader: React.FC = () => {
   const prevNarrativePhase = useBurnInStore((state) => state.prevNarrativePhase);
   const toggleNarrativeAutoPlay = useBurnInStore((state) => state.toggleNarrativeAutoPlay);
 
-  // Pipeline state
   const chips = useBurnInStore((state) => state.chips);
   const selectedChipId = useBurnInStore((state) => state.selectedChipId);
   const parameter = useBurnInStore((state) => state.parameter);
+  const checkpoint = useBurnInStore((state) => state.checkpoint);
   const stats = useBurnInStore((state) => state.stats);
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isExpandedMath, setIsExpandedMath] = useState(false);
   const [isProvenanceModalOpen, setIsProvenanceModalOpen] = useState(false);
+  const toolsMenuRef = useRef<HTMLDivElement>(null);
 
-  // Modes definition
+  // Close tools popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(e.target as Node)) {
+        setIsToolsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const visualModes: { id: View3DMode; label: string; icon: React.ReactNode }[] = [
-    { id: 'CHAMBER', label: 'CHAMBER', icon: <Box className="w-3 h-3" /> },
-    { id: 'LOT_CLOUD', label: '3D CLOUD', icon: <CloudRain className="w-3 h-3" /> },
-    { id: 'THERMAL', label: 'THERMAL', icon: <Thermometer className="w-3 h-3" /> },
-    { id: 'ANOMALY_MAP', label: 'ANOMALY MAP', icon: <Radar className="w-3 h-3" /> },
-    { id: 'TRAJECTORY', label: 'TRAJECTORY', icon: <Activity className="w-3 h-3" /> },
-    { id: '2D_GRID', label: '2D WAFER', icon: <Grid className="w-3 h-3" /> },
-    { id: 'LIVE_VISION', label: 'LIVE VISION', icon: <Video className="w-3 h-3" /> },
+    { id: 'CHAMBER', label: 'CHAMBER', icon: <Box className="w-3.5 h-3.5" /> },
+    { id: 'LOT_CLOUD', label: '3D CLOUD', icon: <CloudRain className="w-3.5 h-3.5" /> },
+    { id: 'THERMAL', label: 'THERMAL', icon: <Thermometer className="w-3.5 h-3.5" /> },
+    { id: 'ANOMALY_MAP', label: 'ANOMALY MAP', icon: <Radar className="w-3.5 h-3.5" /> },
+    { id: 'TRAJECTORY', label: 'TRAJECTORY', icon: <Activity className="w-3.5 h-3.5" /> },
+    { id: '2D_GRID', label: '2D WAFER', icon: <Grid className="w-3.5 h-3.5" /> },
+    { id: 'LIVE_VISION', label: 'LIVE VISION', icon: <Video className="w-3.5 h-3.5" /> },
   ];
 
-  // Pipeline calculations
   const chip = chips.find((c) => c.part_id === selectedChipId) || chips[41] || chips[0];
   const pcfg = PARAMETER_CONFIGS[parameter];
   const currentVal = chip?.currentValue ?? 14.8;
@@ -169,162 +181,198 @@ export const TopNavHeader: React.FC = () => {
   const stage4Breach = slope > safetySlope;
   const verdict = chip?.verdict ?? 'LATENT_SUSPECT';
 
-  // Current Narrative meta
   const currentNarrativeIndex = NARRATIVE_PHASES.indexOf(narrativePhase);
   const currentMeta = PHASES_META[currentNarrativeIndex] || PHASES_META[0];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--surface-elevated)]/95 backdrop-blur-2xl border-b border-[var(--border)] shadow-xl flex flex-col font-sans select-none pointer-events-auto">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--surface-elevated)]/96 backdrop-blur-2xl border-b border-[var(--border)] shadow-[var(--shadow-panel)] flex flex-col font-sans select-none pointer-events-auto">
       {/* ========================================================================= */}
-      {/* LINE 1: MASTER MISSION BAR & GLOBAL CONTROLS (Height: ~40px)              */}
+      {/* LAYER 1: COMMAND & MISSION CONTROL HEADER (Height: 42px)                 */}
       {/* ========================================================================= */}
-      <div className="h-10 px-3.5 flex items-center justify-between border-b border-[var(--border)] text-xs font-mono">
-        {/* Left: Brand Identity & Provenance Benchmark */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="flex items-center justify-center w-6 h-6 rounded-md bg-cyan-500/15 border border-cyan-500/40 text-cyan-400">
-            <Flame className="w-3.5 h-3.5 text-cyan-400" />
+      <div className="h-[42px] px-4 flex items-center justify-between border-b border-[var(--border)] text-xs">
+        {/* Left: Product Identity & Mission Reference */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-7 h-7 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm">
+              <Flame className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-display font-bold text-[14px] tracking-tight text-[var(--text-primary)]">
+                  BURNWATCH<span className="text-[var(--accent)] font-mono ml-0.5 text-xs">3D</span>
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-[4px] bg-cyan-950/80 text-cyan-300 dark:bg-cyan-950/70 border border-cyan-500/30">
+                  ISRO • SIH26170
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold tracking-wider text-cyan-600 dark:text-cyan-400 text-xs">
-              BURNWATCH 3D
-            </span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
-              ISRO SIH26170
-            </span>
-            <span className="hidden xl:inline text-[10px] text-[var(--text-muted)]">
-              • TRL-5 BENCHMARK (MIL-STD-883)
-            </span>
-          </div>
-        </div>
 
-        {/* Center: Flight Lot Selector & Zero-FN Counter */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Lot Selector */}
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-900 border border-[var(--border)] text-[11px]">
-            <Layers className="w-3 h-3 text-cyan-500" />
+          <div className="h-4 w-[1px] bg-[var(--border)] hidden md:block" />
+
+          {/* Active Flight Lot Selector */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] bg-[var(--surface)] border border-[var(--border)] text-[11px] font-sans hover:border-[var(--border-accent)] transition-colors">
+            <Layers className="w-3 h-3 text-[var(--accent)] shrink-0" />
+            <span className="text-[10px] text-[var(--text-muted)] uppercase font-mono font-medium">LOT:</span>
             <select
               value={selectedLotConfig.lotId}
               onChange={(e) => selectLot(e.target.value)}
-              className="bg-transparent text-[var(--text-primary)] font-mono outline-none cursor-pointer text-xs"
+              className="bg-transparent text-[var(--text-primary)] font-medium outline-none cursor-pointer text-xs pr-1"
             >
               {presetLots.map((l) => (
-                <option key={l.lotId} value={l.lotId} className="bg-slate-900 text-slate-200">
+                <option key={l.lotId} value={l.lotId} className="bg-slate-900 text-slate-100">
                   {l.name}
                 </option>
               ))}
             </select>
           </div>
+        </div>
 
-          {/* Zero Defect Escaped Guarantee */}
-          <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
-            <ShieldCheck className="w-3 h-3 text-emerald-500" />
-            <span>0 ESCAPED DEFECTS</span>
+        {/* Center: System Status & Live Mission Telemetry */}
+        <div className="hidden lg:flex items-center gap-4 shrink-0">
+          {/* Nominal Status Indicator */}
+          <div className="flex items-center gap-2 text-[11px] font-medium">
+            <span className="text-[var(--text-muted)] text-[10px] uppercase font-mono">STATUS</span>
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_var(--success)]" />
+              NOMINAL (0 ESCAPED FN)
+            </span>
           </div>
 
           {/* Chamber Ambient Telemetry */}
-          <div className="hidden lg:flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-600 dark:text-amber-400 font-bold">
-            <Thermometer className="w-3 h-3 text-amber-500" />
-            <span>{telemetry.chamberTempC.toFixed(1)}°C (125°C ESS)</span>
+          <div className="flex items-baseline gap-1 font-sans">
+            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase mr-1">CHAMBER</span>
+            <span className="font-display font-bold text-sm text-[var(--warning)] tracking-tight">
+              {telemetry.chamberTempC.toFixed(1)}°C
+            </span>
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">/ 125.0°C</span>
+          </div>
+
+          {/* Mission Checkpoint Time */}
+          <div className="flex items-baseline gap-1.5 font-mono text-xs text-[var(--text-secondary)]">
+            <span className="text-[10px] text-[var(--text-muted)] uppercase">CHECKPOINT</span>
+            <span className="font-semibold text-[var(--accent)]">T+{checkpoint.toString().padStart(3, '0')}:00:00</span>
           </div>
         </div>
 
-        {/* Right: Master Control Actions */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Golden Demo Trigger */}
+        {/* Right: Primary Command Controls & Utility Group */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Primary Action: Golden Demo */}
           <button
             onClick={startGoldenDemo}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-600 dark:text-amber-300 border border-amber-500/50 shadow-sm transition-all"
-            title="Play ISRO Star Demo: Part CHIP-LOT04-042 Early Reject at 24h"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[11px] font-display font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            title="Execute ISRO Star Demo: Part CHIP-LOT04-042 Early Reject at 24h"
           >
-            <Sparkles className="w-3 h-3 text-amber-500" />
-            <span className="hidden sm:inline">GOLDEN DEMO</span>
+            <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
+            <span>GOLDEN DEMO</span>
           </button>
 
           {/* Hero Story Toggle */}
           <button
             onClick={() => (isHeroNarrativeActive ? stopHeroNarrative() : startHeroNarrative(true))}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] font-medium transition-all border ${
               isHeroNarrativeActive
-                ? 'bg-rose-500/20 text-rose-500 border-rose-500'
-                : 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/25'
+                ? 'bg-rose-500/20 text-rose-500 border-rose-500/60 font-semibold'
+                : 'bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)] hover:border-[var(--border-accent)]'
             }`}
-            title="Toggle Cinematic Step-by-Step Narrative [Key: G]"
+            title="Toggle Step-by-Step Aerospace Screening Story [Key: G]"
           >
             <span>{isHeroNarrativeActive ? 'STOP STORY' : 'HERO STORY'}</span>
           </button>
 
-          {/* AI Copilot Button */}
+          {/* AI Copilot Toggle */}
           <button
             onClick={() => setIsAiCopilotOpen(!isAiCopilotOpen)}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all border ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] transition-all border ${
               isAiCopilotOpen
-                ? 'bg-cyan-500/25 text-cyan-600 dark:text-cyan-200 border-cyan-400 font-bold'
-                : 'bg-slate-100 dark:bg-slate-900 text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--border-accent)] font-semibold shadow-sm'
+                : 'bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)]'
             }`}
-            title="Toggle Aerospace AI Copilot"
+            title="Toggle AI Reliability Engineer Panel"
           >
-            <Bot className="w-3 h-3 text-cyan-500" />
-            <span className="hidden md:inline">COPILOT</span>
+            <Bot className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">AI COPILOT</span>
           </button>
 
-          {/* Audit Log Trigger */}
+          {/* Audit Log Modal Trigger */}
           <button
             onClick={() => setIsAuditOpen(true)}
-            className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
-            title="Open Immutable Audit Trail"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors"
+            title="Open Immutable Screening Audit Log"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">AUDIT</span>
           </button>
 
-          {/* Reliability & F2 Metrics */}
-          <button
-            onClick={() => setActivePanelTab('EVALUATION')}
-            className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
-            title="ISRO Reliability, F2 Score & Confusion Matrix"
-          >
-            <BarChart2 className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Data Upload Tab Switcher */}
-          <button
-            onClick={() => setActivePanelTab('UPLOAD')}
-            className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
-            title="Upload CSV / Data Ingestion"
-          >
-            <UploadCloud className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Camera Reset */}
-          <button
-            onClick={resetCamera}
-            className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
-            title="Reset Camera Overview [Key: R]"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Colorblind Toggle */}
-          <button
-            onClick={toggleColorblindMode}
-            className={`p-1 rounded-md transition-colors ${
-              isColorblindMode
-                ? 'bg-amber-500/20 text-amber-500 border border-amber-500/50'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-            title="Colorblind-Safe Palette"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Dual Theme Switcher */}
+          {/* Theme Switcher */}
           <ThemeSwitcher />
+
+          {/* Secondary Tools Dropdown */}
+          <div className="relative" ref={toolsMenuRef}>
+            <button
+              onClick={() => setIsToolsOpen(!isToolsOpen)}
+              className="p-1.5 rounded-[7px] bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors flex items-center gap-1"
+              title="Secondary Engineering Utilities"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <ChevronDown className="w-2.5 h-2.5 text-[var(--text-muted)]" />
+            </button>
+
+            {isToolsOpen && (
+              <div className="absolute right-0 mt-1 w-52 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-[10px] shadow-[var(--shadow-floating)] p-1 z-50 animate-in fade-in zoom-in-95 duration-150 font-sans text-xs">
+                <button
+                  onClick={() => {
+                    setActivePanelTab('EVALUATION');
+                    setIsToolsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[6px] hover:bg-[var(--surface)] text-[var(--text-primary)] transition-colors text-left"
+                >
+                  <BarChart2 className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span>Reliability & F2 Metrics</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActivePanelTab('UPLOAD');
+                    setIsToolsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[6px] hover:bg-[var(--surface)] text-[var(--text-primary)] transition-colors text-left"
+                >
+                  <UploadCloud className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span>Upload Custom CSV</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    resetCamera();
+                    setIsToolsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[6px] hover:bg-[var(--surface)] text-[var(--text-primary)] transition-colors text-left"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span>Reset Camera View [Key: R]</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    toggleColorblindMode();
+                    setIsToolsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[6px] hover:bg-[var(--surface)] text-[var(--text-primary)] transition-colors text-left"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[var(--warning)]" />
+                  <span>{isColorblindMode ? 'Disable Colorblind Palette' : 'Enable Colorblind Safe'}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* LINE 2: 3D / 2D VIEWPORT MODE SWITCHER BAR (Height: ~36px)                */}
+      {/* LAYER 2: INSTRUMENT MODE SELECTOR TABS (Height: 34px)                     */}
       {/* ========================================================================= */}
-      <div className="h-9 px-4 flex items-center justify-center bg-slate-100/70 dark:bg-black/40 border-b border-[var(--border)] overflow-x-auto custom-scrollbar font-mono text-[11px]">
+      <div className="h-[34px] px-4 flex items-center justify-center bg-[var(--surface)]/40 border-b border-[var(--border)] overflow-x-auto custom-scrollbar font-display text-[11px]">
         <div className="flex items-center gap-1 sm:gap-2">
           {visualModes.map((m) => {
             const isActive = view3DMode === m.id;
@@ -332,14 +380,17 @@ export const TopNavHeader: React.FC = () => {
               <button
                 key={m.id}
                 onClick={() => setView3DMode(m.id)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all whitespace-nowrap text-[10px] ${
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] transition-all whitespace-nowrap text-[11px] ${
                   isActive
-                    ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-200/40 dark:hover:bg-slate-800/40'
+                    ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-semibold shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]'
                 }`}
               >
                 {m.icon}
                 <span>{m.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-[var(--accent)] rounded-full shadow-[0_0_8px_var(--accent)]" />
+                )}
               </button>
             );
           })}
@@ -347,36 +398,36 @@ export const TopNavHeader: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* LINE 3: 5-STAGE LATENT DEFECT PIPELINE OR HERO NARRATIVE (Height: ~36px)  */}
+      {/* LAYER 3: CONNECTED 5-STAGE PIPELINE OR HERO STORY STEPPER (Height: 36px)  */}
       {/* ========================================================================= */}
-      <div className="h-9 px-3.5 flex items-center justify-between bg-slate-50/90 dark:bg-black/60 border-b border-[var(--border)] text-[10px] font-mono overflow-x-auto custom-scrollbar">
+      <div className="h-[36px] px-4 flex items-center justify-between bg-[var(--bg-secondary)]/80 border-b border-[var(--border)] text-[11px] overflow-x-auto custom-scrollbar font-sans">
         {isHeroNarrativeActive ? (
-          /* Hero Narrative Stepper Active on Line 3 */
-          <div className="flex items-center justify-between w-full gap-2">
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="p-1 rounded bg-amber-500/20 text-amber-500 border border-amber-500/30">
+          /* Hero Narrative Stepper Active on Layer 3 */
+          <div className="flex items-center justify-between w-full gap-3">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="p-1 rounded-[5px] bg-amber-500/20 text-amber-500 border border-amber-500/30">
                 {currentMeta.icon}
               </div>
-              <span className="font-bold text-amber-500 dark:text-amber-400">
+              <span className="font-display font-bold text-amber-600 dark:text-amber-400">
                 STEP {currentNarrativeIndex + 1} OF {NARRATIVE_PHASES.length}: {currentMeta.title}
               </span>
-              <span className="hidden md:inline text-[var(--text-muted)]">
-                • {currentMeta.description}
+              <span className="hidden md:inline text-[var(--text-muted)] text-[11px]">
+                — {currentMeta.description}
               </span>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
               <button
                 onClick={prevNarrativePhase}
                 disabled={currentNarrativeIndex === 0}
-                className="p-1 rounded bg-[var(--surface)] hover:bg-[var(--border)] disabled:opacity-30 text-[var(--text-secondary)] border border-[var(--border)]"
+                className="p-1 rounded-[5px] bg-[var(--surface)] hover:bg-[var(--border)] disabled:opacity-30 text-[var(--text-secondary)] border border-[var(--border)]"
                 title="Previous Narrative Step"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={toggleNarrativeAutoPlay}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${
+                className={`flex items-center gap-1 px-2.5 py-0.5 rounded-[5px] border font-bold ${
                   narrativeAutoPlay
                     ? 'bg-amber-500 text-slate-950 border-amber-400'
                     : 'bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]'
@@ -388,14 +439,14 @@ export const TopNavHeader: React.FC = () => {
               <button
                 onClick={nextNarrativePhase}
                 disabled={currentNarrativeIndex === NARRATIVE_PHASES.length - 1}
-                className="p-1 rounded bg-[var(--surface)] hover:bg-[var(--border)] disabled:opacity-30 text-[var(--text-secondary)] border border-[var(--border)]"
+                className="p-1 rounded-[5px] bg-[var(--surface)] hover:bg-[var(--border)] disabled:opacity-30 text-[var(--text-secondary)] border border-[var(--border)]"
                 title="Next Narrative Step"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={stopHeroNarrative}
-                className="p-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 ml-1"
+                className="p-1 rounded-[5px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 ml-1"
                 title="Exit Hero Story"
               >
                 <X className="w-3.5 h-3.5" />
@@ -403,110 +454,115 @@ export const TopNavHeader: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Default Mode: 5-Stage Latent-Defect Detection Pipeline */
-          <div className="flex items-center justify-between w-full gap-2">
-            {/* Left: Tag & Active Component */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="px-1.5 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent)] font-bold tracking-wider text-[9px]">
-                SIH26170 PIPELINE
+          /* Default: 5-Stage Connected Engineering Process */
+          <div className="flex items-center justify-between w-full gap-3">
+            {/* Left: Active Component Tag */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold">
+                PROCESS PIPELINE
               </span>
-              <span className="text-cyan-600 dark:text-cyan-400 font-bold text-[11px]">
+              <span className="font-mono text-cyan-600 dark:text-cyan-400 font-bold text-xs">
                 {chip?.part_id || 'CHIP-LOT04-042'}
               </span>
             </div>
 
-            {/* Center: The 5 Sequential Pipeline Stages */}
-            <div className="flex items-center gap-1 shrink-0 overflow-x-auto py-0.5">
-              {/* Stage 1: Static Pass */}
+            {/* Center: Connected Stages with Connecting Rail */}
+            <div className="relative flex items-center gap-2 sm:gap-3 py-0.5 overflow-x-auto custom-scrollbar">
+              {/* Stage 1: Static */}
               <div
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded border transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border shrink-0 transition-all font-mono text-[10px] ${
                   stage1Pass
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
                     : 'bg-rose-500/10 border-rose-500/30 text-rose-500'
                 }`}
                 title={`Datasheet Static Limit: ${currentVal.toFixed(1)} ${pcfg.unit} <= ${staticLimit} ${pcfg.unit}`}
               >
-                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
-                <span>1. STATIC PASS</span>
+                <span className="font-bold opacity-60">01</span>
+                <span className="font-display font-medium">STATIC</span>
+                <span className="font-bold">● {stage1Pass ? 'PASS' : 'FAIL'}</span>
               </div>
 
-              <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
+              <div className="w-3 h-[1px] bg-[var(--border)] shrink-0" />
 
-              {/* Stage 2: Dynamic Anomaly */}
+              {/* Stage 2: Dynamic */}
               <div
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded border transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border shrink-0 transition-all font-mono text-[10px] ${
                   stage2Outlier
-                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 font-bold'
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 font-semibold'
                     : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)]'
                 }`}
                 title={`Lot MAD Dynamic Threshold: +${robustZ.toFixed(1)}σ Outlier relative to lot`}
               >
-                <AlertTriangle className="w-2.5 h-2.5 text-amber-500" />
-                <span>2. DYNAMIC (+{robustZ.toFixed(1)}σ)</span>
+                <span className="font-bold opacity-60">02</span>
+                <span className="font-display font-medium">DYNAMIC</span>
+                <span className="font-bold">● +{robustZ.toFixed(1)}σ</span>
               </div>
 
-              <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
+              <div className="w-3 h-[1px] bg-[var(--border)] shrink-0" />
 
-              {/* Stage 3: Future Drift */}
+              {/* Stage 3: Drift */}
               <div
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded border transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border shrink-0 transition-all font-mono text-[10px] ${
                   stage3Runaway
-                    ? 'bg-rose-500/15 border-rose-500/40 text-rose-500 font-bold'
+                    ? 'bg-rose-500/15 border-rose-500/40 text-rose-600 dark:text-rose-400 font-semibold'
                     : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)]'
                 }`}
-                title={`168h Forecast: ${predicted168.toFixed(1)} ${pcfg.unit} (Runaway beyond datasheet limit)`}
+                title={`168h Forecast: ${predicted168.toFixed(1)} ${pcfg.unit} (Breaches 50µA ceiling @ 88h)`}
               >
-                <TrendingUp className="w-2.5 h-2.5 text-rose-500" />
-                <span>3. DRIFT ({predicted168.toFixed(0)}{pcfg.unit})</span>
+                <span className="font-bold opacity-60">03</span>
+                <span className="font-display font-medium">DRIFT</span>
+                <span className="font-bold">● {predicted168.toFixed(0)} {pcfg.unit}</span>
               </div>
 
-              <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
+              <div className="w-3 h-[1px] bg-[var(--border)] shrink-0" />
 
-              {/* Stage 4: Safety-Slope Risk */}
+              {/* Stage 4: Slope */}
               <div
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded border transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border shrink-0 transition-all font-mono text-[10px] ${
                   stage4Breach
-                    ? 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-500 font-bold'
+                    ? 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-600 dark:text-fuchsia-400 font-semibold'
                     : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)]'
                 }`}
                 title={`Drift Slope: ${slope.toFixed(3)} ${pcfg.unit}/h > Safety Slope ${safetySlope.toFixed(3)} ${pcfg.unit}/h`}
               >
-                <ShieldAlert className="w-2.5 h-2.5 text-fuchsia-500" />
-                <span>4. SLOPE ({slope.toFixed(2)})</span>
+                <span className="font-bold opacity-60">04</span>
+                <span className="font-display font-medium">SLOPE</span>
+                <span className="font-bold">● {slope.toFixed(2)}</span>
               </div>
 
-              <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
+              <div className="w-3 h-[1px] bg-[var(--border)] shrink-0" />
 
-              {/* Stage 5: Explainable Verdict */}
+              {/* Stage 5: Decision */}
               <div
-                className={`flex items-center gap-1 px-2 py-0.5 rounded border font-bold shadow-sm ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border shrink-0 font-mono text-[10px] font-bold ${
                   verdict === 'EARLY_REJECT' || chip?.part_id === 'CHIP-LOT04-042'
-                    ? 'bg-rose-500/20 border-rose-500 text-rose-500'
+                    ? 'bg-rose-500/20 border-rose-500 text-rose-600 dark:text-rose-400'
                     : verdict === 'LATENT_SUSPECT'
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-500'
-                    : 'bg-emerald-500/20 border-emerald-500 text-emerald-500'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
+                    : 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
                 }`}
               >
-                <ShieldCheck className="w-2.5 h-2.5" />
-                <span>5. {verdict === 'PASS' && chip?.part_id === 'CHIP-LOT04-042' ? 'EARLY REJECT' : verdict}</span>
+                <span className="opacity-60">05</span>
+                <span className="font-display">DECISION:</span>
+                <span>● {verdict === 'PASS' && chip?.part_id === 'CHIP-LOT04-042' ? 'EARLY REJECT' : verdict}</span>
               </div>
             </div>
 
-            {/* Right: Technical Explanation & Data Provenance Controls */}
-            <div className="flex items-center gap-1 shrink-0">
+            {/* Right: Scientific Gates & Provenance Modals */}
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-[9px] font-mono px-2 py-0.5 rounded bg-[var(--surface)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)] transition-colors"
+                onClick={() => setIsExpandedMath(!isExpandedMath)}
+                className="text-[10px] font-mono px-2 py-0.5 rounded-[5px] bg-[var(--surface)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)] transition-colors"
               >
-                {isExpanded ? 'Hide Math' : 'Math Gates'}
+                {isExpandedMath ? 'Hide Math' : 'Math Gates'}
               </button>
 
               <button
                 onClick={() => setIsProvenanceModalOpen(true)}
-                className="flex items-center gap-1 text-[9px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 transition-colors"
-                title="View Dataset Provenance & Screening Architecture Disclosure"
+                className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-[5px] bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 transition-colors"
+                title="View Scientific Provenance & Benchmark Methodology"
               >
-                <Database className="w-2.5 h-2.5" />
+                <Database className="w-3 h-3" />
                 <span>PROVENANCE</span>
               </button>
             </div>
@@ -515,37 +571,37 @@ export const TopNavHeader: React.FC = () => {
       </div>
 
       {/* Expandable Mathematical Gates Dropdown View */}
-      {isExpanded && !isHeroNarrativeActive && (
-        <div className="p-3 bg-[var(--surface-elevated)] border-b border-[var(--border)] grid grid-cols-1 md:grid-cols-5 gap-2 font-mono text-[10px] animate-in slide-in-from-top-2 duration-200">
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-900 border border-[var(--border)] space-y-1">
+      {isExpandedMath && !isHeroNarrativeActive && (
+        <div className="p-3 bg-[var(--surface-elevated)] border-b border-[var(--border)] grid grid-cols-1 md:grid-cols-5 gap-2 font-mono text-[10px] animate-in slide-in-from-top-2 duration-150">
+          <div className="p-2 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] space-y-1">
             <span className="text-slate-500 font-bold block">GATE 1: STATIC CEILING</span>
             <div>Formula: x(t) ≤ L_spec</div>
             <div>Measured: {currentVal.toFixed(2)} ≤ {staticLimit.toFixed(1)} {pcfg.unit}</div>
             <div className="text-emerald-500 font-bold">PASSES STATIC (Missed Defect!)</div>
           </div>
 
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-900 border border-[var(--border)] space-y-1">
+          <div className="p-2 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] space-y-1">
             <span className="text-amber-500 font-bold block">GATE 2: DYNAMIC MAD</span>
             <div>Formula: |x - Med| / (1.4826·MAD)</div>
             <div>Lot Median: 10.42 {pcfg.unit}</div>
             <div className="text-amber-500 font-bold">+{robustZ.toFixed(2)}σ Outlier (&gt; 3.0σ)</div>
           </div>
 
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-900 border border-[var(--border)] space-y-1">
+          <div className="p-2 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] space-y-1">
             <span className="text-rose-500 font-bold block">GATE 3: 168H FORECAST</span>
             <div>Model: Arrhenius Log-Linear</div>
             <div>Predicted 168h: {predicted168.toFixed(1)} {pcfg.unit}</div>
             <div className="text-rose-500 font-bold">Breaches 50µA @ 88 hours</div>
           </div>
 
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-900 border border-[var(--border)] space-y-1">
+          <div className="p-2 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] space-y-1">
             <span className="text-fuchsia-500 font-bold block">GATE 4: SAFETY SLOPE</span>
             <div>Formula: m &gt; Med(m) + k·MAD(m)</div>
             <div>Part Slope: +{slope.toFixed(3)} {pcfg.unit}/h</div>
             <div className="text-fuchsia-500 font-bold">16.4× Lot Safety Slope</div>
           </div>
 
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-900 border border-[var(--border)] space-y-1">
+          <div className="p-2 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] space-y-1">
             <span className="text-cyan-500 font-bold block">GATE 5: ACTIONABLE VERDICT</span>
             <div>Decision: EARLY_REJECT @ 24h</div>
             <div>Chamber Savings: 144 Hours</div>
@@ -557,24 +613,24 @@ export const TopNavHeader: React.FC = () => {
       {/* Data Provenance & Scientific Honesty Modal */}
       {isProvenanceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-          <div className="w-full max-w-2xl bg-[var(--surface-elevated)] border border-cyan-500/40 rounded-2xl shadow-2xl p-6 text-[var(--text-primary)] space-y-4">
+          <div className="w-full max-w-2xl bg-[var(--surface-elevated)] border border-cyan-500/40 rounded-[12px] shadow-[var(--shadow-floating)] p-6 text-[var(--text-primary)] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-cyan-500" />
-                <h3 className="text-base font-bold font-mono">
+                <h3 className="text-base font-bold font-display">
                   Data Provenance & Screening Architecture Disclosure
                 </h3>
               </div>
               <button
                 onClick={() => setIsProvenanceModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-[var(--text-primary)] transition-colors p-1"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-3 text-xs leading-relaxed text-[var(--text-secondary)] font-sans">
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+              <div className="p-3 rounded-[8px] bg-cyan-500/10 border border-cyan-500/30">
                 <span className="font-bold text-cyan-600 dark:text-cyan-400 font-mono block mb-1">
                   1. SCIENTIFIC INTEGRITY & DATASET HONESTY
                 </span>
@@ -584,7 +640,7 @@ export const TopNavHeader: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold font-mono text-[var(--text-primary)]">
+                <h4 className="font-bold font-display text-[var(--text-primary)]">
                   2. Physics-Based Degradation Calibration:
                 </h4>
                 <ul className="list-disc pl-5 space-y-1 font-mono text-[11px]">
@@ -601,7 +657,7 @@ export const TopNavHeader: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold font-mono text-[var(--text-primary)]">
+                <h4 className="font-bold font-display text-[var(--text-primary)]">
                   3. Production-Ready Ingestion Pipeline (TRL-5):
                 </h4>
                 <p>
@@ -613,7 +669,7 @@ export const TopNavHeader: React.FC = () => {
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setIsProvenanceModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-cyan-500 text-slate-950 font-mono font-bold text-xs shadow hover:bg-cyan-400"
+                className="px-4 py-2 rounded-[7px] bg-cyan-500 text-slate-950 font-display font-bold text-xs shadow hover:bg-cyan-400 transition-colors"
               >
                 Acknowledge & Close
               </button>
