@@ -36,7 +36,7 @@ export const AuditLogModal: React.FC<AuditLogModalProps> = ({ isOpen, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-4xl bg-[var(--surface-elevated)] border border-[var(--border)] rounded-[10px] shadow-[var(--shadow-floating)] overflow-hidden flex flex-col max-h-[85vh] text-[var(--text-primary)]">
+      <div className="w-full max-w-5xl bg-[var(--surface-elevated)] border border-[var(--border)] rounded-[10px] shadow-[var(--shadow-floating)] overflow-hidden flex flex-col max-h-[85vh] text-[var(--text-primary)]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] bg-slate-100/90 dark:bg-slate-950/80">
           <div className="flex items-center gap-3">

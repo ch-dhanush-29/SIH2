@@ -16,6 +16,8 @@ export const VisionMonitor: React.FC = () => {
   const isHeroNarrativeActive = useBurnInStore((state) => state.isHeroNarrativeActive);
   const narrativePhase = useBurnInStore((state) => state.narrativePhase);
 
+  const setView3DMode = useBurnInStore((state) => state.setView3DMode);
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<'1X' | '20X' | '50X'>('20X');
@@ -38,16 +40,17 @@ export const VisionMonitor: React.FC = () => {
     else if (visionFeedMode === 'AI_BOUNDING') setLocalMode('AI_BOUNDING');
   }, [visionFeedMode]);
 
-  // Gracefully yield right dock zone when inspector or hero explanation is active
+  // Gracefully yield right dock zone when inspector, hero explanation, or full-screen live vision is active
   const isRightDockOccupied =
     isInspectionOpen ||
+    view3DMode === 'LIVE_VISION' ||
     (isHeroNarrativeActive && (narrativePhase === 'AI_EXPLANATION' || narrativePhase === 'RECOMMENDED_ACTION'));
 
   if (isRightDockOccupied) return null;
 
   if (isCollapsed) {
     return (
-      <div className="fixed top-[118px] right-3 z-30 pointer-events-auto">
+      <div className="fixed top-[152px] right-3 z-30 pointer-events-auto">
         <button
           onClick={() => setIsCollapsed(false)}
           className="mission-hud p-2.5 rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all flex flex-col items-center gap-2 group"
@@ -66,7 +69,7 @@ export const VisionMonitor: React.FC = () => {
 
   const isAnomaly = selectedChip.verdict !== 'PASS';
   const val = selectedChip.measurements[parameter][`v_${checkpoint}h`];
-  const shouldExpand = isExpanded || view3DMode === 'LIVE_VISION';
+  const shouldExpand = isExpanded;
 
   // Dynamic junction temperature calculation based on Iddq and 125°C ambient
   const junctionTemp = (125.0 + (val * 0.12)).toFixed(1);
@@ -81,39 +84,39 @@ export const VisionMonitor: React.FC = () => {
 
   return (
     <div
-      className={`fixed top-[118px] right-3 z-30 transition-all duration-300 pointer-events-auto ${
-        shouldExpand ? 'w-[480px]' : 'w-80 sm:w-84'
+      className={`fixed top-[152px] right-3 z-30 transition-all duration-300 pointer-events-auto ${
+        shouldExpand ? 'w-[520px]' : 'w-96 sm:w-[440px]'
       }`}
     >
       <div className="mission-hud rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] overflow-hidden bg-[var(--surface-elevated)]/96 backdrop-blur-2xl">
         {/* Top Camera Header (Section 24) */}
-        <div className="flex items-center justify-between px-3.5 py-2 bg-[var(--surface)]/70 border-b border-[var(--border)] text-[11px] font-sans">
+        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--surface)]/70 border-b border-[var(--border)] text-xs font-sans">
           <div className="flex items-center gap-2">
-            <Camera className="w-3.5 h-3.5 text-[var(--accent)]" />
+            <Camera className="w-4 h-4 text-[var(--accent)]" />
             <span className="font-display font-semibold text-xs tracking-tight text-[var(--text-primary)]">
               LIVE OPTICAL INSPECTION
             </span>
-            <span className="flex items-center gap-1 px-1.5 py-0.2 rounded-[4px] bg-rose-500/10 border border-rose-500/30 text-rose-500 font-mono text-[9px] font-bold">
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] bg-rose-500/10 border border-rose-500/30 text-rose-500 font-mono text-[10px] font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
               LIVE
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-[var(--text-muted)]">
-            <span className="text-[10px] font-mono text-[var(--warning)] font-semibold">{junctionTemp}°C</span>
+          <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+            <span className="text-xs font-mono text-[var(--warning)] font-semibold">{junctionTemp}°C</span>
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--surface)] transition-colors"
-              title={shouldExpand ? 'Minimize Window' : 'Maximize Inspection View'}
+              onClick={() => setView3DMode('LIVE_VISION')}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1.5 rounded hover:bg-[var(--surface)] transition-colors"
+              title="Enter Full Screen High-Res Hardware Feed"
             >
-              {shouldExpand ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <Maximize2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsCollapsed(true)}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--surface)] transition-colors"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1.5 rounded hover:bg-[var(--surface)] transition-colors"
               title="Collapse Vision Monitor"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

@@ -176,7 +176,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-3xl bg-[var(--surface-elevated)] border border-[var(--border-accent)] rounded-[10px] shadow-[var(--shadow-floating)] overflow-hidden flex flex-col h-[82vh] text-[var(--text-primary)]">
+      <div className="w-full max-w-4xl bg-[var(--surface-elevated)] border border-[var(--border-accent)] rounded-[10px] shadow-[var(--shadow-floating)] overflow-hidden flex flex-col h-[85vh] text-[var(--text-primary)]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] bg-slate-100/90 dark:bg-slate-950/80">
           <div className="flex items-center gap-3">

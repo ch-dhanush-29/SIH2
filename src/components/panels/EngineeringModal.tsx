@@ -21,7 +21,7 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-[10px] mission-hud border border-[var(--border)] shadow-[var(--shadow-floating)] overflow-hidden bg-[var(--surface-elevated)] text-[var(--text-primary)]">
+      <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col rounded-[10px] mission-hud border border-[var(--border)] shadow-[var(--shadow-floating)] overflow-hidden bg-[var(--surface-elevated)] text-[var(--text-primary)]">
         {/* Top Header with Tab Switcher */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] bg-slate-100/90 dark:bg-slate-950/80">
           <div className="flex items-center gap-3">

@@ -53,7 +53,7 @@ export const CinematicTimeline: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-full max-w-xl px-4 pointer-events-auto">
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-full max-w-3xl px-4 pointer-events-auto">
       <div className="mission-hud p-2.5 rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-floating)] space-y-2 backdrop-blur-xl">
         {/* Upper Track Bar: Time & Playback Controls */}
         <div className="flex items-center justify-between text-xs text-[var(--text-primary)]">

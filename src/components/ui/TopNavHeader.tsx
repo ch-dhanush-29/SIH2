@@ -187,14 +187,14 @@ export const TopNavHeader: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--surface-elevated)]/96 backdrop-blur-2xl border-b border-[var(--border)] shadow-[var(--shadow-panel)] flex flex-col font-sans select-none pointer-events-auto">
       {/* ========================================================================= */}
-      {/* LAYER 1: COMMAND & MISSION CONTROL HEADER (Height: 42px)                 */}
+      {/* LAYER 1: COMMAND & MISSION CONTROL HEADER (Height: min-h-[50px])       */}
       {/* ========================================================================= */}
-      <div className="h-[42px] px-4 flex items-center justify-between border-b border-[var(--border)] text-xs">
+      <div className="min-h-[50px] px-4 py-1.5 flex items-center justify-between border-b border-[var(--border)] text-xs">
         {/* Left: Product Identity & Mission Reference */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm">
-              <Flame className="w-4 h-4" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm">
+              <Flame className="w-4.5 h-4.5" />
             </div>
             <div>
               <div className="flex items-baseline gap-1.5">
@@ -370,17 +370,17 @@ export const TopNavHeader: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* LAYER 2: INSTRUMENT MODE SELECTOR TABS (Height: 34px)                     */}
+      {/* LAYER 2: INSTRUMENT MODE SELECTOR TABS (Height: min-h-[46px])             */}
       {/* ========================================================================= */}
-      <div className="h-[34px] px-4 flex items-center justify-center bg-[var(--surface)]/40 border-b border-[var(--border)] overflow-x-auto custom-scrollbar font-display text-[11px]">
-        <div className="flex items-center gap-1 sm:gap-2">
+      <div className="min-h-[46px] px-4 py-1 flex items-center justify-center bg-[var(--surface)]/40 border-b border-[var(--border)] overflow-x-auto custom-scrollbar font-display text-xs">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           {visualModes.map((m) => {
             const isActive = view3DMode === m.id;
             return (
               <button
                 key={m.id}
                 onClick={() => setView3DMode(m.id)}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] transition-all whitespace-nowrap text-[11px] ${
+                className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-[6px] transition-all whitespace-nowrap text-xs ${
                   isActive
                     ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-semibold shadow-sm'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]'
@@ -398,9 +398,9 @@ export const TopNavHeader: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* LAYER 3: CONNECTED 5-STAGE PIPELINE OR HERO STORY STEPPER (Height: 36px)  */}
+      {/* LAYER 3: CONNECTED 5-STAGE PIPELINE OR HERO STORY STEPPER (Height: min-h-[46px]) */}
       {/* ========================================================================= */}
-      <div className="h-[36px] px-4 flex items-center justify-between bg-[var(--bg-secondary)]/80 border-b border-[var(--border)] text-[11px] overflow-x-auto custom-scrollbar font-sans">
+      <div className="min-h-[46px] px-4 py-1 flex items-center justify-between bg-[var(--bg-secondary)]/80 border-b border-[var(--border)] text-xs overflow-x-auto custom-scrollbar font-sans">
         {isHeroNarrativeActive ? (
           /* Hero Narrative Stepper Active on Layer 3 */
           <div className="flex items-center justify-between w-full gap-3">

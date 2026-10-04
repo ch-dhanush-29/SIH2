@@ -45,7 +45,7 @@ export const LeftMissionDock: React.FC = () => {
 
   if (isCollapsed) {
     return (
-      <div className="fixed top-[118px] left-3 z-30 pointer-events-auto">
+      <div className="fixed top-[152px] left-3 z-30 pointer-events-auto">
         <button
           onClick={() => setIsCollapsed(false)}
           className="mission-hud p-2.5 rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all flex flex-col items-center gap-2 group"
@@ -62,11 +62,11 @@ export const LeftMissionDock: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-[118px] left-3 max-h-[calc(100vh-130px)] z-30 w-76 sm:w-80 flex flex-col pointer-events-auto font-sans transition-opacity duration-300 ${
+      className={`fixed top-[152px] left-3 max-h-[calc(100vh-165px)] z-30 w-96 sm:w-[440px] flex flex-col pointer-events-auto font-sans transition-opacity duration-300 ${
         isHeroNarrativeActive ? 'opacity-30 hover:opacity-100' : 'opacity-100'
       }`}
     >
-      <div className="mission-hud rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] flex flex-col overflow-hidden max-h-[calc(100vh-130px)] bg-[var(--surface-elevated)]/96 backdrop-blur-2xl">
+      <div className="mission-hud rounded-[10px] border border-[var(--border)] shadow-[var(--shadow-panel)] flex flex-col overflow-hidden max-h-[calc(100vh-165px)] bg-[var(--surface-elevated)]/96 backdrop-blur-2xl">
         {/* Dock Header with Collapse Button */}
         <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--surface)]/70 border-b border-[var(--border)] shrink-0">
           <div className="flex items-center gap-2">

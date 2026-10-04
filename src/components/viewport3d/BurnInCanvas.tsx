@@ -11,6 +11,7 @@ import { InstancedChips } from './InstancedChips';
 import { LotCloudScene } from './LotCloudScene';
 import { TrajectoryScene } from './TrajectoryScene';
 import { Fallback2DView } from './Fallback2DView';
+import { FullscreenVisionView } from './FullscreenVisionView';
 import { ChipTooltip3D } from './ChipTooltip3D';
 import { SpatialAnomalyCallout } from './SpatialAnomalyCallout';
 import { SpatialTrajectoryRibbon } from './SpatialTrajectoryRibbon';
@@ -170,6 +171,15 @@ export const BurnInCanvas: React.FC = () => {
     );
   }
 
+  // If Live Vision mode is selected, render full-screen hardware camera feed
+  if (view3DMode === 'LIVE_VISION') {
+    return (
+      <div className="relative w-full h-full bg-black overflow-hidden select-none transition-colors duration-300">
+        <FullscreenVisionView />
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-full bg-[var(--bg-primary)] overflow-hidden select-none transition-colors duration-300">
       <Canvas
@@ -195,8 +205,7 @@ export const BurnInCanvas: React.FC = () => {
         {view3DMode === 'TRAJECTORY' && <TrajectoryScene />}
         {(view3DMode === 'CHAMBER' ||
           view3DMode === 'THERMAL' ||
-          view3DMode === 'ANOMALY_MAP' ||
-          view3DMode === 'LIVE_VISION') && (
+          view3DMode === 'ANOMALY_MAP') && (
           <group>
             <ChamberEnvironment />
             <InstancedChips />
