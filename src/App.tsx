@@ -15,6 +15,7 @@ import { AiAssistantModal } from './components/panels/AiAssistantModal';
 import { EngineeringModal } from './components/panels/EngineeringModal';
 import { HeroExplanationDock } from './components/ui/HeroExplanationDock';
 import { LotOutlierDock } from './components/ui/LotOutlierDock';
+import { IntroExperience } from './components/intro/IntroExperience';
 import { DemoStoryPhase } from './types/burnIn';
 
 export const App: React.FC = () => {
@@ -46,6 +47,19 @@ export const App: React.FC = () => {
   const nextNarrativePhase = useBurnInStore((state) => state.nextNarrativePhase);
 
   const [isManualGoldenDemoOpen, setIsManualGoldenDemoOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('skipIntro') === 'true') return false;
+    return sessionStorage.getItem('burnwatch_entered') !== 'true';
+  });
+
+  // Support reopening intro on demand
+  useEffect(() => {
+    const handleReopenIntro = () => setShowIntro(true);
+    window.addEventListener('burnwatch-reopen-intro', handleReopenIntro);
+    return () => window.removeEventListener('burnwatch-reopen-intro', handleReopenIntro);
+  }, []);
 
   // Synchronize document root class with theme
   useEffect(() => {
@@ -180,6 +194,16 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans select-none transition-colors duration-300">
+      {/* 0. Fullscreen Cinematic Intro & Mission Initialization Experience */}
+      {showIntro && (
+        <IntroExperience
+          onComplete={() => {
+            sessionStorage.setItem('burnwatch_entered', 'true');
+            setShowIntro(false);
+          }}
+        />
+      )}
+
       {/* 1. Full-Screen Hero 3D Digital Twin Canvas */}
       <div className="absolute inset-0 w-full h-full z-0">
         <BurnInCanvas />

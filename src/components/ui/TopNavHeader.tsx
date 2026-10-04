@@ -454,6 +454,17 @@ export const TopNavHeader: React.FC = () => {
                   <Eye className="w-3.5 h-3.5 text-[var(--warning)]" />
                   <span>{isColorblindMode ? 'Disable Colorblind Palette' : 'Enable Colorblind Safe'}</span>
                 </button>
+
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('burnwatch-reopen-intro'));
+                    setIsToolsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[6px] hover:bg-[var(--surface)] text-[var(--text-primary)] transition-colors text-left border-t border-[var(--border)] mt-1 pt-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span>Replay Mission Intro</span>
+                </button>
               </div>
             )}
           </div>
