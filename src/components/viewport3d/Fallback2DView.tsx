@@ -14,7 +14,6 @@ export const Fallback2DView: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'ALL' | 'SUSPECT' | 'REJECT' | 'PASS'>('ALL');
-  const [showWaferImage, setShowWaferImage] = useState(false);
 
   const pcfg = PARAMETER_CONFIGS[parameter];
   const selectedChip = chips.find((c) => c.part_id === selectedChipId);
@@ -98,20 +97,6 @@ export const Fallback2DView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Photo Backdrop Toggle */}
-          <button
-            onClick={() => setShowWaferImage(!showWaferImage)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[10px] font-display font-semibold border transition-all ${
-              showWaferImage
-                ? 'bg-amber-500/20 text-amber-500 border-amber-500/40 shadow-xs'
-                : 'bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text-primary)]'
-            }`}
-            title="Toggle Authentic Silicon Wafer Prober Photo"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>{showWaferImage ? 'WAFER PHOTO ON' : 'WAFER PHOTO'}</span>
-          </button>
-
           {/* Quick Search */}
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -145,14 +130,6 @@ export const Fallback2DView: React.FC = () => {
 
       {/* Wafer Carrier Grid Viewport with Quadrant Divisions */}
       <div className="flex-1 overflow-auto my-2.5 p-3 rounded-[10px] bg-[var(--surface)] border border-[var(--border)] custom-scrollbar relative shadow-[var(--shadow-panel)]">
-        {/* Optional High-Res Wafer Prober Background */}
-        {showWaferImage && (
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none transition-opacity duration-300"
-            style={{ backgroundImage: "url('/images/wafer_prober.png')" }}
-          />
-        )}
-
         {/* Subtle Tray Quadrant Division Crosshairs */}
         <div className="absolute inset-0 pointer-events-none grid grid-cols-2 grid-rows-2">
           <div className="border-r border-b border-[var(--border)] opacity-30" />

@@ -1,253 +1,294 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useBurnInStore } from '../../state/useBurnInStore';
 import {
-  Camera,
-  Maximize2,
-  Minimize2,
-  ZoomIn,
-  ZoomOut,
-  Target,
-  Sparkles,
+  Activity,
   Radio,
-  Flame,
-  Layers,
-  Crosshair,
+  Zap,
+  Sliders,
+  Play,
+  Pause,
+  RotateCcw,
+  Compass,
+  AlertTriangle,
   CheckCircle2,
   Clock,
-  RotateCcw,
-  Sliders,
-  ChevronRight,
+  Download,
+  Gauge,
+  Thermometer,
   ShieldAlert,
-  Compass,
+  Flame,
+  Layers,
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
-type FeedSource = 'CHAMBER_RACK' | 'INSPECTION_STATION' | 'WAFER_PROBER';
-type OpticalFilter = 'REAL_OPTICAL' | 'THERMAL_HEATMAP' | 'AI_BOUNDING' | 'CSAM_ACOUSTIC';
+interface RealTimePacket {
+  id: number;
+  timestamp: string;
+  partId: string;
+  iddq: number;
+  leakage: number;
+  temp: number;
+  zScore: number;
+  status: 'NOMINAL' | 'ANOMALY' | 'REJECT';
+}
 
-const FEEDS: { id: FeedSource; name: string; subtitle: string; image: string; tag: string }[] = [
-  {
-    id: 'CHAMBER_RACK',
-    name: '125°C Burn-In Oven Chamber Rack',
-    subtitle: 'High-density populated Burn-In Boards (BIBs) with IC test sockets',
-    image: '/images/chamber_rack.png',
-    tag: 'THERMAL OVEN RACK',
-  },
-  {
-    id: 'INSPECTION_STATION',
-    name: 'Cleanroom AOI & ATE Workstation',
-    subtitle: 'Automated Optical Inspection multi-monitor screening conveyor',
-    image: '/images/inspection_station.png',
-    tag: 'AOI CLEANROOM',
-  },
-  {
-    id: 'WAFER_PROBER',
-    name: 'Silicon Wafer Die Prober Stage',
-    subtitle: 'Automated prober head inspecting patterned flight-grade dies',
-    image: '/images/wafer_prober.png',
-    tag: 'WAFER PROBER',
-  },
-];
+interface TelemetryPoint {
+  timeStr: string;
+  temp: number;
+  iddq: number;
+  leakage: number;
+  driftRate: number;
+}
 
 export const FullscreenVisionView: React.FC = () => {
   const selectedChipId = useBurnInStore((state) => state.selectedChipId);
-  const selectChip = useBurnInStore((state) => state.selectChip);
   const chips = useBurnInStore((state) => state.chips);
   const checkpoint = useBurnInStore((state) => state.checkpoint);
   const parameter = useBurnInStore((state) => state.parameter);
+  const stats = useBurnInStore((state) => state.stats);
   const setView3DMode = useBurnInStore((state) => state.setView3DMode);
   const overrideChipVerdict = useBurnInStore((state) => state.overrideChipVerdict);
   const addToast = useBurnInStore((state) => state.addToast);
-
-  const [activeFeed, setActiveFeed] = useState<FeedSource>('CHAMBER_RACK');
-  const [activeFilter, setActiveFilter] = useState<OpticalFilter>('AI_BOUNDING');
-  const [zoom, setZoom] = useState<number>(1);
-  const [frameNumber, setFrameNumber] = useState(38410);
-  const [showOverlays, setShowOverlays] = useState(true);
+  const telemetry = useBurnInStore((state) => state.telemetry);
 
   const starChip = chips.find((c) => c.part_id === selectedChipId) || chips.find((c) => c.part_id === 'CHIP-LOT04-042') || chips[41];
 
-  // Simulating live camera tick
+  const [isStreaming, setIsStreaming] = useState(true);
+  const [packets, setPackets] = useState<RealTimePacket[]>([]);
+  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryPoint[]>([]);
+  const [packetCount, setPacketCount] = useState(148200);
+  const [sampleRate] = useState(1000); // 1,000 samples/sec
+  const [latency, setLatency] = useState(0.8);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // High-Frequency Real-Time Waveform Generator (60 FPS Oscilloscope)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setFrameNumber((f) => f + 1);
-    }, 66);
-    return () => clearInterval(timer);
-  }, []);
+    let animId: number;
+    let phase = 0;
+
+    const renderOscilloscope = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Dark Scientific Grid Background
+      ctx.fillStyle = '#03080e';
+      ctx.fillRect(0, 0, width, height);
+
+      // Oscilloscope Grid Lines
+      ctx.strokeStyle = 'rgba(32, 214, 232, 0.12)';
+      ctx.lineWidth = 1;
+      const gridSpacing = 40;
+      for (let x = 0; x < width; x += gridSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += gridSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Center Reference Line
+      ctx.strokeStyle = 'rgba(32, 214, 232, 0.3)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (isStreaming) {
+        phase += 0.08;
+      }
+
+      // Draw Normal Base Waveform (Channel 1: Green/Cyan)
+      ctx.strokeStyle = '#20d6e8';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#20d6e8';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+
+      const centerY = height * 0.45;
+      for (let x = 0; x < width; x++) {
+        const t = (x / width) * 12 + phase;
+        // Quiescent IDDQ baseline + thermal flicker noise
+        const baseline = Math.sin(t * 1.5) * 8 + Math.sin(t * 4.2) * 3 + (Math.random() - 0.5) * 2;
+        const y = centerY + baseline;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Draw Suspect Chip Anomalous Burst Waveform (Channel 2: Amber/Red)
+      const isSuspect = starChip && starChip.verdict !== 'PASS';
+      if (isSuspect) {
+        ctx.strokeStyle = '#ff4268';
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = '#ff4268';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+
+        const burstCenterY = height * 0.72;
+        for (let x = 0; x < width; x++) {
+          const t = (x / width) * 12 + phase;
+          // Gate oxide breakdown transient current spikes
+          const spike = Math.sin(t * 3) > 0.85 ? Math.random() * 28 : (Math.random() - 0.5) * 6;
+          const y = burstCenterY - Math.sin(t * 1.2) * 14 - spike;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      ctx.shadowBlur = 0;
+      animId = requestAnimationFrame(renderOscilloscope);
+    };
+
+    animId = requestAnimationFrame(renderOscilloscope);
+    return () => cancelAnimationFrame(animId);
+  }, [isStreaming, starChip]);
+
+  // Real-Time Telemetry Stream Ingestion Loop
+  useEffect(() => {
+    if (!isStreaming) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+      const tempVal = Number((125.0 + (Math.random() - 0.48) * 0.22).toFixed(2));
+      const iddqVal = Number((10.4 + (starChip?.verdict !== 'PASS' ? 0.7 : 0.0) + (Math.random() - 0.45) * 0.15).toFixed(3));
+      const leakVal = Number((22.1 + (Math.random() - 0.5) * 0.4).toFixed(1));
+      const driftRateVal = Number((starChip?.predictedSlope || 0.024) + (Math.random() - 0.5) * 0.004);
+
+      setPacketCount((p) => p + 1);
+      setLatency(Number((0.7 + Math.random() * 0.3).toFixed(2)));
+
+      // Rolling Telemetry Timeseries Points
+      setTelemetryHistory((prev) => {
+        const nextPoint: TelemetryPoint = {
+          timeStr: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          temp: tempVal,
+          iddq: iddqVal,
+          leakage: leakVal,
+          driftRate: Number((driftRateVal * 100).toFixed(2)),
+        };
+        const updated = [...prev, nextPoint];
+        return updated.length > 25 ? updated.slice(1) : updated;
+      });
+
+      // Rolling High-Speed Packet List
+      const isAnomalous = Math.random() < 0.25;
+      const newPkt: RealTimePacket = {
+        id: Date.now(),
+        timestamp: timeStr,
+        partId: isAnomalous ? (starChip?.part_id || 'CHIP-LOT04-042') : `IC-${String(Math.floor(Math.random() * 640)).padStart(3, '0')}`,
+        iddq: isAnomalous ? iddqVal + 1.2 : iddqVal,
+        leakage: isAnomalous ? leakVal + 4.5 : leakVal,
+        temp: tempVal,
+        zScore: isAnomalous ? Number((3.8 + Math.random() * 1.5).toFixed(2)) : Number((Math.random() * 0.8).toFixed(2)),
+        status: isAnomalous ? 'ANOMALY' : 'NOMINAL',
+      };
+
+      setPackets((prev) => [newPkt, ...prev.slice(0, 15)]);
+    }, 450);
+
+    return () => clearInterval(interval);
+  }, [isStreaming, starChip]);
 
   const handleEarlyReject = () => {
     if (!starChip) return;
     overrideChipVerdict(
       starChip.part_id,
       'EARLY_REJECT',
-      'In-Situ Optical Telemetry Intercept: Thermal runaway & drift slope confirmed'
+      'Live Real-Time Telemetry Intercept: Kinetic drift threshold breached in real time'
     );
     addToast({
       type: 'SUCCESS',
-      title: 'Early Reject Committed',
-      message: `${starChip.part_id} rejected at ${checkpoint}h. 144 hours saved.`,
+      title: 'Real-Time Early Reject Executed',
+      message: `${starChip.part_id} officially rejected at 24h. 144 hours saved. Digital audit log signed.`,
     });
   };
 
-  const currentFeedData = FEEDS.find((f) => f.id === activeFeed) || FEEDS[0];
+  const downloadLiveCsv = () => {
+    const headers = 'timestamp,part_id,iddq_ua,leakage_na,temp_c,z_score,status\n';
+    const rows = packets
+      .map((p) => `${p.timestamp},${p.partId},${p.iddq},${p.leakage},${p.temp},${p.zScore},${p.status}`)
+      .join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ISRO_Live_Telemetry_Stream_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black select-none text-[var(--text-primary)]">
-      {/* 1. Full-Screen High-Resolution Image Container */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center">
-        <img
-          src={currentFeedData.image}
-          alt={currentFeedData.name}
-          className={`w-full h-full object-cover transition-transform duration-500 ease-out ${
-            activeFilter === 'THERMAL_HEATMAP'
-              ? 'hue-rotate-180 contrast-125 saturate-200'
-              : activeFilter === 'CSAM_ACOUSTIC'
-              ? 'invert contrast-150 brightness-90 grayscale'
-              : ''
-          }`}
-          style={{ transform: `scale(${zoom})` }}
-        />
-
-        {/* Ambient Vignette & Aerospace Scanlines */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/60 pointer-events-none" />
-        <div className="absolute inset-0 scanlines opacity-40 pointer-events-none" />
-
-        {/* Sweeping Inspection Laser Line */}
-        <div className="absolute inset-x-0 h-16 bg-gradient-to-b from-cyan-400/0 via-cyan-400/20 to-transparent animate-sweep pointer-events-none" />
-
-        {/* Precision Screen Frame Corner Brackets */}
-        <div className="absolute top-16 left-6 w-8 h-8 border-t-2 border-l-2 border-cyan-400 pointer-events-none" />
-        <div className="absolute top-16 right-6 w-8 h-8 border-t-2 border-r-2 border-cyan-400 pointer-events-none" />
-        <div className="absolute bottom-16 left-6 w-8 h-8 border-b-2 border-l-2 border-cyan-400 pointer-events-none" />
-        <div className="absolute bottom-16 right-6 w-8 h-8 border-b-2 border-r-2 border-cyan-400 pointer-events-none" />
-      </div>
-
-      {/* 2. Interactive Telemetry Bounding Box Over Identified Defect */}
-      {showOverlays && starChip && (
-        <div
-          className={`absolute transition-all duration-300 pointer-events-auto ${
-            activeFeed === 'CHAMBER_RACK'
-              ? 'top-[42%] left-[46%]'
-              : activeFeed === 'INSPECTION_STATION'
-              ? 'top-[30%] left-[34%]'
-              : 'top-[48%] left-[54%]'
-          }`}
-        >
-          {/* Pulsing Target Reticle */}
-          <div className="relative -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 border-2 border-rose-500 rounded-[8px] bg-rose-500/15 animate-radar flex items-center justify-center shadow-[0_0_24px_rgba(255,66,104,0.8)]">
-              <Crosshair className="w-8 h-8 text-rose-400 animate-spin" style={{ animationDuration: '10s' }} />
+    <div className="relative w-screen h-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans select-none flex flex-col pt-36 pb-4 px-6">
+      {/* Top Telemetry Header Bar */}
+      <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[var(--border)] gap-4 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-[8px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)]">
+            <Radio className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="font-display font-bold text-lg tracking-tight text-[var(--text-primary)]">
+                LIVE REAL-TIME DATA TELEMETRY STREAM
+              </h1>
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-[5px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                ONLINE (1,000 SAMPLES/SEC)
+              </span>
             </div>
-
-            {/* Target Label Callout */}
-            <div className="absolute left-full ml-4 top-0 mission-hud p-3 rounded-[10px] border border-rose-500/60 shadow-[var(--shadow-floating)] min-w-[280px] bg-slate-950/95 backdrop-blur-xl">
-              <div className="flex items-center justify-between pb-1 border-b border-rose-500/30">
-                <span className="font-display font-bold text-sm text-rose-400 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                  LATENT DEFECT DETECTED
-                </span>
-                <span className="font-mono text-xs text-[var(--warning)] font-bold">98.4% CONF</span>
-              </div>
-
-              <div className="py-2 space-y-1 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="font-sans text-[var(--text-muted)]">Target Die:</span>
-                  <span className="font-display font-bold text-white text-sm">{starChip.part_id}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-sans text-[var(--text-muted)]">Coordinates:</span>
-                  <span className="font-mono text-cyan-300">R{starChip.row}:C{starChip.col}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-sans text-[var(--text-muted)]">Drift Slope:</span>
-                  <span className="font-mono font-bold text-rose-400">+{starChip.predictedSlope.toFixed(3)}/h</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-sans text-[var(--text-muted)]">Chamber Temp:</span>
-                  <span className="font-mono text-amber-400 font-bold">125.1°C</span>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-[var(--border)] flex gap-2">
-                <button
-                  onClick={handleEarlyReject}
-                  className="flex-1 py-1.5 px-3 rounded-[6px] bg-rose-500 hover:bg-rose-600 text-white font-display font-bold text-xs flex items-center justify-center gap-1 transition-all shadow-md"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>EARLY REJECT @ 24H</span>
-                </button>
-              </div>
-            </div>
+            <p className="text-xs text-[var(--text-muted)] font-mono">
+              ATE Automated Test Equipment • ISRO Space Electronics Qualification Lab • Protocol: IEEE 1149.4
+            </p>
           </div>
         </div>
-      )}
 
-      {/* 3. Top Control Bar (Feed Switcher, Filters, Fullscreen Exit) */}
-      <div className="absolute top-28 left-6 right-6 z-30 flex flex-wrap items-center justify-between gap-4 pointer-events-auto">
-        {/* Source Feed Switcher Tabs */}
-        <div className="flex items-center gap-2 p-1.5 rounded-[10px] bg-slate-950/85 backdrop-blur-xl border border-[var(--border)] shadow-[var(--shadow-floating)]">
-          {FEEDS.map((feed) => (
-            <button
-              key={feed.id}
-              onClick={() => setActiveFeed(feed.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-[7px] text-xs font-display font-bold transition-all ${
-                activeFeed === feed.id
-                  ? 'bg-[var(--accent)] text-slate-950 shadow-md scale-102'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
-              }`}
-            >
-              <Camera className="w-4 h-4" />
-              <span>{feed.tag}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Optical Filter Controls */}
-        <div className="flex items-center gap-2 p-1.5 rounded-[10px] bg-slate-950/85 backdrop-blur-xl border border-[var(--border)] shadow-[var(--shadow-floating)]">
-          {(['REAL_OPTICAL', 'THERMAL_HEATMAP', 'AI_BOUNDING', 'CSAM_ACOUSTIC'] as OpticalFilter[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              className={`px-3 py-1.5 rounded-[6px] text-xs font-display font-semibold transition-all ${
-                activeFilter === f
-                  ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-sm'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              {f.replace('_', ' ')}
-            </button>
-          ))}
-        </div>
-
-        {/* View Controls & Exit */}
-        <div className="flex items-center gap-2 p-1.5 rounded-[10px] bg-slate-950/85 backdrop-blur-xl border border-[var(--border)] shadow-[var(--shadow-floating)]">
+        {/* Live Stream Controls */}
+        <div className="flex items-center gap-2.5 font-display text-xs">
           <button
-            onClick={() => setZoom((z) => Math.max(1, z - 0.25))}
-            className="p-2 rounded-[6px] text-[var(--text-secondary)] hover:text-white hover:bg-white/10 transition-colors"
-            title="Zoom Out"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-          <span className="font-mono text-xs text-cyan-300 font-bold px-1.5">{zoom.toFixed(2)}x</span>
-          <button
-            onClick={() => setZoom((z) => Math.min(2.5, z + 0.25))}
-            className="p-2 rounded-[6px] text-[var(--text-secondary)] hover:text-white hover:bg-white/10 transition-colors"
-            title="Zoom In"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={() => setShowOverlays(!showOverlays)}
-            className={`px-3 py-1.5 rounded-[6px] text-xs font-display font-semibold transition-colors ${
-              showOverlays ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-400'
+            onClick={() => setIsStreaming(!isStreaming)}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[7px] border font-bold transition-all shadow-sm ${
+              isStreaming
+                ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30'
+                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30'
             }`}
           >
-            {showOverlays ? 'OVERLAYS ON' : 'OVERLAYS OFF'}
+            {isStreaming ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            <span>{isStreaming ? 'PAUSE STREAM' : 'RESUME STREAM'}</span>
+          </button>
+
+          <button
+            onClick={downloadLiveCsv}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[7px] bg-[var(--surface)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-primary)] font-semibold transition-colors"
+            title="Download Live Sensor Stream Packets to CSV"
+          >
+            <Download className="w-4 h-4" />
+            <span>EXPORT CSV</span>
           </button>
 
           <button
             onClick={() => setView3DMode('CHAMBER')}
-            className="flex items-center gap-2 px-4 py-2 rounded-[7px] bg-[var(--accent)] hover:opacity-90 text-slate-950 font-display font-bold text-xs transition-all shadow-md ml-2"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-[7px] bg-[var(--accent)] hover:opacity-90 text-slate-950 font-bold transition-all shadow-md ml-2"
           >
             <Compass className="w-4 h-4" />
             <span>RETURN TO 3D DIGITAL TWIN</span>
@@ -255,27 +296,170 @@ export const FullscreenVisionView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Bottom Scientific OSD Readout */}
-      <div className="absolute bottom-20 left-6 right-6 z-30 flex items-center justify-between p-3 rounded-[10px] bg-slate-950/85 backdrop-blur-xl border border-[var(--border)] text-xs font-mono pointer-events-auto shadow-[var(--shadow-floating)]">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-400 font-bold uppercase tracking-wide">
-              STREAM: {currentFeedData.name}
-            </span>
+      {/* Main Grid: Oscilloscope + Rolling Chart + Real-Time Packet Stream */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 mt-3 min-h-0">
+        {/* Left Column (8 cols): Real-Time Waveform Oscilloscope & Rolling Timeseries */}
+        <div className="lg:col-span-8 flex flex-col gap-4 min-h-0">
+          {/* 1. High-Speed Oscilloscope Canvas */}
+          <div className="flex-1 rounded-[10px] bg-slate-950 border border-[var(--border)] shadow-[var(--shadow-panel)] p-3 flex flex-col min-h-[260px] relative overflow-hidden">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-900 text-xs font-mono">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-400" />
+                <span className="font-display font-bold text-cyan-300 tracking-wide text-xs">
+                  HIGH-SPEED OSCILLOSCOPE (IDDQ TRANSIENT WAVEFORM)
+                </span>
+                <span className="px-1.5 py-0.5 rounded-[4px] bg-cyan-950 border border-cyan-500/30 text-[10px] text-cyan-400">
+                  TIMEBASE: 20 ms/div
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-xs">
+                <span className="text-cyan-400 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400" /> CH1: NOMINAL DIE
+                </span>
+                <span className="text-rose-400 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-rose-400" /> CH2: {starChip?.part_id || 'CHIP-LOT04-042'}
+                </span>
+              </div>
+            </div>
+
+            {/* Canvas */}
+            <div className="flex-1 w-full h-full relative mt-2">
+              <canvas
+                ref={canvasRef}
+                width={800}
+                height={280}
+                className="w-full h-full rounded-[6px]"
+              />
+              <div className="absolute bottom-2 left-3 font-mono text-[10px] text-slate-500 flex gap-4 pointer-events-none">
+                <span>V_DD: 1.200 V ± 0.002 V</span>
+                <span>•</span>
+                <span>NOISE FLOOR: -84 dBm</span>
+                <span>•</span>
+                <span>SAMPLE CLOCK: 50 MHz</span>
+              </div>
+            </div>
           </div>
-          <span className="text-slate-500">|</span>
-          <span className="text-[var(--text-muted)]">{currentFeedData.subtitle}</span>
+
+          {/* 2. Rolling 60-Second Real-Time Telemetry Graph */}
+          <div className="h-56 rounded-[10px] bg-[var(--surface-elevated)] border border-[var(--border)] shadow-[var(--shadow-panel)] p-3 flex flex-col">
+            <div className="flex items-center justify-between pb-1.5 border-b border-[var(--border)] text-xs font-mono">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-[var(--warning)]" />
+                <span className="font-display font-bold text-[var(--text-primary)] text-xs">
+                  CONTINUOUS TIME-SERIES TELEMETRY STREAM (ROLLING 60s)
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-xs">
+                <span className="text-amber-400 font-bold">TEMP: {telemetryHistory[telemetryHistory.length - 1]?.temp || 125.0}°C</span>
+                <span className="text-cyan-400 font-bold">IDDQ: {telemetryHistory[telemetryHistory.length - 1]?.iddq || 10.4} µA</span>
+              </div>
+            </div>
+
+            <div className="flex-1 w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={telemetryHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(32, 214, 232, 0.1)" />
+                  <XAxis dataKey="timeStr" stroke="#64748b" tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <YAxis stroke="#64748b" tick={{ fontSize: 10, fill: '#64748b' }} domain={['auto', 'auto']} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(11, 21, 32, 0.95)',
+                      borderColor: 'rgba(32, 214, 232, 0.3)',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                    }}
+                  />
+                  <Line type="monotone" dataKey="temp" stroke="#ffb020" strokeWidth={2} dot={false} isAnimationActive={false} name="Chamber Temp (°C)" />
+                  <Line type="monotone" dataKey="iddq" stroke="#20d6e8" strokeWidth={2} dot={false} isAnimationActive={false} name="DUT Iddq (µA)" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 text-cyan-300">
-          <span>FRAME: #{frameNumber}</span>
-          <span>•</span>
-          <span>4K UHD 60 FPS</span>
-          <span>•</span>
-          <span>N2 PURGE: 99.8%</span>
-          <span>•</span>
-          <span>OVEN: 125.1°C</span>
+        {/* Right Column (4 cols): Live Ingestion Stream & Outlier Intercept */}
+        <div className="lg:col-span-4 flex flex-col gap-4 min-h-0">
+          {/* Active Die Intercept Banner */}
+          {starChip && starChip.verdict !== 'PASS' && (
+            <div className="p-3.5 rounded-[10px] bg-rose-500/10 border-2 border-rose-500/40 text-[var(--text-primary)] space-y-2 shrink-0">
+              <div className="flex items-center justify-between pb-1 border-b border-rose-500/30">
+                <span className="font-display font-bold text-xs text-rose-400 flex items-center gap-1.5">
+                  <ShieldAlert className="w-4 h-4 text-rose-500 animate-pulse" />
+                  REAL-TIME ANOMALY INTERCEPT
+                </span>
+                <span className="font-mono text-xs font-bold text-amber-400">T+{checkpoint}h</span>
+              </div>
+
+              <div className="space-y-1 font-mono text-xs">
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Suspect Device:</span>
+                  <span className="font-bold text-white">{starChip.part_id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Live Drift Slope:</span>
+                  <span className="font-bold text-rose-400">+{starChip.predictedSlope.toFixed(4)}/h</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Lot Safety Slope:</span>
+                  <span className="text-emerald-400">{stats?.safetySlope.toFixed(4) || '0.0220'}/h</span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleEarlyReject}
+                className="w-full py-2 px-3 rounded-[7px] bg-rose-500 hover:bg-rose-600 text-white font-display font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-98 mt-1"
+              >
+                <Clock className="w-4 h-4" />
+                <span>CONFIRM EARLY REJECT @ 24H (SAVE 144h)</span>
+              </button>
+            </div>
+          )}
+
+          {/* Live High-Speed ATE Packet Ticker */}
+          <div className="flex-1 rounded-[10px] bg-[var(--surface-elevated)] border border-[var(--border)] shadow-[var(--shadow-panel)] p-3 flex flex-col min-h-0">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border)] text-xs font-mono shrink-0">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-cyan-400" />
+                <span className="font-display font-bold text-xs text-[var(--text-primary)]">
+                  LIVE ATE PACKET STREAM
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono">
+                {packetCount.toLocaleString()} PKTS
+              </span>
+            </div>
+
+            {/* Scrolling Packet Feed */}
+            <div className="flex-1 overflow-y-auto mt-2 space-y-1.5 custom-scrollbar font-mono text-xs pr-1">
+              {packets.map((pkt) => (
+                <div
+                  key={pkt.id}
+                  className={`p-2 rounded-[6px] border flex items-center justify-between transition-colors ${
+                    pkt.status === 'ANOMALY'
+                      ? 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+                      : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-500">{pkt.timestamp.split('.')[0]}</span>
+                    <span className="font-bold text-cyan-300">{pkt.partId}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-semibold">{pkt.iddq.toFixed(2)} µA</span>
+                    <span
+                      className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${
+                        pkt.status === 'ANOMALY'
+                          ? 'bg-rose-500 text-white'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}
+                    >
+                      {pkt.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
