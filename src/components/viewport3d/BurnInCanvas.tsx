@@ -149,9 +149,9 @@ const CameraDirector: React.FC<{
         raycaster.ray.at(14, hitPoint);
       }
 
-      // High-speed accelerated pointer zoom: ~3.5x faster responsiveness
-      const zoomSensitivity = 0.0055;
-      const clampedDelta = Math.sign(e.deltaY) * Math.min(Math.max(Math.abs(e.deltaY), 70), 220);
+      // Controlled, smooth pointer-anchored zoom (decreased to balanced rate)
+      const zoomSensitivity = 0.0026;
+      const clampedDelta = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 140);
       const factor = Math.exp(clampedDelta * zoomSensitivity);
 
       // Notify parent for visual feedback pulse

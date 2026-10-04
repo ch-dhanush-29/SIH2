@@ -62,8 +62,8 @@ export const Fallback2DView: React.FC = () => {
     const pointerX = e.clientX - rect.left;
     const pointerY = e.clientY - rect.top;
 
-    const zoomSpeed = 0.0055;
-    const clampedDelta = Math.sign(e.deltaY) * Math.min(Math.max(Math.abs(e.deltaY), 60), 180);
+    const zoomSpeed = 0.0026;
+    const clampedDelta = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 140);
     const factor = Math.exp(-clampedDelta * zoomSpeed);
     const newScale = Math.min(Math.max(1.0, zoomScale * factor), 8.0);
 
