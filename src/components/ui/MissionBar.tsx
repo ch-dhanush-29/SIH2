@@ -73,10 +73,10 @@ export const MissionBar: React.FC = () => {
           <div className="text-[10px] text-slate-400 font-mono flex items-center gap-2">
             <span className="flex items-center gap-1 text-emerald-400 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              LIVE DIGITAL TWIN
+              5-STAGE SCREENING PIPELINE
             </span>
             <span>•</span>
-            <span>125°C ARRHENIUS CHAMBER</span>
+            <span>TRL-5 BENCHMARK (MIL-STD-883)</span>
           </div>
         </div>
       </div>

@@ -162,6 +162,44 @@ export const InspectionHUD: React.FC = () => {
         </p>
       </div>
 
+      {/* 5-Stage Latent-Defect Screening Pipeline Audit */}
+      <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] space-y-1.5 font-mono text-[10px]">
+        <div className="flex items-center justify-between text-[10px] font-bold text-[var(--accent)] border-b border-[var(--border)] pb-1">
+          <span>5-STAGE LATENT DEFECT PIPELINE</span>
+          <span className="text-[var(--text-muted)]">MIL-STD-883 / AEC-Q100</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-[var(--text-muted)]">1. Static Limit Check:</span>
+          <span className={chip.passesStaticLimit ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+            {val.toFixed(1)} &lt; {pcfg.staticLimit} µA {chip.passesStaticLimit ? '(PASS)' : '(FAIL)'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-[var(--text-muted)]">2. Dynamic Anomaly:</span>
+          <span className={chip.robustZScore >= 3.0 ? 'text-amber-500 font-bold' : 'text-emerald-500'}>
+            +{chip.robustZScore.toFixed(1)}σ MAD {chip.robustZScore >= 3.0 ? '(OUTLIER)' : '(NOMINAL)'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-[var(--text-muted)]">3. Future Drift (168h):</span>
+          <span className={chip.predicted168h > pcfg.staticLimit ? 'text-rose-500 font-bold' : 'text-[var(--text-primary)]'}>
+            {chip.predicted168h.toFixed(1)} µA {chip.predicted168h > pcfg.staticLimit ? '(RUNAWAY)' : '(BOUNDED)'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-[var(--text-muted)]">4. Safety-Slope Risk:</span>
+          <span className={chip.earlyReject ? 'text-fuchsia-500 font-bold' : 'text-emerald-500'}>
+            +{chip.predictedSlope.toFixed(3)}/h {chip.earlyReject ? '(EXCEEDED)' : '(SAFE)'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center pt-1 border-t border-[var(--border)]">
+          <span className="text-[var(--text-muted)]">5. Actionable Verdict:</span>
+          <span className="font-bold text-[var(--text-primary)]">
+            {chip.verdict}
+          </span>
+        </div>
+      </div>
+
       {/* Critical Telemetry Metric Grid */}
       <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/40 border border-[var(--border)] grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] font-mono">
         <div className="flex justify-between">

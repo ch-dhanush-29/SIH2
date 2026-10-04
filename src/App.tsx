@@ -16,6 +16,7 @@ import { AiAssistantModal } from './components/panels/AiAssistantModal';
 import { EngineeringModal } from './components/panels/EngineeringModal';
 import { MissionNarrativeBar } from './components/ui/MissionNarrativeBar';
 import { HeroExplanationDock } from './components/ui/HeroExplanationDock';
+import { PipelineWorkflowBanner } from './components/ui/PipelineWorkflowBanner';
 import { DemoStoryPhase } from './types/burnIn';
 
 export const App: React.FC = () => {
@@ -189,8 +190,12 @@ export const App: React.FC = () => {
       {/* 2. Top Aerospace Mission HUD Bar */}
       <MissionBar />
 
-      {/* 2.5. Primary SIH Hero Narrative Director & Stepper */}
-      <MissionNarrativeBar />
+      {/* 2.5. Central Innovation: 5-Stage Latent-Defect Detection Pipeline vs Hero Narrative */}
+      {isHeroNarrativeActive ? (
+        <MissionNarrativeBar />
+      ) : (
+        <PipelineWorkflowBanner />
+      )}
 
       {/* 3. Floating Telemetry & Dynamic Threshold HUD (Top-Left) */}
       <div className={`transition-opacity duration-500 ${isHeroNarrativeActive ? 'opacity-25 hover:opacity-100' : 'opacity-100'}`}>

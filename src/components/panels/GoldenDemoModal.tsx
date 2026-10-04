@@ -88,17 +88,17 @@ export const GoldenDemoModal: React.FC<GoldenDemoModalProps> = ({ isOpen, onClos
 
             <div className="p-4 rounded-xl border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/20 space-y-2">
               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-mono font-bold text-xs uppercase">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> BurnWatch 3D Dynamic AI Screening
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> 5-Stage Latent-Defect Detection Pipeline
               </div>
               <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                At <strong>24h</strong>, drift slope is <strong>0.0375 µA/h</strong> (4.68× lot median 0.0080 µA/h). Trajectory breaches dynamic safety slope (0.022 µA/h).
+                At <strong>24h</strong>, drift slope is <strong>0.362 µA/h</strong> (breaches dynamic safety slope). The 5-stage pipeline catches the runaway trajectory 144 hours early.
               </p>
               <div className="px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-mono font-bold flex items-center justify-between">
-                <span>BurnWatch AI Verdict:</span>
-                <span className="text-rose-600 dark:text-rose-400">EARLY REJECT (24h)</span>
+                <span>Pipeline Stage 5 Decision:</span>
+                <span className="text-rose-600 dark:text-rose-400">EARLY REJECT @ 24H</span>
               </div>
               <p className="text-[11px] text-emerald-600 dark:text-emerald-300/80 italic">
-                Defect caught early. 144 hours of chamber burn-in oven runtime saved!
+                Defect caught early. 144 hours of chamber burn-in oven runtime saved per defective die!
               </p>
             </div>
           </div>
