@@ -149,9 +149,10 @@ const CameraDirector: React.FC<{
         raycaster.ray.at(14, hitPoint);
       }
 
-      // Smooth exponential zoom factor
-      const zoomSensitivity = 0.0016;
-      const factor = Math.exp(e.deltaY * zoomSensitivity);
+      // High-speed accelerated pointer zoom: ~3.5x faster responsiveness
+      const zoomSensitivity = 0.0055;
+      const clampedDelta = Math.sign(e.deltaY) * Math.min(Math.max(Math.abs(e.deltaY), 70), 220);
+      const factor = Math.exp(clampedDelta * zoomSensitivity);
 
       // Notify parent for visual feedback pulse
       if (onZoomEvent) {
@@ -162,9 +163,9 @@ const CameraDirector: React.FC<{
       const offset = camera.position.clone().sub(hitPoint);
       const newPos = hitPoint.clone().add(offset.multiplyScalar(factor));
 
-      // Calculate distance to ensure bounds
+      // Calculate distance to ensure bounds (expanded bounds 0.9 to 95.0 for deep inspection)
       const dist = newPos.distanceTo(hitPoint);
-      if (dist >= 2.0 && dist <= 75.0) {
+      if (dist >= 0.9 && dist <= 95.0) {
         camera.position.copy(newPos);
 
         // Also scale controls.target towards hitPoint so orbiting revolves around the pointer-anchored target
