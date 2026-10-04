@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { PerspectiveCamera } from '@react-three/drei';
+import * as THREE from 'three';
 import { useBurnInStore } from '../../state/useBurnInStore';
 import { useIntroPointer } from './IntroPointerField';
 import { IntroGrid } from './IntroGrid';
-import { IntroParticles } from './IntroParticles';
-import { IntroTechnicalRings } from './IntroTechnicalRings';
-import { IntroLogo } from './IntroLogo';
+import { IntroLogo3D } from './IntroLogo3D';
 import { IntroSystemStatus } from './IntroSystemStatus';
 import { IntroStartButton } from './IntroStartButton';
 
@@ -12,13 +13,67 @@ interface IntroExperienceProps {
   onComplete: () => void;
 }
 
+// Interactive 3D Lighting Rig following pointer with real-time specular glints
+const PointerLighting3D: React.FC<{
+  theme: 'dark' | 'light';
+  pointerX: number;
+  pointerY: number;
+}> = ({ theme, pointerX, pointerY }) => {
+  const lightRef = useRef<THREE.PointLight>(null);
+  const isDark = theme === 'dark';
+
+  useFrame((_, delta) => {
+    if (lightRef.current) {
+      // Dynamic specular light follows cursor across the 3D emblem
+      const targetX = pointerX * 7.5;
+      const targetY = -pointerY * 5.0;
+      lightRef.current.position.x = THREE.MathUtils.lerp(
+        lightRef.current.position.x,
+        targetX,
+        delta * 6.0
+      );
+      lightRef.current.position.y = THREE.MathUtils.lerp(
+        lightRef.current.position.y,
+        targetY,
+        delta * 6.0
+      );
+    }
+  });
+
+  return (
+    <>
+      <ambientLight intensity={isDark ? 0.8 : 1.15} />
+      <directionalLight
+        position={[7, 9, 8]}
+        intensity={isDark ? 1.8 : 1.4}
+        color={isDark ? '#e0f2fe' : '#ffffff'}
+        castShadow
+      />
+      {/* Interactive Cursor-Tracking 3D Specular Light */}
+      <pointLight
+        ref={lightRef}
+        position={[0, 0, 5.5]}
+        intensity={isDark ? 3.6 : 2.6}
+        color={isDark ? '#38bdf8' : '#0284c7'}
+        distance={16}
+        decay={2}
+      />
+      {/* Signature ISRO Plume Orange Rim Light */}
+      <directionalLight
+        position={[-6, -4, -6]}
+        intensity={isDark ? 1.6 : 1.0}
+        color="#f37023"
+      />
+    </>
+  );
+};
+
 export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) => {
   const theme = useBurnInStore((state) => state.theme);
   const pointer = useIntroPointer();
 
   // Animation timeline progression states
   const [timelineStep, setTimelineStep] = useState(0);
-  const [isLogoRevealed, setIsLogoRevealed] = useState(false);
   const [isTitleRevealed, setIsTitleRevealed] = useState(false);
   const [statusStep, setStatusStep] = useState(0);
   const [isButtonActive, setIsButtonActive] = useState(false);
@@ -27,24 +82,21 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
 
   // Controlled timeline sequencing
   useEffect(() => {
-    // 0.2s: technical particles and rings initialize
-    const t1 = setTimeout(() => setTimelineStep(1), 200);
+    // 0.15s: 3D scene boot
+    const t1 = setTimeout(() => setTimelineStep(1), 150);
 
-    // 0.8s: official ISRO logo reveals
-    const t2 = setTimeout(() => setIsLogoRevealed(true), 800);
+    // 0.6s: header and subtitle reveal
+    const t2 = setTimeout(() => setIsTitleRevealed(true), 600);
 
-    // 1.3s: title and AI intelligence subtitle reveal
-    const t3 = setTimeout(() => setIsTitleRevealed(true), 1300);
+    // 1.0s to 2.0s: system initialization steps 1 to 5
+    const t3 = setTimeout(() => setStatusStep(1), 1000);
+    const t4 = setTimeout(() => setStatusStep(2), 1250);
+    const t5 = setTimeout(() => setStatusStep(3), 1500);
+    const t6 = setTimeout(() => setStatusStep(4), 1750);
+    const t7 = setTimeout(() => setStatusStep(5), 2000);
 
-    // 1.7s to 2.4s: system initialization steps 1 to 5
-    const t4 = setTimeout(() => setStatusStep(1), 1700);
-    const t5 = setTimeout(() => setStatusStep(2), 1900);
-    const t6 = setTimeout(() => setStatusStep(3), 2100);
-    const t7 = setTimeout(() => setStatusStep(4), 2300);
-    const t8 = setTimeout(() => setStatusStep(5), 2500);
-
-    // 2.6s: start button becomes fully active
-    const t9 = setTimeout(() => setIsButtonActive(true), 2600);
+    // 2.1s: start button becomes fully active
+    const t8 = setTimeout(() => setIsButtonActive(true), 2100);
 
     return () => {
       clearTimeout(t1);
@@ -55,7 +107,6 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
       clearTimeout(t6);
       clearTimeout(t7);
       clearTimeout(t8);
-      clearTimeout(t9);
     };
   }, []);
 
@@ -64,12 +115,12 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
     if (isStarting) return;
     setIsStarting(true);
 
-    // Cinematic transition timeline:
-    // 1. Central visual brightens and particles warp inward (0 - 450ms)
-    // 2. Entire overlay depth-zooms and fades out into live digital twin (450 - 750ms)
+    // 700ms Cinematic 3D Depth Zoom Warp into Chamber:
+    // 1. 3D logo spins up into acceleration warp & zooms toward camera (0 - 450ms)
+    // 2. Entire overlay dissolves out to reveal the preloaded live digital twin chamber (450 - 750ms)
     setTimeout(() => {
       setIsFadingOut(true);
-    }, 400);
+    }, 450);
 
     setTimeout(() => {
       onComplete();
@@ -92,7 +143,7 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden font-sans select-none transition-all ${
+      className={`fixed inset-0 w-screen h-screen z-50 flex flex-col justify-between overflow-hidden font-sans select-none transition-all ${
         isFadingOut
           ? 'opacity-0 scale-105 pointer-events-none duration-400 ease-out'
           : 'opacity-100 scale-100 duration-300'
@@ -102,92 +153,96 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
         color: isDark ? '#e8f0f7' : '#102033',
       }}
     >
-      {/* LAYER 1: Deep Aerospace Background with Pointer Soft Lighting */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-        style={{
-          background: isDark
-            ? `radial-gradient(circle 650px at ${pointer.lightX}px ${pointer.lightY}px, rgba(32, 214, 232, 0.12) 0%, rgba(8, 17, 26, 0.7) 50%, #05080d 100%)`
-            : `radial-gradient(circle 650px at ${pointer.lightX}px ${pointer.lightY}px, rgba(8, 126, 164, 0.10) 0%, rgba(232, 238, 244, 0.7) 50%, #f5f8fb 100%)`,
-        }}
-      />
-
-      {/* LAYER 2: Precision Engineering Grid with Subtle Pointer Perspective */}
-      <IntroGrid theme={theme} smoothX={pointer.smoothX} smoothY={pointer.smoothY} />
-
-      {/* LAYER 3: Scientific Telemetry Particles with Inward Signal Drift */}
-      <IntroParticles
-        theme={theme}
-        smoothX={pointer.smoothX}
-        smoothY={pointer.smoothY}
-        isAccelerating={isStarting}
-      />
-
-      {/* LAYER 4: Concentric Scientific Technical Rings */}
-      <IntroTechnicalRings
-        theme={theme}
-        smoothX={pointer.smoothX}
-        smoothY={pointer.smoothY}
-        isStarting={isStarting}
-      />
-
-      {/* LAYER 5: Central Mission Hero Composition */}
-      <div className="relative z-30 flex flex-col items-center text-center px-4 max-w-2xl mx-auto my-auto">
-        {/* Top Mission Identifier */}
-        <div
-          className="font-mono text-[11px] tracking-widest uppercase text-[var(--accent)] font-semibold mb-2 transition-all duration-700"
-          style={{
-            opacity: timelineStep >= 1 ? 0.9 : 0,
-            transform: `translateY(${timelineStep >= 1 ? 0 : -8}px)`,
+      {/* ========================================================================= */}
+      {/* 1. FULLSCREEN THREE.JS 3D CANVAS: ROTATING & ANIMATING ISRO EMBLEM         */}
+      {/* ========================================================================= */}
+      <div className="absolute inset-0 w-full h-full z-10 pointer-events-auto">
+        <Canvas
+          shadows
+          dpr={[1, 2]}
+          gl={{
+            antialias: true,
+            powerPreference: 'high-performance',
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: isDark ? 1.3 : 1.1,
           }}
         >
-          ISRO • PROBLEM STATEMENT SIH26170
+          <color attach="background" args={[isDark ? '#05080d' : '#f5f8fb']} />
+          <PerspectiveCamera makeDefault position={[0, 0, 9.6]} fov={42} />
+
+          {/* Interactive 3D Lighting Rig */}
+          <PointerLighting3D
+            theme={theme}
+            pointerX={pointer.smoothX}
+            pointerY={pointer.smoothY}
+          />
+
+          {/* 3D Rotating & Animating ISRO Emblem */}
+          <IntroLogo3D
+            theme={theme}
+            pointerX={pointer.smoothX}
+            pointerY={pointer.smoothY}
+            isStarting={isStarting}
+            scale={window.innerWidth < 768 ? 0.85 : 1.05}
+          />
+        </Canvas>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. SUBTLE ENGINEERING BACKGROUND GRID (LAYER 2)                           */}
+      {/* ========================================================================= */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <IntroGrid theme={theme} smoothX={pointer.smoothX} smoothY={pointer.smoothY} />
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. FOREGROUND CINEMATIC AEROSPACE HUD OVERLAYS (LAYER 3 - FLOATING)      */}
+      {/* ========================================================================= */}
+      {/* Top Mission Identifier Header */}
+      <header className="relative z-30 pt-5 px-6 sm:px-10 flex items-center justify-between pointer-events-none select-none">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-[6px] bg-cyan-950/80 dark:bg-cyan-950/60 border border-cyan-500/30">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+            <span className="font-mono text-xs tracking-widest uppercase text-cyan-300 font-bold">
+              ISRO • PROBLEM STATEMENT SIH26170
+            </span>
+          </div>
+          <span className="hidden md:inline font-mono text-[10px] text-[var(--text-muted)] tracking-wider">
+            ELECTRONIC COMPONENT QUALIFICATION PROTOCOL
+          </span>
         </div>
 
-        {/* Official ISRO Mark Presentation */}
-        <IntroLogo
-          theme={theme}
-          smoothX={pointer.smoothX}
-          smoothY={pointer.smoothY}
-          isRevealed={isLogoRevealed}
-          isStarting={isStarting}
-        />
+        <div className="flex items-center gap-2 font-mono text-[10px] text-[var(--text-muted)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>MIL-STD-883H CLASS-S READY</span>
+        </div>
+      </header>
 
+      {/* Center Spacer: Keeps the center 100% CLEAR so the 3D rotating ISRO emblem commands the screen */}
+      <div className="flex-1 pointer-events-none" />
+
+      {/* Bottom Mission Control Console & Launch Gate */}
+      <main className="relative z-30 pb-6 px-4 flex flex-col items-center text-center max-w-xl mx-auto w-full pointer-events-none">
         {/* Main Product Title */}
         <div
-          className="mt-4 transition-all duration-700"
+          className="transition-all duration-700 pointer-events-auto"
           style={{
             opacity: isTitleRevealed ? 1 : 0,
-            transform: `translateY(${isTitleRevealed ? 0 : 12}px)`,
+            transform: `translateY(${isTitleRevealed ? 0 : 10}px)`,
           }}
         >
-          <h1 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight text-[var(--text-primary)]">
+          <h1 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-[var(--text-primary)] drop-shadow-md">
             BURNWATCH <span className="text-[var(--accent)] font-mono">3D</span>
           </h1>
 
-          <div className="mt-1 font-display font-semibold text-xs sm:text-sm tracking-wider uppercase text-[var(--text-secondary)]">
+          <div className="mt-0.5 font-display font-semibold text-xs sm:text-sm tracking-wider uppercase text-[var(--text-secondary)]">
             AI-Driven Anomaly Detection in Component Burn-In & Screening
           </div>
-
-          <p className="mt-1 font-sans text-xs text-[var(--text-muted)] max-w-lg mx-auto leading-relaxed hidden sm:block">
-            Semiconductor reliability digital twin delivering early latent defect screening at 24h with zero false negatives.
-          </p>
         </div>
-
-        {/* Technical Divider Bar */}
-        <div
-          className="w-48 h-[1px] my-3 mx-auto transition-all duration-700"
-          style={{
-            opacity: isTitleRevealed ? 0.4 : 0,
-            background: isDark
-              ? 'linear-gradient(90deg, transparent, rgba(32, 214, 232, 0.8), transparent)'
-              : 'linear-gradient(90deg, transparent, rgba(8, 126, 164, 0.8), transparent)',
-          }}
-        />
 
         {/* System Initialization Status Section */}
         <div
-          className="w-full transition-all duration-700"
+          className="w-full transition-all duration-700 pointer-events-auto mt-2"
           style={{
             opacity: isTitleRevealed ? 1 : 0,
             transform: `translateY(${isTitleRevealed ? 0 : 8}px)`,
@@ -196,22 +251,31 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
           <IntroSystemStatus theme={theme} startStep={statusStep} />
         </div>
 
-        {/* Primary CTA Start Button with Magnetic Pointer Pull */}
-        <IntroStartButton
-          theme={theme}
-          isActive={isButtonActive}
-          onClick={handleStart}
-          isStarting={isStarting}
-        />
-      </div>
+        {/* Primary CTA Start Button */}
+        <div className="pointer-events-auto mt-2">
+          <IntroStartButton
+            theme={theme}
+            isActive={isButtonActive}
+            onClick={handleStart}
+            isStarting={isStarting}
+          />
+        </div>
+
+        {/* Keyboard and interaction hint */}
+        <div className="mt-2 text-[10px] font-mono text-[var(--text-muted)] opacity-70 tracking-wider">
+          PRESS <span className="font-bold text-[var(--accent)]">ENTER</span> /{' '}
+          <span className="font-bold text-[var(--accent)]">SPACE</span> TO START • MOVE CURSOR TO TILT 3D FIELD
+        </div>
+      </main>
 
       {/* Subtle Bottom Mission Clearance Metadata */}
-      <div className="absolute bottom-4 left-0 right-0 flex items-center justify-between px-6 font-mono text-[9px] text-[var(--text-muted)] opacity-50 pointer-events-none select-none">
-        <span>SECURITY LEVEL: ISRO-FLIGHT-QUAL-A</span>
-        <span>BENCHMARK DATASET: N=1,000 ICS (LOT-04)</span>
+      <footer className="relative z-30 pb-3 px-6 sm:px-10 flex items-center justify-between font-mono text-[9px] text-[var(--text-muted)] opacity-60 pointer-events-none select-none">
+        <span>SECURITY: ISRO-FLIGHT-QUAL-A</span>
+        <span className="hidden md:inline">BENCHMARK: 1,000 ICS (LOT-04) • 125°C ESS CHAMBER 01-A</span>
         <span>ZERO FALSE NEGATIVE GUARANTEE</span>
-      </div>
+      </footer>
     </div>
   );
 };
+
 export default IntroExperience;

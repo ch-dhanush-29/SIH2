@@ -51,7 +51,7 @@ export const App: React.FC = () => {
     if (typeof window === 'undefined') return false;
     const params = new URLSearchParams(window.location.search);
     if (params.get('skipIntro') === 'true') return false;
-    return sessionStorage.getItem('burnwatch_entered') !== 'true';
+    return true;
   });
 
   // Support reopening intro on demand

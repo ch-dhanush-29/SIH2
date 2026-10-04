@@ -206,21 +206,25 @@ export const TopNavHeader: React.FC = () => {
       <div className="min-h-[50px] px-4 py-1.5 flex items-center justify-between border-b border-[var(--border)] text-xs">
         {/* Left: Product Identity & Mission Reference */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('burnwatch-reopen-intro'))}
+            title="Click to replay 3D Cinematic Intro"
+            className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm group-hover:scale-105 transition-transform">
               <Flame className="w-4.5 h-4.5" />
             </div>
             <div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-display font-bold text-[14px] tracking-tight text-[var(--text-primary)]">
+                <span className="font-display font-bold text-[14px] tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
                   BURNWATCH<span className="text-[var(--accent)] font-mono ml-0.5 text-xs">3D</span>
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-[4px] bg-cyan-950/80 text-cyan-300 dark:bg-cyan-950/70 border border-cyan-500/30">
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-[4px] bg-cyan-950/80 text-cyan-300 dark:bg-cyan-950/70 border border-cyan-500/30 group-hover:border-cyan-400 transition-colors">
                   ISRO • SIH26170
                 </span>
               </div>
             </div>
-          </div>
+          </button>
 
           <div className="h-4 w-[1px] bg-[var(--border)] hidden md:block" />
 
