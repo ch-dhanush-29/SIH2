@@ -10,6 +10,7 @@ import {
   ScreeningVerdict,
   View3DMode,
   CameraViewMode,
+  DemoStoryPhase,
 } from '../types/burnIn';
 import { PRESET_LOTS, LotConfig } from '../algorithms/syntheticData';
 import { workerClient } from '../workers/workerClient';
@@ -68,6 +69,17 @@ interface BurnInState {
   telemetry: ChamberTelemetry;
   toasts: ToastMessage[];
 
+  // Hero Story Narrative Controller (Digital Twin -> Real-Time Event -> AI Explanation -> Data)
+  isHeroNarrativeActive: boolean;
+  narrativePhase: DemoStoryPhase;
+  narrativeAutoPlay: boolean;
+  setNarrativePhase: (phase: DemoStoryPhase) => Promise<void>;
+  nextNarrativePhase: () => void;
+  prevNarrativePhase: () => void;
+  startHeroNarrative: (autoPlay?: boolean) => void;
+  stopHeroNarrative: () => void;
+  toggleNarrativeAutoPlay: () => void;
+
   // Mission Control HUD Modals & Layers
   isGoldenDemoPlaying: boolean;
   goldenDemoStep: number;
@@ -115,6 +127,18 @@ interface BurnInState {
   tickStreamSimulation: () => void;
 }
 
+export const NARRATIVE_PHASES: DemoStoryPhase[] = [
+  'NORMAL_CHAMBER',
+  'LIVE_TELEMETRY',
+  'DRIFT_DETECTED',
+  'CHIP_PULSING',
+  'CAMERA_APPROACH',
+  'SPATIAL_VIZ',
+  'TRAJECTORY_RENDER',
+  'AI_EXPLANATION',
+  'RECOMMENDED_ACTION',
+];
+
 export const useBurnInStore = create<BurnInState>((set, get) => ({
   presetLots: PRESET_LOTS,
   selectedLotConfig: PRESET_LOTS[0],
@@ -122,6 +146,11 @@ export const useBurnInStore = create<BurnInState>((set, get) => ({
   stats: null,
   metrics: null,
   isComputing: false,
+
+  // Narrative Story State
+  isHeroNarrativeActive: false,
+  narrativePhase: 'NORMAL_CHAMBER',
+  narrativeAutoPlay: false,
 
   selectedChipId: null,
   hoveredChipId: null,
@@ -355,6 +384,152 @@ export const useBurnInStore = create<BurnInState>((set, get) => ({
 
   stopGoldenDemo: () => {
     set({ isGoldenDemoPlaying: false, goldenDemoStep: 0 });
+  },
+
+  startHeroNarrative: (autoPlay = true) => {
+    if (get().selectedLotConfig.lotId !== 'LOT-2026-04') {
+      get().selectLot('LOT-2026-04');
+    }
+    set({
+      isHeroNarrativeActive: true,
+      narrativeAutoPlay: autoPlay,
+    });
+    get().setNarrativePhase('NORMAL_CHAMBER');
+  },
+
+  stopHeroNarrative: () => {
+    set({
+      isHeroNarrativeActive: false,
+      narrativeAutoPlay: false,
+    });
+    get().resetCamera();
+  },
+
+  nextNarrativePhase: () => {
+    const current = get().narrativePhase;
+    const idx = NARRATIVE_PHASES.indexOf(current);
+    if (idx < NARRATIVE_PHASES.length - 1) {
+      get().setNarrativePhase(NARRATIVE_PHASES[idx + 1]);
+    } else {
+      set({ narrativeAutoPlay: false });
+    }
+  },
+
+  prevNarrativePhase: () => {
+    const current = get().narrativePhase;
+    const idx = NARRATIVE_PHASES.indexOf(current);
+    if (idx > 0) {
+      get().setNarrativePhase(NARRATIVE_PHASES[idx - 1]);
+    }
+  },
+
+  toggleNarrativeAutoPlay: () => {
+    set((state) => ({ narrativeAutoPlay: !state.narrativeAutoPlay }));
+  },
+
+  setNarrativePhase: async (phase: DemoStoryPhase) => {
+    const starChip = get().chips.find((c) => c.part_id === 'CHIP-LOT04-042') || get().chips[41];
+    const starChipId = starChip ? starChip.part_id : 'CHIP-LOT04-042';
+
+    set({ narrativePhase: phase });
+
+    switch (phase) {
+      case 'NORMAL_CHAMBER':
+        set({
+          checkpoint: 0,
+          view3DMode: 'CHAMBER',
+          cameraViewMode: 'OVERVIEW',
+          selectedChipId: null,
+          isInspectionOpen: false,
+          telemetry: { ...get().telemetry, isStreaming: false, burnInHoursElapsed: 0, chamberTempC: 125.0 },
+        });
+        break;
+
+      case 'LIVE_TELEMETRY':
+        await get().setCheckpoint(24);
+        set({
+          telemetry: { ...get().telemetry, isStreaming: true, burnInHoursElapsed: 24, chamberTempC: 125.2 },
+          cameraViewMode: 'OVERVIEW',
+          selectedChipId: null,
+          isInspectionOpen: false,
+        });
+        get().addToast({
+          type: 'INFO',
+          title: 'Live Telemetry Active',
+          message: 'Chamber reached 24h calibration checkpoint. Parametric stream running.',
+        });
+        break;
+
+      case 'DRIFT_DETECTED':
+        await get().setCheckpoint(24);
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'OVERVIEW',
+          isInspectionOpen: false,
+        });
+        get().addToast({
+          type: 'ALERT',
+          title: 'Parametric Drift Detected',
+          message: `Ensemble AI flagged abnormal slope on ${starChipId} (+4.8σ MAD Outlier).`,
+        });
+        break;
+
+      case 'CHIP_PULSING':
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'OVERVIEW',
+          isInspectionOpen: false,
+        });
+        break;
+
+      case 'CAMERA_APPROACH':
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'CLOSEUP',
+          isInspectionOpen: false,
+        });
+        break;
+
+      case 'SPATIAL_VIZ':
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'CLOSEUP',
+          visionFeedMode: 'THERMAL',
+          isInspectionOpen: false,
+        });
+        break;
+
+      case 'TRAJECTORY_RENDER':
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'ANOMALY_FOLLOW',
+          visionFeedMode: 'AI_BOUNDING',
+          isInspectionOpen: false,
+        });
+        break;
+
+      case 'AI_EXPLANATION':
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'CLOSEUP',
+          isInspectionOpen: true,
+          activePanelTab: 'EXPLAIN',
+        });
+        break;
+
+      case 'RECOMMENDED_ACTION':
+        set({
+          selectedChipId: starChipId,
+          cameraViewMode: 'CLOSEUP',
+          isInspectionOpen: true,
+        });
+        get().addToast({
+          type: 'SUCCESS',
+          title: 'Early Reject Recommended',
+          message: 'Rejecting at 24h saves 144 hours of chamber testing time ($3,200 testing cost saved).',
+        });
+        break;
+    }
   },
 
   setHoveredChip: (chipId: string | null) => {

@@ -12,6 +12,9 @@ import { LotCloudScene } from './LotCloudScene';
 import { TrajectoryScene } from './TrajectoryScene';
 import { Fallback2DView } from './Fallback2DView';
 import { ChipTooltip3D } from './ChipTooltip3D';
+import { SpatialAnomalyCallout } from './SpatialAnomalyCallout';
+import { SpatialTrajectoryRibbon } from './SpatialTrajectoryRibbon';
+import { SpatialPulsingEffects } from './SpatialPulsingEffects';
 
 // Dynamic lighting controller that smoothly interpolates lighting across theme changes
 const DynamicThemeLighting: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
@@ -96,38 +99,44 @@ const CameraDirector: React.FC = () => {
     controlsRef.current.update();
   }, [cameraResetCount, view3DMode]);
 
-  // Fly-to selected chip in Close-up view
-  useEffect(() => {
-    if (!controlsRef.current || !selectedChip) return;
-    if (view3DMode !== 'CHAMBER' && view3DMode !== 'THERMAL' && view3DMode !== 'ANOMALY_MAP') return;
+  // Smooth frame-by-frame camera animation and flight
+  useFrame(({ clock }, delta) => {
+    if (!controlsRef.current) return;
+    const factor = Math.min(1.0, delta * 3.6);
 
-    const targetPos = new THREE.Vector3(selectedChip.trayX, selectedChip.trayY + 0.3, selectedChip.trayZ);
-    const cameraPos = new THREE.Vector3(
-      selectedChip.trayX + 2.2,
-      selectedChip.trayY + 3.8,
-      selectedChip.trayZ + 4.8
-    );
-
-    controlsRef.current.target.lerp(targetPos, 0.95);
-    controlsRef.current.object.position.lerp(cameraPos, 0.95);
-    controlsRef.current.update();
-  }, [selectedChipId, selectedChip, view3DMode, cameraViewMode]);
-
-  // Continuous subtle orbital follow when ANOMALY_FOLLOW mode is engaged
-  useFrame(({ clock }) => {
-    if (!controlsRef.current || !selectedChip || cameraViewMode !== 'ANOMALY_FOLLOW') return;
-
-    const t = clock.getElapsedTime() * 0.4;
-    const radius = 5.2;
-    const targetY = selectedChip.trayY + 0.4;
-
-    controlsRef.current.target.set(selectedChip.trayX, targetY, selectedChip.trayZ);
-    controlsRef.current.object.position.set(
-      selectedChip.trayX + Math.sin(t) * radius,
-      selectedChip.trayY + 3.4,
-      selectedChip.trayZ + Math.cos(t) * radius
-    );
-    controlsRef.current.update();
+    if (
+      (view3DMode === 'CHAMBER' || view3DMode === 'THERMAL' || view3DMode === 'ANOMALY_MAP') &&
+      selectedChip
+    ) {
+      if (cameraViewMode === 'CLOSEUP') {
+        const targetPos = new THREE.Vector3(
+          selectedChip.trayX,
+          selectedChip.trayY + 0.35,
+          selectedChip.trayZ
+        );
+        const camPos = new THREE.Vector3(
+          selectedChip.trayX + 2.2,
+          selectedChip.trayY + 2.5,
+          selectedChip.trayZ + 3.2
+        );
+        controlsRef.current.target.lerp(targetPos, factor);
+        controlsRef.current.object.position.lerp(camPos, factor);
+        controlsRef.current.update();
+      } else if (cameraViewMode === 'ANOMALY_FOLLOW') {
+        const t = clock.getElapsedTime() * 0.45;
+        const radius = 4.2;
+        const targetY = selectedChip.trayY + 0.4;
+        const targetPos = new THREE.Vector3(selectedChip.trayX, targetY, selectedChip.trayZ);
+        const orbitCamPos = new THREE.Vector3(
+          selectedChip.trayX + Math.sin(t) * radius,
+          selectedChip.trayY + 2.6,
+          selectedChip.trayZ + Math.cos(t) * radius
+        );
+        controlsRef.current.target.lerp(targetPos, factor);
+        controlsRef.current.object.position.lerp(orbitCamPos, factor);
+        controlsRef.current.update();
+      }
+    }
   });
 
   return (
@@ -145,6 +154,10 @@ const CameraDirector: React.FC = () => {
 
 export const BurnInCanvas: React.FC = () => {
   const view3DMode = useBurnInStore((state) => state.view3DMode);
+  const selectedChipId = useBurnInStore((state) => state.selectedChipId);
+  const narrativePhase = useBurnInStore((state) => state.narrativePhase);
+  const isHeroNarrativeActive = useBurnInStore((state) => state.isHeroNarrativeActive);
+  const isInspectionOpen = useBurnInStore((state) => state.isInspectionOpen);
   const theme = useBurnInStore((state) => state.theme);
   const cfg = getThemeConfig(theme);
 
@@ -188,6 +201,24 @@ export const BurnInCanvas: React.FC = () => {
             <ChamberEnvironment />
             <InstancedChips />
             <ThermalField />
+
+            {/* Spatial 3D Narrative & Anomaly Overlays */}
+            {selectedChipId && (
+              <>
+                <SpatialPulsingEffects chipId={selectedChipId} />
+                {(narrativePhase === 'SPATIAL_VIZ' ||
+                  narrativePhase === 'TRAJECTORY_RENDER' ||
+                  !isHeroNarrativeActive) && (
+                  <SpatialAnomalyCallout chipId={selectedChipId} />
+                )}
+                {(narrativePhase === 'TRAJECTORY_RENDER' ||
+                  narrativePhase === 'AI_EXPLANATION' ||
+                  narrativePhase === 'RECOMMENDED_ACTION' ||
+                  (!isHeroNarrativeActive && isInspectionOpen)) && (
+                  <SpatialTrajectoryRibbon chipId={selectedChipId} />
+                )}
+              </>
+            )}
           </group>
         )}
       </Canvas>

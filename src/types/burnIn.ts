@@ -60,6 +60,17 @@ export type View3DMode =
 
 export type CameraViewMode = 'ORBIT' | 'OVERVIEW' | 'CLOSEUP' | 'ANOMALY_FOLLOW' | 'TRAJECTORY';
 
+export type DemoStoryPhase =
+  | 'NORMAL_CHAMBER'       // Phase 1: 125°C Chamber Running, all nominal
+  | 'LIVE_TELEMETRY'       // Phase 2: Live Telemetry stream active, hours advancing to 24h
+  | 'DRIFT_DETECTED'       // Phase 3: AI Ensemble flags parametric drift spike
+  | 'CHIP_PULSING'         // Phase 4: Suspect IC starts intense 3D strobe & thermal acoustic ripple
+  | 'CAMERA_APPROACH'      // Phase 5: Camera cinematically glides to macro 45° close-up
+  | 'SPATIAL_VIZ'          // Phase 6: 3D Holographic spatial callout & die hotspot appear
+  | 'TRAJECTORY_RENDER'    // Phase 7: 3D Anomaly runaway trajectory curve extrudes into space
+  | 'AI_EXPLANATION'       // Phase 8: Glass-box SHAP & Arrhenius physics root-cause panel
+  | 'RECOMMENDED_ACTION';  // Phase 9: 24h Early Reject execution (144h chamber time saved)
+
 export interface ChipMeasurements {
   v_0h: number;
   v_24h: number;

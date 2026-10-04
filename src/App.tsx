@@ -14,6 +14,9 @@ import { GoldenDemoModal } from './components/panels/GoldenDemoModal';
 import { AuditLogModal } from './components/panels/AuditLogModal';
 import { AiAssistantModal } from './components/panels/AiAssistantModal';
 import { EngineeringModal } from './components/panels/EngineeringModal';
+import { MissionNarrativeBar } from './components/ui/MissionNarrativeBar';
+import { HeroExplanationDock } from './components/ui/HeroExplanationDock';
+import { DemoStoryPhase } from './types/burnIn';
 
 export const App: React.FC = () => {
   const initialize = useBurnInStore((state) => state.initialize);
@@ -36,6 +39,12 @@ export const App: React.FC = () => {
   const activePanelTab = useBurnInStore((state) => state.activePanelTab);
   const setActivePanelTab = useBurnInStore((state) => state.setActivePanelTab);
   const startGoldenDemo = useBurnInStore((state) => state.startGoldenDemo);
+  const isHeroNarrativeActive = useBurnInStore((state) => state.isHeroNarrativeActive);
+  const narrativePhase = useBurnInStore((state) => state.narrativePhase);
+  const narrativeAutoPlay = useBurnInStore((state) => state.narrativeAutoPlay);
+  const startHeroNarrative = useBurnInStore((state) => state.startHeroNarrative);
+  const stopHeroNarrative = useBurnInStore((state) => state.stopHeroNarrative);
+  const nextNarrativePhase = useBurnInStore((state) => state.nextNarrativePhase);
 
   const [isManualGoldenDemoOpen, setIsManualGoldenDemoOpen] = useState(false);
 
@@ -80,6 +89,29 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying, playSpeed, setCheckpoint]);
 
+  // Hero Story Narrative Auto-Advance Loop
+  useEffect(() => {
+    if (!isHeroNarrativeActive || !narrativeAutoPlay) return;
+
+    const delayMap: Record<DemoStoryPhase, number> = {
+      NORMAL_CHAMBER: 3200,
+      LIVE_TELEMETRY: 3000,
+      DRIFT_DETECTED: 2800,
+      CHIP_PULSING: 2800,
+      CAMERA_APPROACH: 3000,
+      SPATIAL_VIZ: 3800,
+      TRAJECTORY_RENDER: 4500,
+      AI_EXPLANATION: 4500,
+      RECOMMENDED_ACTION: 6500,
+    };
+
+    const timer = window.setTimeout(() => {
+      nextNarrativePhase();
+    }, delayMap[narrativePhase] || 3500);
+
+    return () => clearTimeout(timer);
+  }, [isHeroNarrativeActive, narrativeAutoPlay, narrativePhase, nextNarrativePhase]);
+
   // Keyboard navigation & accessibility shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -89,7 +121,11 @@ export const App: React.FC = () => {
 
       if (e.code === 'Space') {
         e.preventDefault();
-        setIsPlaying(!isPlaying);
+        if (isHeroNarrativeActive) {
+          nextNarrativePhase();
+        } else {
+          setIsPlaying(!isPlaying);
+        }
       } else if (e.key === '1') {
         setView3DMode('CHAMBER');
       } else if (e.key === '2') {
@@ -107,9 +143,10 @@ export const App: React.FC = () => {
       } else if (e.key === 'r' || e.key === 'R') {
         resetCamera();
       } else if (e.key === 'g' || e.key === 'G') {
-        startGoldenDemo();
+        startHeroNarrative(true);
       } else if (e.key === 'Escape') {
         selectChip(null);
+        stopHeroNarrative();
         stopGoldenDemo();
         setIsManualGoldenDemoOpen(false);
         setIsAuditOpen(false);
@@ -123,6 +160,10 @@ export const App: React.FC = () => {
   }, [
     isPlaying,
     setIsPlaying,
+    isHeroNarrativeActive,
+    nextNarrativePhase,
+    startHeroNarrative,
+    stopHeroNarrative,
     setView3DMode,
     resetCamera,
     selectChip,
@@ -148,20 +189,30 @@ export const App: React.FC = () => {
       {/* 2. Top Aerospace Mission HUD Bar */}
       <MissionBar />
 
+      {/* 2.5. Primary SIH Hero Narrative Director & Stepper */}
+      <MissionNarrativeBar />
+
       {/* 3. Floating Telemetry & Dynamic Threshold HUD (Top-Left) */}
-      <TelemetryHUD />
+      <div className={`transition-opacity duration-500 ${isHeroNarrativeActive ? 'opacity-25 hover:opacity-100' : 'opacity-100'}`}>
+        <TelemetryHUD />
+      </div>
 
       {/* 4. Floating Live Chamber Vision Feed (Top-Right) */}
       <VisionMonitor />
 
       {/* 5. Floating Lot Health Radar & Zero-FN Counter (Bottom-Left) */}
-      <AnomalyRadar />
+      <div className={`transition-opacity duration-500 ${isHeroNarrativeActive ? 'opacity-25 hover:opacity-100' : 'opacity-100'}`}>
+        <AnomalyRadar />
+      </div>
 
       {/* 6. Floating Cinematic Timeline & Screening Gate (Bottom-Center) */}
       <CinematicTimeline />
 
-      {/* 7. Slide-In Component Glass-Box Inspector HUD (Right Drawer) */}
-      <InspectionHUD />
+      {/* 7. Dedicated Glass-Box Explanation & Early Reject Action Dock */}
+      <HeroExplanationDock />
+
+      {/* 8. Slide-In Component Glass-Box Inspector HUD (for manual inspection) */}
+      {!isHeroNarrativeActive && <InspectionHUD />}
 
       {/* 8. Mission Boot Sequence on Initial Load */}
       <BootSequence />
