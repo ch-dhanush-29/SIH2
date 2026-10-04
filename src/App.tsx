@@ -139,7 +139,7 @@ export const App: React.FC = () => {
     activePanelTab === 'COMPARISON';
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans select-none text-slate-100">
+    <div className="relative w-screen h-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans select-none transition-colors duration-300">
       {/* 1. Full-Screen Hero 3D Digital Twin Canvas */}
       <div className="absolute inset-0 w-full h-full z-0">
         <BurnInCanvas />

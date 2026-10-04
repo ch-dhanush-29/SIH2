@@ -2,31 +2,25 @@ import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useBurnInStore } from '../../state/useBurnInStore';
+import { getThemeConfig } from '../../theme/themeTokens';
 
 export const ThermalField: React.FC = () => {
   const view3DMode = useBurnInStore((state) => state.view3DMode);
-  const pointsRef = useRef<THREE.Points>(null);
+  const theme = useBurnInStore((state) => state.theme);
+  const cfg = getThemeConfig(theme);
 
+  const pointsRef = useRef<THREE.Points>(null);
   const particleCount = 600;
 
   // Generate convection thermal particles
-  const [positions, initialPositions] = useMemo(() => {
+  const [positions] = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
-    const initPos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      const x = (Math.random() - 0.5) * 32;
-      const y = Math.random() * 8.0;
-      const z = (Math.random() - 0.5) * 16;
-
-      pos[i * 3] = x;
-      pos[i * 3 + 1] = y;
-      pos[i * 3 + 2] = z;
-
-      initPos[i * 3] = x;
-      initPos[i * 3 + 1] = y;
-      initPos[i * 3 + 2] = z;
+      pos[i * 3] = (Math.random() - 0.5) * 32;
+      pos[i * 3 + 1] = Math.random() * 8.0;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 16;
     }
-    return [pos, initPos];
+    return [pos];
   }, []);
 
   useFrame(({ clock }) => {
@@ -62,11 +56,11 @@ export const ThermalField: React.FC = () => {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={view3DMode === 'THERMAL' ? 0.35 : 0.15}
-          color={view3DMode === 'THERMAL' ? '#ff6600' : '#ffaa00'}
+          size={view3DMode === 'THERMAL' ? cfg.three.thermalParticleSize * 1.2 : cfg.three.thermalParticleSize}
+          color={cfg.three.thermalParticleColor}
           transparent
-          opacity={view3DMode === 'THERMAL' ? 0.75 : 0.25}
-          blending={THREE.AdditiveBlending}
+          opacity={view3DMode === 'THERMAL' ? (theme === 'dark' ? 0.75 : 0.85) : (theme === 'dark' ? 0.25 : 0.35)}
+          blending={theme === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending}
           depthWrite={false}
         />
       </points>
@@ -76,11 +70,11 @@ export const ThermalField: React.FC = () => {
         <mesh position={[0, 4.0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[32, 16]} />
           <meshBasicMaterial
-            color="#ff3300"
+            color={theme === 'dark' ? '#ff3300' : '#d97706'}
             transparent
-            opacity={0.12}
+            opacity={theme === 'dark' ? 0.12 : 0.16}
             side={THREE.DoubleSide}
-            blending={THREE.AdditiveBlending}
+            blending={theme === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending}
             depthWrite={false}
           />
         </mesh>

@@ -18,6 +18,8 @@ const CB_SELECTED = new THREE.Color('#56b4e9');
 
 const tempObject = new THREE.Object3D();
 
+import { getThemeConfig } from '../../theme/themeTokens';
+
 export const LotCloudScene: React.FC = () => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const chips = useBurnInStore((state) => state.chips);
@@ -29,6 +31,7 @@ export const LotCloudScene: React.FC = () => {
   const selectChip = useBurnInStore((state) => state.selectChip);
   const setHoveredChip = useBurnInStore((state) => state.setHoveredChip);
   const isColorblindMode = useBurnInStore((state) => state.isColorblindMode);
+  const theme = useBurnInStore((state) => state.theme);
 
   const pcfg = PARAMETER_CONFIGS[parameter];
   const chipCount = chips.length;
@@ -69,17 +72,18 @@ export const LotCloudScene: React.FC = () => {
       tempObject.updateMatrix();
       meshRef.current.setMatrixAt(i, tempObject.matrix);
 
+      const cfg = getThemeConfig(theme);
       let col: THREE.Color;
       if (chip.part_id === selectedChipId) {
-        col = isColorblindMode ? CB_SELECTED : COLOR_SELECTED;
+        col = isColorblindMode ? CB_SELECTED : cfg.three.chipSelectedColor;
       } else if (chip.verdict === 'HARD_REJECT') {
-        col = isColorblindMode ? CB_REJECT : COLOR_REJECT;
+        col = isColorblindMode ? CB_REJECT : cfg.three.chipRejectColor;
       } else if (chip.verdict === 'EARLY_REJECT') {
-        col = isColorblindMode ? CB_EARLY_REJECT : COLOR_EARLY_REJECT;
+        col = isColorblindMode ? CB_EARLY_REJECT : cfg.three.chipEarlyRejectColor;
       } else if (chip.verdict === 'LATENT_SUSPECT') {
-        col = isColorblindMode ? CB_SUSPECT : COLOR_SUSPECT;
+        col = isColorblindMode ? CB_SUSPECT : cfg.three.chipSuspectColor;
       } else {
-        col = isColorblindMode ? CB_NORMAL : COLOR_NORMAL;
+        col = isColorblindMode ? CB_NORMAL : cfg.three.chipNormalColor;
       }
 
       meshRef.current.setColorAt(i, col);
@@ -89,7 +93,7 @@ export const LotCloudScene: React.FC = () => {
     if (meshRef.current.instanceColor) {
       meshRef.current.instanceColor.needsUpdate = true;
     }
-  }, [chips, stats, parameter, checkpoint, selectedChipId, hoveredChipId, isColorblindMode, chipCount, pcfg]);
+  }, [chips, stats, parameter, checkpoint, selectedChipId, hoveredChipId, isColorblindMode, chipCount, pcfg, theme]);
 
   // Static limit position on X-axis
   const staticLimitX = stats
@@ -100,7 +104,6 @@ export const LotCloudScene: React.FC = () => {
   const yMax = stats ? Math.max(0.4, stats.safetySlope * 2.8) : 0.5;
   const safetySlopeY = stats ? (stats.safetySlope / yMax) * 12 - 3 : 2;
 
-  const theme = useBurnInStore((state) => state.theme);
   const textColor = theme === 'dark' ? '#00f0ff' : '#0284c7';
   const gridColor1 = theme === 'dark' ? '#00f0ff' : '#0284c7';
   const gridColor2 = theme === 'dark' ? '#1f293d' : '#cbd5e1';

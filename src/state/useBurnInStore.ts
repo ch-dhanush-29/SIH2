@@ -22,6 +22,18 @@ export interface ToastMessage {
   timestamp: string;
 }
 
+const getInitialTheme = (): 'dark' | 'light' => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('burnwatch-theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  }
+  return 'dark';
+};
+
 interface BurnInState {
   // Lot & Chips Data
   presetLots: LotConfig[];
@@ -70,6 +82,7 @@ interface BurnInState {
   theme: 'dark' | 'light';
 
   // Actions
+  setTheme: (theme: 'dark' | 'light') => void;
   toggleTheme: () => void;
   initialize: () => Promise<void>;
   selectLot: (lotId: string) => Promise<void>;
@@ -147,21 +160,22 @@ export const useBurnInStore = create<BurnInState>((set, get) => ({
   toasts: [],
 
   activePanelTab: 'EXPLAIN',
-  theme: 'dark',
+  theme: getInitialTheme(),
+
+  setTheme: (theme: 'dark' | 'light') => {
+    set({ theme });
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('burnwatch-theme', theme);
+      } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    }
+  },
 
   toggleTheme: () => {
-    const current = get().theme;
-    const next = current === 'dark' ? 'light' : 'dark';
-    set({ theme: next });
-    if (typeof document !== 'undefined') {
-      if (next === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-    }
+    const next = get().theme === 'dark' ? 'light' : 'dark';
+    get().setTheme(next);
   },
 
   initialize: async () => {

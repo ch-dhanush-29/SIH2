@@ -22,6 +22,7 @@ import {
   BarChart2,
   RotateCcw,
 } from 'lucide-react';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 export const MissionBar: React.FC = () => {
   const selectedLotConfig = useBurnInStore((state) => state.selectedLotConfig);
@@ -192,14 +193,8 @@ export const MissionBar: React.FC = () => {
           <Eye className="w-3.5 h-3.5" />
         </button>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-xl mission-hud border border-slate-700/60 text-slate-400 hover:text-amber-300 transition-colors"
-          title={`Switch to ${theme === 'dark' ? 'Light Engineering' : 'Dark Mission'} Mode`}
-        >
-          {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-        </button>
+        {/* Aerospace Theme Switcher */}
+        <ThemeSwitcher />
       </div>
     </header>
   );

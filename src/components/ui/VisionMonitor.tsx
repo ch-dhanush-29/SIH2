@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useBurnInStore } from '../../state/useBurnInStore';
-import {
-  Video,
-  Scan,
-  Maximize2,
-  Minimize2,
-  Cpu,
-  Thermometer,
-  Layers,
-  Sparkles,
-  Eye,
-} from 'lucide-react';
+import { Video, Maximize2, Minimize2 } from 'lucide-react';
 
 export const VisionMonitor: React.FC = () => {
   const selectedChipId = useBurnInStore((state) => state.selectedChipId);
@@ -19,6 +9,7 @@ export const VisionMonitor: React.FC = () => {
   const parameter = useBurnInStore((state) => state.parameter);
   const visionFeedMode = useBurnInStore((state) => state.visionFeedMode);
   const setVisionFeedMode = useBurnInStore((state) => state.setVisionFeedMode);
+  const view3DMode = useBurnInStore((state) => state.view3DMode);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [frameCounter, setFrameCounter] = useState(24891);
@@ -28,7 +19,7 @@ export const VisionMonitor: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setFrameCounter((prev) => prev + 1);
-    }, 66); // ~15-20 FPS frame counter tick
+    }, 66); // ~15 FPS camera tick
     return () => clearInterval(interval);
   }, []);
 
@@ -36,33 +27,35 @@ export const VisionMonitor: React.FC = () => {
 
   const isAnomaly = selectedChip.verdict !== 'PASS';
   const val = selectedChip.measurements[parameter][`v_${checkpoint}h`];
+  const shouldExpand = isExpanded || view3DMode === 'LIVE_VISION';
 
   return (
     <div
       className={`fixed top-20 right-4 z-30 transition-all duration-300 pointer-events-auto ${
-        isExpanded ? 'w-96' : 'w-72'
+        shouldExpand ? 'w-96' : 'w-72'
       }`}
     >
-      <div className="mission-hud rounded-2xl border border-cyan-500/25 shadow-2xl overflow-hidden corner-accent">
+      <div className="mission-hud rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden corner-accent">
         {/* Top Camera Header */}
-        <div className="flex items-center justify-between px-3 py-2 bg-black/60 border-b border-slate-800 text-[10px] font-mono">
-          <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
+        <div className="flex items-center justify-between px-3 py-2 bg-slate-100/90 dark:bg-black/60 border-b border-[var(--border)] text-[10px] font-mono">
+          <div className="flex items-center gap-1.5 text-[var(--accent)] font-bold">
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
             <Video className="w-3.5 h-3.5" />
             <span>LIVE CHAMBER CAM-01</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-400">
+          <div className="flex items-center gap-2 text-[var(--text-muted)]">
             <span>59.8 FPS</span>
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-slate-400 hover:text-white transition-colors"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              title="Expand / Minimize Camera View"
             >
-              {isExpanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+              {shouldExpand ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
             </button>
           </div>
         </div>
 
-        {/* Video Screen Viewport */}
+        {/* Video Screen Viewport (Scientific camera imagery preserved without CSS inversion) */}
         <div className="relative h-44 bg-[#05070c] overflow-hidden flex items-center justify-center">
           {/* Subtle Scanlines overlay */}
           <div className="absolute inset-0 scanlines opacity-60 z-10 pointer-events-none" />
@@ -145,13 +138,13 @@ export const VisionMonitor: React.FC = () => {
         </div>
 
         {/* Vision Feed Mode Switcher */}
-        <div className="grid grid-cols-3 p-1.5 bg-black/40 border-t border-slate-800 text-[10px] font-mono gap-1">
+        <div className="grid grid-cols-3 p-1.5 bg-slate-100/90 dark:bg-black/40 border-t border-[var(--border)] text-[10px] font-mono gap-1">
           <button
             onClick={() => setVisionFeedMode('OPTICAL')}
             className={`py-1 rounded text-center transition-colors ${
               visionFeedMode === 'OPTICAL'
-                ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-bold border border-[var(--border-accent)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             OPTICAL
@@ -160,8 +153,8 @@ export const VisionMonitor: React.FC = () => {
             onClick={() => setVisionFeedMode('THERMAL')}
             className={`py-1 rounded text-center transition-colors ${
               visionFeedMode === 'THERMAL'
-                ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-amber-500/20 text-amber-500 font-bold border border-amber-500/40'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             THERMAL
@@ -170,8 +163,8 @@ export const VisionMonitor: React.FC = () => {
             onClick={() => setVisionFeedMode('AI_BOUNDING')}
             className={`py-1 rounded text-center transition-colors ${
               visionFeedMode === 'AI_BOUNDING'
-                ? 'bg-rose-500/20 text-rose-300 font-bold border border-rose-500/40'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-rose-500/20 text-rose-500 font-bold border border-rose-500/40'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             AI OVERLAY

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>" />
@@ -10,8 +10,27 @@
     <meta name="theme-color" content="#06080d" />
     <meta name="description" content="BurnWatch 3D: ISRO AI-Driven Anomaly Detection and Time-Series Drift Digital Twin." />
     <title>BurnWatch 3D | ISRO Component Burn-In & Screening Digital Twin</title>
+    <!-- Early theme initialization to prevent Flash of Unstyled / Wrong Theme (FOUC) -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('burnwatch-theme');
+          var theme = saved;
+          if (!theme || (theme !== 'dark' && theme !== 'light')) {
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-[#06080d] text-slate-100 overflow-hidden select-none">
+  <body class="overflow-hidden select-none">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

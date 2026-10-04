@@ -20,32 +20,32 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-2xl mission-hud border border-cyan-500/40 shadow-2xl overflow-hidden bg-slate-900/95 text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-2xl mission-hud border border-[var(--border)] shadow-2xl overflow-hidden bg-[var(--surface-elevated)] text-[var(--text-primary)]">
         {/* Top Header with Tab Switcher */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-slate-100/80 dark:bg-slate-950/60">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <div className="p-2 rounded-lg bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)]">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold font-mono text-cyan-400 tracking-wider uppercase">
+              <h2 className="text-sm font-bold font-mono text-[var(--accent)] tracking-wider uppercase">
                 Engineering Diagnostics & Reliability Lab
               </h2>
-              <p className="text-xs text-slate-400 font-mono">
+              <p className="text-xs text-[var(--text-muted)] font-mono">
                 ISRO Space-Grade Environmental Stress Screening (SIH26170)
               </p>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-200/70 dark:bg-slate-900 border border-[var(--border)] font-mono text-xs">
             <button
               onClick={() => onTabChange('UPLOAD')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeTab === 'UPLOAD'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-300/40 dark:hover:bg-slate-800/50'
               }`}
             >
               <UploadCloud className="w-3.5 h-3.5" />
@@ -56,8 +56,8 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
               onClick={() => onTabChange('EVALUATION')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeTab === 'EVALUATION'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-300/40 dark:hover:bg-slate-800/50'
               }`}
             >
               <BarChart2 className="w-3.5 h-3.5" />
@@ -68,8 +68,8 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
               onClick={() => onTabChange('COMPARISON')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeTab === 'COMPARISON'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-accent)] font-bold shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-300/40 dark:hover:bg-slate-800/50'
               }`}
             >
               <GitCompare className="w-3.5 h-3.5" />
@@ -80,7 +80,7 @@ export const EngineeringModal: React.FC<EngineeringModalProps> = ({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition-all"
+            className="p-2 rounded-xl text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition-all"
             title="Close dialog (Esc)"
           >
             <X className="w-4 h-4" />

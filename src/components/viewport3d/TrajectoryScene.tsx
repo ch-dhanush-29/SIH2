@@ -135,11 +135,11 @@ export const TrajectoryScene: React.FC = () => {
           [posX, valToY(chip.predicted168h), timeToZ(168)],
         ];
 
-        // Color determination
-        let strokeColor = '#00ff88';
-        if (chip.verdict === 'HARD_REJECT') strokeColor = '#ff3366';
-        else if (chip.verdict === 'EARLY_REJECT') strokeColor = '#ff00aa';
-        else if (chip.verdict === 'LATENT_SUSPECT') strokeColor = '#ffaa00';
+        // Color determination based on theme and verdict
+        let strokeColor = theme === 'dark' ? '#00f0ff' : '#0284c7';
+        if (chip.verdict === 'HARD_REJECT') strokeColor = theme === 'dark' ? '#ff3366' : '#e11d48';
+        else if (chip.verdict === 'EARLY_REJECT') strokeColor = theme === 'dark' ? '#ff00aa' : '#c026d3';
+        else if (chip.verdict === 'LATENT_SUSPECT') strokeColor = theme === 'dark' ? '#ffaa00' : '#d97706';
 
         if (isColorblindMode) {
           if (chip.verdict === 'HARD_REJECT') strokeColor = '#d55e00';

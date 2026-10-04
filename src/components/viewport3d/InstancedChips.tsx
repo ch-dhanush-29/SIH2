@@ -2,14 +2,7 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useBurnInStore } from '../../state/useBurnInStore';
-
-// Color definitions for mission-control palette
-const COLOR_NORMAL = new THREE.Color('#00f0ff');       // Cyan
-const COLOR_SUSPECT = new THREE.Color('#ffaa00');      // Glowing amber
-const COLOR_REJECT = new THREE.Color('#ff3366');       // Crimson red
-const COLOR_EARLY_REJECT = new THREE.Color('#ff00aa'); // Neon magenta
-const COLOR_SELECTED = new THREE.Color('#ffffff');     // Diamond white
-const COLOR_SUBDUED = new THREE.Color('#151b28');      // Subdued slate for anomaly map
+import { getThemeConfig } from '../../theme/themeTokens';
 
 // Colorblind-safe palette (Tol / Wong palette)
 const CB_NORMAL = new THREE.Color('#0072b2');
@@ -35,7 +28,9 @@ export const InstancedChips: React.FC = () => {
   const checkpoint = useBurnInStore((state) => state.checkpoint);
   const isColorblindMode = useBurnInStore((state) => state.isColorblindMode);
   const view3DMode = useBurnInStore((state) => state.view3DMode);
+  const theme = useBurnInStore((state) => state.theme);
 
+  const cfg = getThemeConfig(theme);
   const chipCount = chips.length;
 
   // Selected chip object for the laser ring and beam
@@ -98,40 +93,40 @@ export const InstancedChips: React.FC = () => {
         pinsMeshRef.current.setMatrixAt(i, tempPinObject.matrix);
       }
 
-      // Determine instance color based on visual mode
+      // Determine instance color based on visual mode and active theme
       let baseColor: THREE.Color;
 
       if (view3DMode === 'THERMAL') {
         // Continuous thermal gradient: 124°C (blue) to 125°C (orange) to 126°C+ (red)
         const tVal = 124.6 + (chip.currentValue % 1.2);
         if (tVal > 125.4) {
-          baseColor = COLOR_REJECT;
+          baseColor = cfg.three.chipRejectColor;
         } else if (tVal > 124.9) {
-          baseColor = COLOR_SUSPECT;
+          baseColor = cfg.three.chipSuspectColor;
         } else {
-          baseColor = COLOR_NORMAL;
+          baseColor = cfg.three.chipNormalColor;
         }
       } else if (view3DMode === 'ANOMALY_MAP') {
-        // Normal chips are subdued into dark slate, anomalous chips vividly spotlighted
+        // Normal chips are subdued, anomalous chips vividly spotlighted
         if (chip.verdict === 'PASS') {
-          baseColor = COLOR_SUBDUED;
+          baseColor = cfg.three.anomalySubduedColor;
         } else if (chip.verdict === 'LATENT_SUSPECT') {
-          baseColor = isColorblindMode ? CB_SUSPECT : COLOR_SUSPECT;
+          baseColor = isColorblindMode ? CB_SUSPECT : cfg.three.chipSuspectColor;
         } else {
-          baseColor = isColorblindMode ? CB_REJECT : COLOR_REJECT;
+          baseColor = isColorblindMode ? CB_REJECT : cfg.three.chipRejectColor;
         }
       } else {
         // Standard Chamber View
         if (chip.part_id === selectedChipId) {
-          baseColor = isColorblindMode ? CB_SELECTED : COLOR_SELECTED;
+          baseColor = isColorblindMode ? CB_SELECTED : cfg.three.chipSelectedColor;
         } else if (chip.verdict === 'HARD_REJECT') {
-          baseColor = isColorblindMode ? CB_REJECT : COLOR_REJECT;
+          baseColor = isColorblindMode ? CB_REJECT : cfg.three.chipRejectColor;
         } else if (chip.verdict === 'EARLY_REJECT') {
-          baseColor = isColorblindMode ? CB_EARLY_REJECT : COLOR_EARLY_REJECT;
+          baseColor = isColorblindMode ? CB_EARLY_REJECT : cfg.three.chipEarlyRejectColor;
         } else if (chip.verdict === 'LATENT_SUSPECT') {
-          baseColor = isColorblindMode ? CB_SUSPECT : COLOR_SUSPECT;
+          baseColor = isColorblindMode ? CB_SUSPECT : cfg.three.chipSuspectColor;
         } else {
-          baseColor = isColorblindMode ? CB_NORMAL : COLOR_NORMAL;
+          baseColor = isColorblindMode ? CB_NORMAL : cfg.three.chipNormalColor;
         }
       }
 
@@ -145,7 +140,17 @@ export const InstancedChips: React.FC = () => {
     if (pinsMeshRef.current) {
       pinsMeshRef.current.instanceMatrix.needsUpdate = true;
     }
-  }, [chips, chipCount, selectedChipId, hoveredChipId, checkpoint, isColorblindMode, view3DMode]);
+  }, [
+    chips,
+    chipCount,
+    selectedChipId,
+    hoveredChipId,
+    checkpoint,
+    isColorblindMode,
+    view3DMode,
+    theme,
+    cfg,
+  ]);
 
   // Animation frame for laser target ring and vertical data beam
   useFrame(({ clock }) => {
@@ -186,8 +191,8 @@ export const InstancedChips: React.FC = () => {
         }}
       >
         <meshStandardMaterial
-          roughness={0.25}
-          metalness={0.75}
+          roughness={theme === 'dark' ? 0.25 : 0.45}
+          metalness={theme === 'dark' ? 0.75 : 0.4}
           toneMapped={false}
         />
       </instancedMesh>
@@ -198,9 +203,9 @@ export const InstancedChips: React.FC = () => {
         args={[pinGeometry, undefined, chipCount]}
       >
         <meshStandardMaterial
-          color="#d1d5db"
-          metalness={0.95}
-          roughness={0.15}
+          color={cfg.three.chipLeadPinColor}
+          metalness={0.85}
+          roughness={0.2}
         />
       </instancedMesh>
 
@@ -210,7 +215,7 @@ export const InstancedChips: React.FC = () => {
           <mesh ref={targetRingRef} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.45, 0.55, 32]} />
             <meshBasicMaterial
-              color="#00f0ff"
+              color={cfg.three.laserRingColor}
               transparent
               opacity={0.85}
               side={THREE.DoubleSide}
@@ -221,10 +226,14 @@ export const InstancedChips: React.FC = () => {
           <mesh ref={dataBeamRef} position={[0, 3.5, 0]}>
             <cylinderGeometry args={[0.02, 0.02, 7.0, 16]} />
             <meshBasicMaterial
-              color={selectedChip.verdict !== 'PASS' ? '#ff3366' : '#00f0ff'}
+              color={
+                selectedChip.verdict !== 'PASS'
+                  ? cfg.three.dataBeamReject
+                  : cfg.three.dataBeamNormal
+              }
               transparent
-              opacity={0.65}
-              blending={THREE.AdditiveBlending}
+              opacity={theme === 'dark' ? 0.65 : 0.5}
+              blending={theme === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending}
             />
           </mesh>
         </group>
