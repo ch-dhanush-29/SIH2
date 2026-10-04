@@ -53,7 +53,7 @@ export const CinematicTimeline: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-full max-w-2xl px-4 pointer-events-auto">
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-full max-w-xl px-4 pointer-events-auto">
       <div className="mission-hud p-3 rounded-2xl border border-[var(--border)] shadow-2xl space-y-2.5 backdrop-blur-xl">
         {/* Upper Track Bar: Time & Playback Controls */}
         <div className="flex items-center justify-between font-mono text-xs text-[var(--text-primary)]">
@@ -106,8 +106,8 @@ export const CinematicTimeline: React.FC = () => {
 
         {/* Visual Timeline Track with Event Nodes */}
         <div className="relative pt-1 pb-1">
-          {/* Background Connecting Rail */}
-          <div className="absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          {/* Background Connecting Rail (centered on 16px pin dots at top-[9px]) */}
+          <div className="absolute top-[9px] left-3 right-3 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden z-0">
             <div
               className={`h-full transition-all duration-300 ${
                 theme === 'dark'
@@ -119,7 +119,7 @@ export const CinematicTimeline: React.FC = () => {
           </div>
 
           {/* Checkpoint Clickable Nodes */}
-          <div className="relative flex justify-between">
+          <div className="relative flex justify-between z-10">
             {CHECKPOINTS.map((chk) => {
               const ev = checkpointEvents[chk];
               const isSelected = checkpoint === chk;

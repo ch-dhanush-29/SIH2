@@ -116,7 +116,7 @@ export const InspectionHUD: React.FC = () => {
   ];
 
   return (
-    <div className="fixed top-20 right-4 z-40 w-96 max-h-[calc(100vh-140px)] overflow-y-auto mission-hud rounded-2xl border border-[var(--border)] shadow-2xl p-4 flex flex-col gap-3 pointer-events-auto backdrop-blur-2xl">
+    <div className="fixed top-20 right-3 z-40 w-80 sm:w-96 max-h-[calc(100vh-110px)] overflow-y-auto custom-scrollbar mission-hud rounded-2xl border border-[var(--border)] shadow-2xl p-3.5 flex flex-col gap-3 pointer-events-auto backdrop-blur-2xl">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 border-b border-[var(--border)] text-xs font-mono">
         <div className="flex items-center gap-2">

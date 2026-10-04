@@ -51,88 +51,85 @@ export const PipelineWorkflowBanner: React.FC = () => {
   const verdict = chip.verdict;
 
   return (
-    <div className="fixed top-16 left-4 right-4 z-30 pointer-events-auto font-sans">
-      <div className="mission-hud rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)]/90 backdrop-blur-xl shadow-2xl p-2.5 transition-all text-[var(--text-primary)]">
+    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-20 w-auto max-w-[calc(100vw-620px)] hidden md:block pointer-events-auto font-sans">
+      <div className="mission-hud rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)]/90 backdrop-blur-xl shadow-2xl px-3 py-1.5 transition-all text-[var(--text-primary)]">
         {/* Main Pipeline Ribbon Row */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Left: Core Pipeline Tag & Provenance */}
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-[var(--accent-soft)] text-[var(--accent)] font-mono text-[10px] font-bold tracking-wider">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Core Pipeline Tag & Active Part */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="px-2 py-0.5 rounded-md bg-[var(--accent-soft)] text-[var(--accent)] font-mono text-[9px] font-bold tracking-wider">
               SIH26170 PIPELINE
             </span>
-            <span className="text-xs font-mono font-bold text-[var(--text-primary)] hidden md:inline">
-              5-Stage Latent-Defect Detection:
-            </span>
-            <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 font-semibold">
+            <span className="text-[11px] font-mono text-cyan-600 dark:text-cyan-400 font-bold">
               {chip.part_id}
             </span>
           </div>
 
           {/* Center: The 5 Sequential Pipeline Stages */}
-          <div className="flex items-center gap-1 sm:gap-1.5 font-mono text-[10px] overflow-x-auto py-1">
+          <div className="flex items-center gap-1 font-mono text-[9px] overflow-x-auto py-0.5 custom-scrollbar">
             {/* Stage 1: Static Pass */}
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg border transition-all ${
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border shrink-0 transition-all ${
                 stage1Pass
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
                   : 'bg-rose-500/10 border-rose-500/30 text-rose-500'
               }`}
               title={`Datasheet Static Limit: ${currentVal.toFixed(1)} ${pcfg.unit} <= ${staticLimit} ${pcfg.unit}`}
             >
-              <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+              <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
               <span>1. STATIC PASS</span>
             </div>
 
-            <ChevronRight className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
+            <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
 
             {/* Stage 2: Dynamic Anomaly */}
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg border transition-all ${
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border shrink-0 transition-all ${
                 stage2Outlier
                   ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 font-bold'
                   : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)]'
               }`}
               title={`Lot MAD Dynamic Threshold: +${robustZ.toFixed(1)}σ Outlier relative to lot`}
             >
-              <AlertTriangle className="w-3 h-3 text-amber-500" />
-              <span>2. DYNAMIC ANOMALY (+{robustZ.toFixed(1)}σ)</span>
+              <AlertTriangle className="w-2.5 h-2.5 text-amber-500" />
+              <span>2. DYNAMIC (+{robustZ.toFixed(1)}σ)</span>
             </div>
 
-            <ChevronRight className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
+            <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
 
             {/* Stage 3: Future Drift */}
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg border transition-all ${
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border shrink-0 transition-all ${
                 stage3Runaway
                   ? 'bg-rose-500/15 border-rose-500/40 text-rose-500 font-bold'
                   : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)]'
               }`}
               title={`168h Forecast: ${predicted168.toFixed(1)} ${pcfg.unit} (Runaway beyond datasheet limit)`}
             >
-              <TrendingUp className="w-3 h-3 text-rose-500" />
-              <span>3. FUTURE DRIFT ({predicted168.toFixed(0)} {pcfg.unit})</span>
+              <TrendingUp className="w-2.5 h-2.5 text-rose-500" />
+              <span>3. DRIFT ({predicted168.toFixed(0)}{pcfg.unit})</span>
             </div>
 
-            <ChevronRight className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
+            <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
 
             {/* Stage 4: Safety-Slope Risk */}
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg border transition-all ${
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border shrink-0 transition-all ${
                 stage4Breach
                   ? 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-500 font-bold'
                   : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)]'
               }`}
               title={`Drift Slope: ${slope.toFixed(3)} ${pcfg.unit}/h > Safety Slope ${safetySlope.toFixed(3)} ${pcfg.unit}/h`}
             >
-              <ShieldAlert className="w-3 h-3 text-fuchsia-500" />
-              <span>4. SAFETY SLOPE ({slope.toFixed(3)})</span>
+              <ShieldAlert className="w-2.5 h-2.5 text-fuchsia-500" />
+              <span>4. SLOPE ({slope.toFixed(2)})</span>
             </div>
 
-            <ChevronRight className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
+            <ChevronRight className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0" />
 
             {/* Stage 5: Explainable Verdict */}
             <div
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border font-bold shadow-sm ${
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-md border shrink-0 font-bold shadow-sm ${
                 verdict === 'EARLY_REJECT' || chip.part_id === 'CHIP-LOT04-042'
                   ? 'bg-rose-500/20 border-rose-500 text-rose-500'
                   : verdict === 'LATENT_SUSPECT'
@@ -140,27 +137,27 @@ export const PipelineWorkflowBanner: React.FC = () => {
                   : 'bg-emerald-500/20 border-emerald-500 text-emerald-500'
               }`}
             >
-              <ShieldCheck className="w-3 h-3" />
-              <span>5. {verdict === 'PASS' && chip.part_id === 'CHIP-LOT04-042' ? 'EARLY REJECT @ 24H' : verdict}</span>
+              <ShieldCheck className="w-2.5 h-2.5" />
+              <span>5. {verdict === 'PASS' && chip.part_id === 'CHIP-LOT04-042' ? 'EARLY REJECT' : verdict}</span>
             </div>
           </div>
 
           {/* Right: Technical Explanation & Data Provenance Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-[10px] font-mono px-2 py-1 rounded-lg bg-[var(--surface)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)] transition-colors"
+              className="text-[9px] font-mono px-2 py-1 rounded-md bg-[var(--surface)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)] transition-colors"
             >
-              {isExpanded ? 'Hide Mathematics' : 'Show Mathematical Gates'}
+              {isExpanded ? 'Hide Math' : 'Math Gates'}
             </button>
 
             <button
               onClick={() => setIsProvenanceModalOpen(true)}
-              className="flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 transition-colors"
+              className="flex items-center gap-1 text-[9px] font-mono px-2 py-1 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 transition-colors"
               title="View Dataset Provenance & Screening Architecture Disclosure"
             >
-              <Database className="w-3 h-3" />
-              <span className="hidden sm:inline">DATA PROVENANCE</span>
+              <Database className="w-2.5 h-2.5" />
+              <span>PROVENANCE</span>
             </button>
           </div>
         </div>

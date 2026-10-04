@@ -3,9 +3,8 @@ import { useBurnInStore } from './state/useBurnInStore';
 import { CHECKPOINTS, CheckpointHour } from './types/burnIn';
 import { BurnInCanvas } from './components/viewport3d/BurnInCanvas';
 import { MissionBar } from './components/ui/MissionBar';
-import { TelemetryHUD } from './components/ui/TelemetryHUD';
+import { LeftMissionDock } from './components/ui/LeftMissionDock';
 import { VisionMonitor } from './components/ui/VisionMonitor';
-import { AnomalyRadar } from './components/ui/AnomalyRadar';
 import { CinematicTimeline } from './components/ui/CinematicTimeline';
 import { InspectionHUD } from './components/ui/InspectionHUD';
 import { BootSequence } from './components/ui/BootSequence';
@@ -197,20 +196,13 @@ export const App: React.FC = () => {
         <PipelineWorkflowBanner />
       )}
 
-      {/* 3. Floating Telemetry & Dynamic Threshold HUD (Top-Left) */}
-      <div className={`transition-opacity duration-500 ${isHeroNarrativeActive ? 'opacity-25 hover:opacity-100' : 'opacity-100'}`}>
-        <TelemetryHUD />
-      </div>
+      {/* 3. Consolidated Unified Left Dock (Chamber ESS, Parameter Limits, Radar, Zero-FN Guarantee) */}
+      <LeftMissionDock />
 
-      {/* 4. Floating Live Chamber Vision Feed (Top-Right) */}
+      {/* 4. Floating Live Chamber Vision Feed (Top-Right Dock Zone) */}
       <VisionMonitor />
 
-      {/* 5. Floating Lot Health Radar & Zero-FN Counter (Bottom-Left) */}
-      <div className={`transition-opacity duration-500 ${isHeroNarrativeActive ? 'opacity-25 hover:opacity-100' : 'opacity-100'}`}>
-        <AnomalyRadar />
-      </div>
-
-      {/* 6. Floating Cinematic Timeline & Screening Gate (Bottom-Center) */}
+      {/* 5. Floating Cinematic Timeline & Screening Gate (Bottom-Center) */}
       <CinematicTimeline />
 
       {/* 7. Dedicated Glass-Box Explanation & Early Reject Action Dock */}

@@ -225,16 +225,6 @@ export const BurnInCanvas: React.FC = () => {
 
       {/* Floating 3D Hover Tooltip */}
       <ChipTooltip3D />
-
-      {/* Bottom Left Telemetry Status */}
-      <div className="absolute bottom-4 left-4 z-10 pointer-events-none flex items-center gap-2">
-        <div className="mission-hud px-3 py-1.5 rounded-lg text-[10px] font-mono flex items-center gap-2.5 shadow-xl">
-          <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse shadow-[0_0_8px_var(--success)]" />
-          <span className="tracking-wider text-[var(--text-secondary)]">WEBGL2 CORE • 60 FPS • DUAL LIGHTING</span>
-          <span className="text-[var(--text-muted)]">|</span>
-          <span className="text-[var(--accent)] font-semibold uppercase">{view3DMode} SCENE</span>
-        </div>
-      </div>
     </div>
   );
 };

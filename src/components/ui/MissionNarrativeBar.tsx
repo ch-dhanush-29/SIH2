@@ -129,7 +129,7 @@ export const MissionNarrativeBar: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-4xl pointer-events-auto font-sans">
+    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-2xl lg:max-w-3xl pointer-events-auto font-sans">
       <div className="mission-hud rounded-2xl border border-amber-500/40 bg-[var(--surface-elevated)]/95 backdrop-blur-2xl shadow-2xl overflow-hidden p-3.5 text-[var(--text-primary)]">
         {/* Top Header & Actions Row */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-[var(--border)]">

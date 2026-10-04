@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useBurnInStore } from '../../state/useBurnInStore';
-import { Video, Maximize2, Minimize2, ZoomIn, Target, Radio, Layers, Flame, Eye } from 'lucide-react';
+import { Video, Maximize2, Minimize2, ZoomIn, Target, Radio, Layers, Flame, Eye, ChevronRight, ChevronLeft } from 'lucide-react';
 
 export const VisionMonitor: React.FC = () => {
   const selectedChipId = useBurnInStore((state) => state.selectedChipId);
@@ -12,8 +12,12 @@ export const VisionMonitor: React.FC = () => {
   const view3DMode = useBurnInStore((state) => state.view3DMode);
   const setCameraViewMode = useBurnInStore((state) => state.setCameraViewMode);
   const selectChip = useBurnInStore((state) => state.selectChip);
+  const isInspectionOpen = useBurnInStore((state) => state.isInspectionOpen);
+  const isHeroNarrativeActive = useBurnInStore((state) => state.isHeroNarrativeActive);
+  const narrativePhase = useBurnInStore((state) => state.narrativePhase);
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [zoomLevel, setZoomLevel] = useState<'1X' | '20X' | '50X'>('20X');
   const [localMode, setLocalMode] = useState<'OPTICAL' | 'THERMAL' | 'CSAM' | 'AI_BOUNDING'>('THERMAL');
   const [frameCounter, setFrameCounter] = useState(24891);
@@ -34,6 +38,30 @@ export const VisionMonitor: React.FC = () => {
     else if (visionFeedMode === 'AI_BOUNDING') setLocalMode('AI_BOUNDING');
   }, [visionFeedMode]);
 
+  // Gracefully yield right dock zone when inspector or hero explanation is active
+  const isRightDockOccupied =
+    isInspectionOpen ||
+    (isHeroNarrativeActive && (narrativePhase === 'AI_EXPLANATION' || narrativePhase === 'RECOMMENDED_ACTION'));
+
+  if (isRightDockOccupied) return null;
+
+  if (isCollapsed) {
+    return (
+      <div className="fixed top-20 right-3 z-30 pointer-events-auto">
+        <button
+          onClick={() => setIsCollapsed(false)}
+          className="mission-hud p-2.5 rounded-xl border border-[var(--border)] shadow-2xl text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-all flex flex-col items-center gap-2 group"
+          title="Expand Vision Feed"
+        >
+          <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+          <span className="[writing-mode:vertical-lr] font-mono text-[10px] tracking-widest uppercase font-bold text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">
+            VISION FEED
+          </span>
+        </button>
+      </div>
+    );
+  }
+
   if (!selectedChip) return null;
 
   const isAnomaly = selectedChip.verdict !== 'PASS';
@@ -53,7 +81,7 @@ export const VisionMonitor: React.FC = () => {
 
   return (
     <div
-      className={`fixed top-20 right-4 z-30 transition-all duration-300 pointer-events-auto ${
+      className={`fixed top-20 right-3 z-30 transition-all duration-300 pointer-events-auto ${
         shouldExpand ? 'w-96' : 'w-72'
       }`}
     >
@@ -66,14 +94,21 @@ export const VisionMonitor: React.FC = () => {
             <span>OPTICAL/THERMAL INSPECTION</span>
           </div>
 
-          <div className="flex items-center gap-2 text-[var(--text-muted)]">
+          <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
             <span className="text-[9px]">{junctionTemp}°C</span>
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 rounded"
               title="Expand / Minimize Camera View"
             >
               {shouldExpand ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+            </button>
+            <button
+              onClick={() => setIsCollapsed(true)}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 rounded"
+              title="Collapse Vision Monitor"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
