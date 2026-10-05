@@ -50,6 +50,10 @@ app.add_middleware(
 # Mount API V1
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
+from backend.app.api.v1.realtime import websocket_live_endpoint
+# Direct root WebSocket alias for universal client compatibility
+app.websocket("/ws/live")(websocket_live_endpoint)
+
 # Legacy compatibility route for existing frontend apiClient
 @app.get("/api/health")
 def legacy_health():
