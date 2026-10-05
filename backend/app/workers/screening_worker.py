@@ -198,12 +198,14 @@ class RealInferenceWorker:
 
                         comps = db.query(Component).filter(Component.lot_id == queued_run.lot_id).all()
                         total = len(comps)
+                        param = getattr(queued_run, "parameter", "iddq") or "iddq"
+                        chkpt = getattr(queued_run, "checkpoint", 24) or 24
 
                         # Load peer population values for baseline
                         meas_0h = (
                             db.query(Measurement.v_0h)
                             .join(Component, Component.id == Measurement.component_id)
-                            .filter(Component.lot_id == queued_run.lot_id, Measurement.parameter == queued_run.parameter)
+                            .filter(Component.lot_id == queued_run.lot_id, Measurement.parameter == param)
                             .all()
                         )
                         peer_readings = [float(r[0]) for r in meas_0h if r[0] is not None]
@@ -222,17 +224,17 @@ class RealInferenceWorker:
 
                                 meas = (
                                     db.query(Measurement)
-                                    .filter(Measurement.component_id == c.id, Measurement.parameter == queued_run.parameter)
+                                    .filter(Measurement.component_id == c.id, Measurement.parameter == param)
                                     .first()
                                 )
                                 v_0 = meas.v_0h if meas else 21.2
-                                v_chk = getattr(meas, f"v_{queued_run.checkpoint}h", v_0) if meas else v_0
+                                v_chk = getattr(meas, f"v_{chkpt}h", v_0) if meas else v_0
 
                                 # Unified screening engine evaluation
                                 eval_res = await screening_engine.evaluate(
                                     component_id=c.part_id,
                                     lot_id=queued_run.lot_id,
-                                    parameter=queued_run.parameter,
+                                    parameter=param,
                                     value=v_chk,
                                     quality_status="VALID",
                                     v_0h=v_0,
@@ -247,7 +249,7 @@ class RealInferenceWorker:
                                     .filter(
                                         ScreeningResult.screening_run_id == queued_run.run_id,
                                         ScreeningResult.component_id == c.id,
-                                        ScreeningResult.checkpoint == queued_run.checkpoint
+                                        ScreeningResult.checkpoint == chkpt
                                     )
                                     .first()
                                 )
@@ -276,8 +278,8 @@ class RealInferenceWorker:
                                         screening_run_id=queued_run.run_id,
                                         component_id=c.id,
                                         lot_id=queued_run.lot_id,
-                                        parameter=queued_run.parameter,
-                                        checkpoint=queued_run.checkpoint,
+                                        parameter=param,
+                                        checkpoint=chkpt,
                                         static_verdict="FAIL" if eval_res.anomaly_score >= 100.0 else "PASS",
                                         dynamic_verdict="FAIL" if eval_res.decision in ("REJECT", "EARLY_REJECT") else "PASS",
                                         drift_verdict="FAIL" if eval_res.forecast and eval_res.forecast.decision == "EARLY_REJECT" else "PASS",
