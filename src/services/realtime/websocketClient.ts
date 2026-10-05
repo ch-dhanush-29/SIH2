@@ -2,7 +2,7 @@ import { ReconnectManager } from './reconnectManager';
 import { EventRouter, RealtimeEvent } from './eventRouter';
 import { getWsBaseUrl, getApiBaseUrl } from '../apiClient';
 
-export type ConnectionState = 'CONNECTING' | 'CONNECTED' | 'DEGRADED' | 'RECONNECTING' | 'OFFLINE';
+export type ConnectionState = 'CONNECTING' | 'CONNECTED' | 'DEGRADED' | 'RECONNECTING' | 'RESYNCING' | 'OFFLINE';
 
 export interface WebSocketClientOptions {
   url?: string;
@@ -201,18 +201,33 @@ export class WebSocketClient {
 
   private async handleSequenceGap(fromSeq: number, toSeq: number): Promise<void> {
     try {
+      this.setState('RESYNCING');
       const res = await fetch(
-        `${getApiBaseUrl()}/api/v1/events/replay?from_sequence=${fromSeq}&to_sequence=${toSeq}`
+        `${getApiBaseUrl()}/api/v1/realtime/replay?from_sequence=${fromSeq}&to_sequence=${toSeq}`
       );
       if (res.ok) {
-        const events: RealtimeEvent[] = await res.json();
+        const data = await res.json();
+        if (data && data.status === 'REPLAY_UNAVAILABLE') {
+          console.warn('[WebSocketClient] Replay outside retention window. Performing full snapshot resync.');
+          if (typeof window !== 'undefined' && (window as any).__BURNWATCH_RESYNC_SNAPSHOT__) {
+            await (window as any).__BURNWATCH_RESYNC_SNAPSHOT__();
+          }
+          this.setState('CONNECTED');
+          return;
+        }
+
+        const events: RealtimeEvent[] = Array.isArray(data) ? data : (data.events || []);
         for (const evt of events) {
           this.router.dispatch(evt);
         }
         console.info(`[WebSocketClient] Successfully recovered ${events.length} missed sequence events.`);
+        this.setState('CONNECTED');
+      } else {
+        this.setState('DEGRADED');
       }
     } catch (e) {
       console.error('[WebSocketClient] Failed to recover missed events:', e);
+      this.setState('DEGRADED');
     }
   }
 

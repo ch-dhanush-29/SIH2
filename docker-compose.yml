@@ -10,9 +10,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-burnwatch_prod}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     restart: unless-stopped
+    networks:
+      - burnwatch_net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U burnwatch_user -d burnwatch_prod"]
       interval: 10s
@@ -22,11 +24,13 @@ services:
   redis:
     image: redis:7-alpine
     container_name: burnwatch_redis
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    networks:
+      - burnwatch_net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -54,6 +58,8 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
     volumes:
       - backend_data:/app/data
+    networks:
+      - burnwatch_net
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,6 +83,8 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-burnwatch_user}:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/${POSTGRES_DB:-burnwatch_prod}
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY}
+    networks:
+      - burnwatch_net
     depends_on:
       backend:
         condition: service_healthy
@@ -89,6 +97,8 @@ services:
     container_name: burnwatch_frontend
     ports:
       - "3000:80"
+    networks:
+      - burnwatch_net
     depends_on:
       - backend
     restart: unless-stopped
@@ -97,3 +107,7 @@ volumes:
   postgres_data:
   redis_data:
   backend_data:
+
+networks:
+  burnwatch_net:
+    driver: bridge

@@ -17,6 +17,19 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
 
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        if env == "production":
+            insecure_markers = ["change_this", "changeme", "insecure_default"]
+            if not v or len(v) < 32 or any(marker in v.lower() for marker in insecure_markers):
+                raise ValueError(
+                    "CRITICAL SECURITY ERROR: In production environment, SECRET_KEY must be a cryptographically "
+                    "secure string of at least 32 characters, and cannot contain default placeholders."
+                )
+        return v
+
     # Database configuration: Default SQLite for dev/test, PostgreSQL for production
     DATABASE_URL: str = Field(
         default=os.getenv("DATABASE_URL", "sqlite:///./burnwatch.db")

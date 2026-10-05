@@ -20,7 +20,7 @@ class ClientSession:
         self.user = user  # Authenticated user dict with username, role
         self.lot_ids: Set[str] = set()
         self.chamber_ids: Set[str] = {"CH-01"}
-        self.streams: Set[str] = {"telemetry", "anomalies", "screening", "system", "camera", "demo"}
+        self.streams: Set[str] = {"telemetry", "system", "demo"}
         self.component_ids: Set[str] = set()
         self.is_authenticated = user is not None
         self.connected_at = datetime.now(timezone.utc).isoformat()
@@ -56,8 +56,9 @@ class ClientSession:
 
 class WebSocketManager:
     """
-    Production-Grade WebSocket Gateway for BurnWatch 3D.
-    Handles authentication, topic subscriptions, sequence tracking, backpressure, and heartbeat monitoring.
+    Production-Grade WebSocket Gateway for BurnWatch 3D (Phases 12, 13, 17).
+    Enforces post-connect JWT authentication, role-based stream authorization (RBAC),
+    monotonic sequence tracking, and priority-class backpressure.
     """
     def __init__(self):
         self._active_sessions: Dict[str, ClientSession] = {}
@@ -83,6 +84,14 @@ class WebSocketManager:
                 pass
 
         session = ClientSession(websocket, connection_id, user=user)
+        if session.is_authenticated:
+            # Grant full streams for authenticated users according to role
+            role = user.get("role", "VIEWER") if user else "VIEWER"
+            if role in ("QA_INSPECTOR", "ADMIN"):
+                session.streams = {"telemetry", "anomalies", "component", "screening", "system", "camera", "demo"}
+            elif role == "ENGINEER":
+                session.streams = {"telemetry", "anomalies", "component", "system", "demo"}
+
         session.writer_task = asyncio.create_task(self._client_writer(session))
 
         async with self._lock:
@@ -131,22 +140,44 @@ class WebSocketManager:
                 if user:
                     session.user = user
                     session.is_authenticated = True
+                    role = user.get("role", "VIEWER")
+                    if role in ("QA_INSPECTOR", "ADMIN"):
+                        session.streams = {"telemetry", "anomalies", "component", "screening", "system", "camera", "demo"}
+                    elif role == "ENGINEER":
+                        session.streams = {"telemetry", "anomalies", "component", "system", "demo"}
+                    else:
+                        session.streams = {"telemetry", "system", "demo"}
+
                     ack = WsServerAck(
                         type="auth_ack",
                         status="AUTHENTICATED",
-                        message=f"Authenticated as {user.get('sub', 'user')} (Role: {user.get('role', 'VIEWER')})"
+                        message=f"Authenticated as {user.get('sub', 'user')} (Role: {role})",
+                        subscriptions={"streams": list(session.streams)}
                     )
                 else:
                     ack = WsServerAck(type="error", status="AUTH_FAILED", message="Invalid or expired JWT token.")
                 await session.send_queue.put(ack.model_dump_json())
 
             elif action == "subscribe":
+                user_role = session.user.get("role", "VIEWER") if session.user else "ANONYMOUS"
+
+                # Enforce RBAC on streams
+                requested_streams = set(data.get("streams", [])) if "streams" in data else session.streams
+                if not session.is_authenticated:
+                    allowed_streams = {"telemetry", "system", "demo"}
+                elif user_role == "VIEWER":
+                    allowed_streams = {"telemetry", "system", "demo"}
+                elif user_role == "ENGINEER":
+                    allowed_streams = {"telemetry", "anomalies", "component", "system", "demo"}
+                else:  # QA_INSPECTOR or ADMIN
+                    allowed_streams = {"telemetry", "anomalies", "component", "screening", "system", "camera", "demo"}
+
+                session.streams = requested_streams.intersection(allowed_streams) if requested_streams else allowed_streams
+
                 if "lot_ids" in data and isinstance(data["lot_ids"], list):
                     session.lot_ids = set(data["lot_ids"])
                 if "chamber_ids" in data and isinstance(data["chamber_ids"], list):
                     session.chamber_ids = set(data["chamber_ids"])
-                if "streams" in data and isinstance(data["streams"], list):
-                    session.streams = set(data["streams"])
                 if "components" in data and isinstance(data["components"], list):
                     session.component_ids = set(data["components"])
 
@@ -196,10 +227,14 @@ class WebSocketManager:
     async def _on_bus_event(self, event: RealtimeEvent):
         """Called whenever an event is published on the event bus."""
         event_str = event.model_dump_json()
-        is_critical = event.event_type in (
-            "anomaly_detected", "anomaly_resolved", "screening_update",
-            "qa_override", "demo.started", "demo.completed", "demo.step"
+
+        # Priority Classes:
+        # P0: Safety / Reject / Anomaly -> NEVER DROP
+        is_p0 = event.event_type in (
+            "component.anomaly_detected", "anomaly_detected", "screening.decision", "qa_override"
         )
+        # P1: Screening State / Demo Step -> LOW DROP
+        is_p1 = event.event_type.startswith("demo.") or event.event_type == "screening_update"
 
         async with self._lock:
             sessions = list(self._active_sessions.values())
@@ -209,21 +244,28 @@ class WebSocketManager:
                 continue
 
             try:
-                if is_critical:
-                    # Never drop critical anomaly/screening events
-                    await session.send_queue.put(event_str)
-                else:
-                    # Bounded queue backpressure: drop low-value telemetry if client is slow
+                if is_p0:
+                    # P0: Never drop critical safety/anomaly events
                     try:
                         session.send_queue.put_nowait(event_str)
                     except asyncio.QueueFull:
-                        self._events_dropped_total += 1
-                        # Drop oldest non-critical message and enqueue latest
+                        # Drop oldest non-critical message from queue to make room for P0
                         try:
                             _ = session.send_queue.get_nowait()
                             session.send_queue.put_nowait(event_str)
                         except Exception:
-                            pass
+                            await session.send_queue.put(event_str)
+                elif is_p1:
+                    try:
+                        session.send_queue.put_nowait(event_str)
+                    except asyncio.QueueFull:
+                        self._events_dropped_total += 1
+                else:
+                    # P2/P3 Telemetry: Drop if client is slow to maintain low latency
+                    try:
+                        session.send_queue.put_nowait(event_str)
+                    except asyncio.QueueFull:
+                        self._events_dropped_total += 1
             except Exception as e:
                 logger.debug("Failed to enqueue event for session %s: %s", session.connection_id, e)
 

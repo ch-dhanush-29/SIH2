@@ -149,6 +149,10 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
       });
     });
 
+    if (typeof window !== 'undefined') {
+      (window as any).__BURNWATCH_RESYNC_SNAPSHOT__ = get().syncSnapshot;
+    }
+
     client.connect();
     set({ client });
 

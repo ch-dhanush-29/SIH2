@@ -5,51 +5,57 @@
 [![Organization](https://img.shields.io/badge/Organization-ISRO-orange.svg)](https://www.isro.gov.in)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688.svg)](https://fastapi.tiangolo.com)
 [![React Three Fiber](https://img.shields.io/badge/3D%20Digital%20Twin-Three.js%20%7C%20R3F-blue.svg)](https://threejs.org)
+[![Real-Time](https://img.shields.io/badge/Real--Time-Redis%20Streams%20%7C%20WebSocket-e03a3e.svg)](#)
 [![Database](https://img.shields.io/badge/Database-SQLAlchemy%202.0%20(SQLite%20%2F%20Postgres)-red.svg)](https://www.sqlalchemy.org)
-[![Pytest](https://img.shields.io/badge/Pytest-12%20Passed-emerald.svg)](https://pytest.org)
-[![Vitest](https://img.shields.io/badge/Vitest-5%20Passed-00ff88.svg)](https://vitest.dev)
-[![Recall](https://img.shields.io/badge/Flight%20Recall-100%25%20(Zero%20Escaped%20Defects)-green.svg)](#)
+[![Pytest](https://img.shields.io/badge/Pytest-33%20Passed-emerald.svg)](https://pytest.org)
+[![Vitest](https://img.shields.io/badge/Vitest-8%20Passed-00ff88.svg)](https://vitest.dev)
+[![Flight Recall](https://img.shields.io/badge/Flight%20Recall-100%25%20(Zero%20Escaped%20Defects)-green.svg)](#)
 
-> **Mission-Control 3D Screening System & Digital Twin for Accelerated Thermal Burn-In Testing at 125°C.**  
+> **Mission-Control Real-Time 3D Digital Twin & Distributed Screening Platform for Accelerated Thermal Burn-In Testing at 125°C.**  
 > Intercepts latent gate-oxide pinholes, electromigration, and non-linear degradation defects that escape static manufacturer datasheet limits, saving **144 hours** of high-temperature oven operation per defective die via 24h early AI reject gates.
 
 ---
 
-## 🛰️ Full-Stack System Architecture
+## 🛰️ Distributed Real-Time Architecture
 
 ```text
- ┌────────────────────────────────────────────────────────────────────────┐
- │                      BurnWatch 3D Frontend (Port 3000)                 │
- │  Vite + React 18 + TypeScript + Three.js + R3F + Tailwind CSS v4       │
- │                                                                        │
- │  • 3D Chamber Digital Twin (60 FPS InstancedMesh, 500-5,000 ICs)       │
- │  • 3D Lot Cloud Space (X=Value, Y=Drift Slope, Z=Time Checkpoint)      │
- │  • 3D Trajectory Degradation Tubes with Ghost 168h Forecast Extension   │
- │  • 2D Matrix Carrier Grid Fallback for WebGL-less environments         │
- │  • Interactive Glass-box QA Inspector & Decision Override Engine       │
- │  • Zero-Hallucination AI Engineering Assistant Grounded in Telemetry   │
- │  • Client-side jsPDF Single Certificate & Batch Audit PDF Generation   │
- └───────────────────────────────────┬────────────────────────────────────┘
-                                     │ HTTPS / REST (or Offline Fallback)
-                                     ▼
- ┌────────────────────────────────────────────────────────────────────────┐
- │                   FastAPI Backend Microservice (Port 8000)             │
- │                                                                        │
- │  • RBAC & Security (JWT, bcrypt, 4 Roles: Admin, QA, Engineer, Viewer) │
- │  • Ingestion Service (Physics sanity checks, wide/long CSV validator)  │
- │  • Module A: Robust Z-Score (Median/MAD), Tukey IQR, Isolation Forest   │
- │  • Module B: Arrhenius Drift Predictor (0h+24h -> 168h Forecast, 95% CI│
- │  • Dynamic Safety Slope Calculation (Drift > Safety Slope -> Reject)   │
- │  • Unified 3-Way Decision Engine (PASS / REVIEW / REJECT)              │
- │  • Audit Log Engine (Immutable security records & QA decision stamps)  │
- └───────────────────────────────────┬────────────────────────────────────┘
-                                     │ SQLAlchemy 2.0 ORM
-                                     ▼
- ┌────────────────────────────────────────────────────────────────────────┐
- │                 Relational Database (SQLite / PostgreSQL)              │
- │  Tables: users, lots, components, measurements, screening_results,     │
- │          qa_decisions, audit_logs, model_versions                      │
- └────────────────────────────────────────────────────────────────────────┘
+ SENSOR / SIMULATOR / REPLAY / INDUSTRIAL INGRESS
+                        │
+                        ▼
+            Telemetry Ingest Adapter
+                        │
+                        ▼
+               Validation & Quality
+           (Clock skew, NaN, Sanity)
+                        │
+                        ▼
+         Authoritative Sequence Allocator
+          (Redis Streams + In-Memory Fallback)
+                        │
+         ┌──────────────┴──────────────┐
+         ▼                             ▼
+    Persistence                   Unified Screening
+(PostgreSQL / SQLite)                  Engine
+                        ┌──────────────┴──────────────┐
+                        ▼                             ▼
+                  Redis PubSub                   Redis Streams
+                  (Fanout Hub)                  (Durable Buffer)
+                        │                             │
+                        └──────────────┬──────────────┘
+                                       ▼
+                             WebSocket Gateway
+                                 (/ws/live)
+                           RBAC + Topic Subscriptions
+                           Priority-Based Backpressure
+                                       │
+                                       ▼
+                             Zustand Realtime Store
+                           (Gap Recovery & Snapshot)
+                                       │
+         ┌──────────────────┬──────────┴──────────┬──────────────────┐
+         ▼                  ▼                     ▼                  ▼
+    3D Digital Twin     2D Matrix            AI Telemetry         Live HUD &
+     (InstancedMesh)   (Carrier View)           Charts            Alarms
 ```
 
 ---
@@ -66,9 +72,19 @@ Click the **Golden Demo** button in the top navigation bar to trigger this live 
 
 ---
 
-## ⚡ High-Scale Performance Benchmarks
+## ⚡ Real-Time & High-Scale Performance Benchmarks
 
-Executed on standard consumer hardware via `python scripts/run_benchmark.py`:
+### 1. Real-Time Distributed Telemetry Benchmark (`scripts/load_test_realtime.py`)
+
+| Metric | Target SLA | Measured Result | Status |
+|:---|:---:|:---:|:---:|
+| **Throughput** | $> 500$ events/sec | **747.5 events/sec** | ✅ **PASSED** (149% of SLA) |
+| **End-to-End Latency** | $< 100$ ms | **56.61 ms average** | ✅ **PASSED** (P99: 82.4 ms) |
+| **Sequence Ordering** | 100% strictly ordered | **100% Monotonic** | ✅ **PASSED** (0 gaps, 0 reorders) |
+| **Duplicate Rejection** | 100% | **100% Rejected** | ✅ **PASSED** |
+| **Memory Fallback** | Zero downtime | **Instant Fallback** | ✅ **PASSED** |
+
+### 2. High-Scale Ingestion & Screening Benchmark (`scripts/run_benchmark.py`)
 
 | Scale (Components) | Latency (ms) | Throughput (components/sec) | Escaped Defects (FN) | Chamber Hours Saved |
 |:---:|:---:|:---:|:---:|:---:|
@@ -91,6 +107,8 @@ docker-compose up --build
 ```
 - Frontend: `http://localhost:3000`
 - Backend API Docs (Swagger): `http://localhost:8000/docs`
+- Deep Dependency Probe: `http://localhost:8000/api/v1/health/dependencies`
+- Prometheus Metrics: `http://localhost:8000/metrics`
 
 ### 2. Run Manually (Local Development)
 
@@ -98,6 +116,9 @@ docker-compose up --build
 ```bash
 # Seed initial users, models, and golden benchmark data
 python -m backend.app.services.seed_db
+
+# Run database migrations
+python -m alembic upgrade head
 
 # Start FastAPI server
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
@@ -114,12 +135,12 @@ Visit `http://localhost:3000` in any WebGL-capable browser.
 
 ## 🧪 Automated Test Execution
 
-### Backend Pytest Suite (12 Tests: Zero Leakage, Ingestion, API, Star Demo)
+### Backend Pytest Suite (33 Tests: Chaos, Zero Leakage, Ingestion, API, Real-Time, Unified Screening)
 ```bash
 python -m pytest tests/ -v
 ```
 
-### Frontend Vitest Suite (5 Tests: Dynamic Outlier, Arrhenius Drift)
+### Frontend Vitest Suite (8 Tests: EventRouter, Dynamic Outlier, Arrhenius Drift)
 ```bash
 npx vitest run
 ```
@@ -129,10 +150,17 @@ npx vitest run
 python scripts/run_benchmark.py
 ```
 
+### Real-Time Ingestion Load Test
+```bash
+python scripts/load_test_realtime.py --events 2000 --concurrency 10
+```
+
 ---
 
 ## 📚 Technical Documentation Index
 
+- [**Distributed Real-Time Architecture** (`docs/realtime.md`)](./docs/realtime.md): WebSocket `/ws/live` protocol, canonical v2 envelope, Redis Streams, sequence gap recovery, and client backpressure.
+- [**Unified Screening Engine** (`docs/screening-engine.md`)](./docs/screening-engine.md): DynamicBaselineEngine, Module A (Robust Z/Tukey IQR), Module B (Arrhenius Early Reject), Dynamic Confidence, and glass-box DecisionEngine.
 - [**System Architecture** (`docs/architecture.md`)](./docs/architecture.md): Full subsystem designs, database ERD, RBAC permissions, and WebGL pipeline.
 - [**ML & Screening Pipeline** (`docs/ml-pipeline.md`)](./docs/ml-pipeline.md): Mathematical formulations for Robust Z-Score, Tukey IQR, Isolation Forest, Arrhenius drift extrapolation, and zero-leakage proof.
 - [**Glass-Box Explainability** (`docs/explainability.md`)](./docs/explainability.md): Natural language justification generator, SHAP attribution bar charts, and PDF certification.

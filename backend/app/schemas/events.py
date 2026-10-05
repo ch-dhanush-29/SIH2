@@ -1,25 +1,30 @@
 from typing import Dict, Any, List, Optional, Literal
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
+import uuid
 
 class RealtimeEvent(BaseModel):
     """
     Canonical Event Envelope for all BurnWatch 3D live distributed events.
-    Guarantees strict schema versioning, sequencing, and topic routing.
+    Guarantees strict schema versioning, sequencing, tracing, and topic routing.
     """
     event_id: str = Field(description="Unique idempotency identifier (UUIDv4)")
-    event_type: str = Field(
-        description="Event classification (telemetry, anomaly_detected, screening_update, etc.)"
+    trace_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="Distributed tracing identifier for correlation across microservices"
     )
-    schema_version: int = Field(default=1, description="Event contract version")
+    event_type: str = Field(
+        description="Event classification (telemetry, component.anomaly_detected, screening.decision, etc.)"
+    )
+    schema_version: int = Field(default=2, description="Event contract version")
     timestamp: str = Field(description="UTC timestamp of source generation (ISO8601)")
     server_timestamp: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
         description="UTC timestamp of server receipt/routing"
     )
+    chamber_id: Optional[str] = Field(default="CH-01", description="Physical oven chamber identifier")
     lot_id: Optional[str] = Field(default=None, description="Target flight lot reference")
     component_id: Optional[str] = Field(default=None, description="Target component part_id")
-    chamber_id: Optional[str] = Field(default="CH-01", description="Physical oven chamber identifier")
     sequence: int = Field(description="Monotonically increasing sequence number for gap recovery")
     payload: Dict[str, Any] = Field(default_factory=dict, description="Domain-specific payload")
 
@@ -46,6 +51,8 @@ class TelemetryIngestPayload(BaseModel):
     component_id: Optional[str] = Field(default=None)
     timestamp: Optional[str] = Field(default=None)
     event_id: Optional[str] = Field(default=None)
+    trace_id: Optional[str] = Field(default=None)
+    quality_status: Optional[str] = Field(default="VALID")
     parameters: Dict[str, float] = Field(
         description="Electrical parameters: iddq_ua, leakage_na, prop_delay_ns"
     )
@@ -61,4 +68,5 @@ class TelemetryIngestPayload(BaseModel):
 class TelemetryBatchIngestPayload(BaseModel):
     chamber_id: str = Field(default="CH-01")
     lot_id: str = Field(default="LOT-04")
+    trace_id: Optional[str] = Field(default=None)
     items: List[TelemetryIngestPayload]

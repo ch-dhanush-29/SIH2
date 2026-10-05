@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from typing import Dict, Any, List, Optional, Callable, Set, Coroutine
+from typing import Dict, Any, List, Optional, Callable, Set, Coroutine, Tuple
 from collections import deque
 from datetime import datetime, timezone
 import uuid
@@ -98,10 +98,8 @@ class EventBus:
 
         if self._is_redis_connected and self._redis_client:
             try:
-                # Redis INCRBY returns the new sequence after addition
                 new_seq = await self._redis_client.incrby("burnwatch:sequence:global", count)
                 self._current_sequence = new_seq
-                # Return the starting sequence of the reserved block
                 return new_seq - count + 1
             except Exception as e:
                 logger.warning("Redis sequence increment failed: %s. Using local sequence lock.", e)
@@ -119,6 +117,7 @@ class EventBus:
         component_id: Optional[str] = None,
         chamber_id: Optional[str] = "CH-01",
         event_id: Optional[str] = None,
+        trace_id: Optional[str] = None,
         sequence: Optional[int] = None,
         timestamp: Optional[str] = None
     ) -> RealtimeEvent:
@@ -133,7 +132,6 @@ class EventBus:
             logger.debug("Duplicate event_id '%s' detected. Returning existing cached event.", evt_id)
             return self._processed_events[evt_id]
 
-        # Use pre-allocated sequence if passed from TelemetryService, or allocate new one
         if sequence is not None:
             seq = sequence
             if seq > self._current_sequence:
@@ -145,13 +143,14 @@ class EventBus:
 
         event = RealtimeEvent(
             event_id=evt_id,
+            trace_id=trace_id or str(uuid.uuid4()),
             event_type=event_type,
-            schema_version=1,
+            schema_version=2,
             timestamp=timestamp or now_utc,
             server_timestamp=now_utc,
+            chamber_id=chamber_id or "CH-01",
             lot_id=lot_id,
             component_id=component_id,
-            chamber_id=chamber_id or "CH-01",
             sequence=seq,
             payload=payload
         )
@@ -175,15 +174,27 @@ class EventBus:
         # Publish to Redis Streams and PubSub if connected
         if self._is_redis_connected and self._redis_client:
             try:
-                # 1. Append to durable Redis Stream
-                await self._redis_client.xadd(
-                    "burnwatch:stream:events",
-                    {"data": event_json, "seq": str(event.sequence)},
+                pipe = self._redis_client.pipeline()
+
+                # 1. Append to primary durable Redis Stream
+                pipe.xadd(
+                    "burnwatch:events",
+                    {"data": event_json, "seq": str(event.sequence), "type": event.event_type},
                     maxlen=10000,
                     approximate=True
                 )
+
+                # Append to domain-specific stream
+                if event_type.startswith("telemetry"):
+                    pipe.xadd("burnwatch:telemetry", {"data": event_json, "seq": str(event.sequence)}, maxlen=10000, approximate=True)
+                elif "anomaly" in event_type:
+                    pipe.xadd("burnwatch:anomalies", {"data": event_json, "seq": str(event.sequence)}, maxlen=10000, approximate=True)
+                elif "screening" in event_type:
+                    pipe.xadd("burnwatch:screening", {"data": event_json, "seq": str(event.sequence)}, maxlen=10000, approximate=True)
+                elif "system" in event_type or "demo" in event_type:
+                    pipe.xadd("burnwatch:system", {"data": event_json, "seq": str(event.sequence)}, maxlen=10000, approximate=True)
+
                 # 2. Fanout via PubSub
-                pipe = self._redis_client.pipeline()
                 pipe.publish("burnwatch:events:global", event_json)
                 pipe.publish(f"burnwatch:events:stream:{event_type}", event_json)
                 if lot_id:
@@ -249,16 +260,27 @@ class EventBus:
         to_sequence: Optional[int] = None,
         lot_id: Optional[str] = None,
         max_limit: int = 1000
-    ) -> List[RealtimeEvent]:
+    ) -> Tuple[str, List[RealtimeEvent]]:
         """
         Retrieves missed sequence events for gap recovery.
-        Clamped to max_limit (default 1000) to protect against memory exhaustion.
+        Returns ("OK", events) or ("REPLAY_UNAVAILABLE", []).
         """
         if from_sequence <= 0:
             from_sequence = 1
+
         target_to = to_sequence if to_sequence is not None else self._current_sequence
         if target_to < from_sequence:
-            return []
+            return "OK", []
+
+        # Check retention boundary if buffer has events
+        if self._replay_buffer:
+            oldest_seq = self._replay_buffer[0].sequence
+            if from_sequence < oldest_seq:
+                logger.warning(
+                    "Replay request from_sequence=%d is older than buffer retention=%d",
+                    from_sequence, oldest_seq
+                )
+                return "REPLAY_UNAVAILABLE", []
 
         # Clamp range
         if (target_to - from_sequence + 1) > max_limit:
@@ -270,7 +292,8 @@ class EventBus:
             if evt:
                 if not lot_id or evt.lot_id == lot_id or evt.lot_id is None:
                     recovered.append(evt)
-        return recovered
+
+        return "OK", recovered
 
     @property
     def is_redis_connected(self) -> bool:
@@ -279,6 +302,14 @@ class EventBus:
     @property
     def current_sequence(self) -> int:
         return self._current_sequence
+
+    @property
+    def replay_buffer_size(self) -> int:
+        return len(self._replay_buffer)
+
+    @property
+    def subscriber_count(self) -> int:
+        return sum(len(subs) for subs in self._local_subscribers.values())
 
     async def close(self):
         if self._listener_task:
