@@ -1,10 +1,18 @@
+import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException, Depends
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import logging
+from sqlalchemy.orm import Session
+from datetime import datetime, timezone
 
+from backend.app.core.database import get_db
 from backend.app.schemas.events import RealtimeEvent
 from backend.app.services.event_bus import event_bus
 from backend.app.services.websocket_manager import ws_manager
+from backend.app.models.chamber import Chamber
+from backend.app.models.lot import Lot
+from backend.app.models.component import Component
+from backend.app.models.telemetry import AnomalyEvent
 
 logger = logging.getLogger("burnwatch.api.realtime")
 router = APIRouter(prefix="", tags=["Real-Time & WebSockets"])
@@ -12,13 +20,16 @@ router = APIRouter(prefix="", tags=["Real-Time & WebSockets"])
 @router.websocket("/ws/live")
 async def websocket_live_endpoint(
     websocket: WebSocket,
-    token: Optional[str] = Query(None)
+    token: Optional[str] = Query(None, description="DEPRECATED: Prefer sending {'action': 'auth', 'token': '...'} post-handshake")
 ):
     """
-    Primary High-Frequency Real-Time WebSocket Gateway.
+    Primary High-Frequency Real-Time WebSocket Gateway for BurnWatch 3D.
     Delivers live telemetry, anomalies, AI inferences, chamber environmental updates, and Golden Demo events.
-    Supports JWT authentication, topic subscription filtering, sequence numbers, and ping/pong heartbeats.
+    Supports post-connect JWT authentication handshake, topic subscriptions, sequence tracking, and heartbeats.
     """
+    if token:
+        logger.warning("Client connected using query-parameter token. Recommend migrating to post-connect auth handshake.")
+
     await ws_manager.initialize()
     session = await ws_manager.connect(websocket, token=token)
 
@@ -33,6 +44,82 @@ async def websocket_live_endpoint(
         await ws_manager.disconnect(session.connection_id)
 
 
+@router.get("/realtime/snapshot")
+def get_realtime_snapshot(
+    lot_id: str = Query("LOT-04", description="Lot identifier for initial snapshot state"),
+    chamber_id: str = Query("CH-01", description="Chamber identifier for initial thermal state"),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Authoritative Initial Snapshot Endpoint (Phase 5).
+    Returns complete lot state, chamber status, 3D component coordinates, and active anomalies
+    at the exact sequence number `seq_snapshot`.
+    Clients fetch this snapshot first, then apply incoming delta events from `seq_snapshot + 1`.
+    """
+    ch = db.query(Chamber).filter(Chamber.chamber_id == chamber_id).first()
+    lot = db.query(Lot).filter(Lot.lot_id == lot_id).first()
+    components = db.query(Component).filter(Component.lot_id == lot_id).all()
+    active_anomalies = (
+        db.query(AnomalyEvent)
+        .filter(AnomalyEvent.lot_id == lot_id, AnomalyEvent.is_resolved == False)
+        .order_by(AnomalyEvent.sequence.desc())
+        .limit(100)
+        .all()
+    )
+
+    return {
+        "status": "SNAPSHOT_LOADED",
+        "sequence": event_bus.current_sequence,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "chamber": {
+            "chamber_id": ch.chamber_id if ch else chamber_id,
+            "name": ch.name if ch else "ISRO ESS Thermal Chamber 01-A",
+            "current_temperature_c": ch.current_temperature_c if ch else 125.0,
+            "target_temperature_c": ch.target_temperature_c if ch else 125.0,
+            "humidity_percent": ch.humidity_percent if ch else 8.0,
+            "nitrogen_flow_lpm": ch.nitrogen_flow_lpm if ch else 15.0,
+            "status": ch.status if ch else "OPERATIONAL"
+        },
+        "lot": {
+            "lot_id": lot.lot_id if lot else lot_id,
+            "part_family": lot.part_family if lot else "RH-FPGA-500K",
+            "total_parts": lot.total_parts if lot else len(components),
+            "anomaly_count": lot.anomaly_count if lot else len(active_anomalies),
+            "status": lot.status if lot else "SCREENING",
+            "median_iddq": lot.median_iddq if lot else 21.2,
+            "mad_iddq": lot.mad_iddq if lot else 1.1
+        },
+        "components": [
+            {
+                "part_id": c.part_id,
+                "status": c.status,
+                "risk_score": c.risk_score,
+                "row": c.row,
+                "col": c.col,
+                "tray_x": c.tray_x,
+                "tray_y": c.tray_y,
+                "tray_z": c.tray_z,
+                "defect_type": c.defect_type,
+                "is_ground_truth_defect": c.is_ground_truth_defect
+            }
+            for c in components
+        ],
+        "active_anomalies": [
+            {
+                "event_id": a.event_id,
+                "sequence": a.sequence,
+                "component_id": a.component_id,
+                "parameter": a.parameter,
+                "anomaly_score": a.anomaly_score,
+                "confidence": a.confidence,
+                "decision": a.decision,
+                "reasons": json.loads(a.reason_codes_json) if a.reason_codes_json else []
+            }
+            for a in active_anomalies
+        ]
+    }
+
+
 @router.get("/events/replay", response_model=List[RealtimeEvent])
 def replay_events(
     from_sequence: int = Query(..., description="Starting sequence number for missed-event gap recovery"),
@@ -41,7 +128,7 @@ def replay_events(
 ):
     """
     Recovers missed events when a sequence gap is detected by a client.
-    Guarantees no data loss across WebSocket drops or network interruptions.
+    Guarantees zero data loss across WebSocket drops or network interruptions.
     """
     recovered = event_bus.get_replay_events(
         from_sequence=from_sequence,

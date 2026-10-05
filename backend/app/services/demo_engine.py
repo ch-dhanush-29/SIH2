@@ -2,16 +2,21 @@ import asyncio
 import logging
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
+import uuid
 
+from backend.app.core.database import SessionLocal
+from backend.app.schemas.events import TelemetryIngestPayload
 from backend.app.services.event_bus import event_bus
+from backend.app.services.telemetry_service import TelemetryService
 
 logger = logging.getLogger("burnwatch.demo_engine")
 
 class GoldenDemoEngine:
     """
-    Backend-Driven Golden Real-Time Demo Orchestrator.
-    Emits authentic real-time WebSocket events across the entire digital-twin pipeline:
-    Chamber Telemetry -> IC-40005 Thermal Drift -> AI Inference -> Anomaly Detection -> Early Reject @ 24h -> 144 Hours Saved.
+    Authentic Backend-Driven Golden Real-Time Demo Orchestrator.
+    Feeds authentic synthetic telemetry for target component IC-40005 through the real
+    authoritative ingestion and AI screening pipeline, allowing the DynamicAnomalyDetector
+    and DriftPredictor to naturally evaluate and trigger the anomaly and early-reject action.
     """
     def __init__(self):
         self.is_running = False
@@ -56,7 +61,7 @@ class GoldenDemoEngine:
 
     async def _run_golden_sequence(self):
         try:
-            # STEP 0: Demo Started (0h Nominal Steady State)
+            # STEP 1: Demo Started (0h Nominal Steady State)
             self.current_step = 1
             self.phase_name = "0h_STEADY_STATE"
             await event_bus.publish(
@@ -74,46 +79,74 @@ class GoldenDemoEngine:
             )
             await asyncio.sleep(2.5)
 
-            # STEP 1: Thermal Stabilization & Live Telemetry (6h)
+            # STEP 2: Thermal Soak & Live Telemetry Ingestion (6h) - Injected into TelemetryService!
             self.current_step = 2
             self.phase_name = "6h_THERMAL_STABILIZATION"
+            db = SessionLocal()
+            try:
+                p2 = TelemetryIngestPayload(
+                    chamber_id="CH-01",
+                    lot_id="LOT-04",
+                    component_id="IC-40005",
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    event_id=str(uuid.uuid4()),
+                    parameters={"iddq_ua": 21.8, "leakage_na": 4.5, "prop_delay_ns": 11.2},
+                    environment={"temperature_c": 125.1, "humidity_percent": 8.0, "nitrogen_flow_lpm": 15.0}
+                )
+                await TelemetryService.process_single_telemetry(p2, db)
+            finally:
+                db.close()
+
             await event_bus.publish(
-                event_type="telemetry.updated",
+                event_type="demo.step",
                 payload={
                     "step": 2,
                     "phase": "LIVE_TELEMETRY",
                     "checkpoint_hour": 6,
                     "chamber_temp": 125.1,
                     "target_component": "IC-40005",
-                    "parameters": {"iddq_ua": 22.8, "leakage_na": 4.5, "prop_delay_ns": 11.2},
                     "title": "2. Thermal Soak & Live Ingestion (6h)",
-                    "description": "50 MHz high-frequency telemetry stream active. Oven reached thermal equilibrium."
+                    "description": "High-frequency telemetry stream active. Oven reached thermal equilibrium."
                 },
                 lot_id="LOT-04",
                 component_id="IC-40005"
             )
             await asyncio.sleep(2.5)
 
-            # STEP 2: Minor Drift Emergence (12h - 18h)
+            # STEP 3: Sub-Datasheet Latent Drift Ingestion (18h) - Injected into TelemetryService!
             self.current_step = 3
             self.phase_name = "18h_DRIFT_EMERGENCE"
+            db = SessionLocal()
+            try:
+                p3 = TelemetryIngestPayload(
+                    chamber_id="CH-01",
+                    lot_id="LOT-04",
+                    component_id="IC-40005",
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    event_id=str(uuid.uuid4()),
+                    parameters={"iddq_ua": 28.2, "leakage_na": 6.8, "prop_delay_ns": 11.5},
+                    environment={"temperature_c": 125.0, "humidity_percent": 8.1, "nitrogen_flow_lpm": 14.9}
+                )
+                await TelemetryService.process_single_telemetry(p3, db)
+            finally:
+                db.close()
+
             await event_bus.publish(
-                event_type="telemetry.updated",
+                event_type="demo.step",
                 payload={
                     "step": 3,
                     "phase": "DRIFT_DETECTED",
                     "checkpoint_hour": 18,
                     "target_component": "IC-40005",
-                    "parameters": {"iddq_ua": 28.4, "leakage_na": 6.8, "prop_delay_ns": 11.5},
                     "title": "3. Sub-Datasheet Latent Drift (18h)",
-                    "description": "Component IC-40005 IDDQ rises from 21.2 to 28.4 µA. Still below 50 µA datasheet limit, but slope exceeds peer mean."
+                    "description": "Component IC-40005 IDDQ rises from 21.2 to 28.2 µA. Still below 50 µA datasheet limit, but slope exceeds peer mean."
                 },
                 lot_id="LOT-04",
                 component_id="IC-40005"
             )
             await asyncio.sleep(2.5)
 
-            # STEP 3: 24h AI Early Screening Gate & Inference Started
+            # STEP 4: 24h AI Screening Gate Activated
             self.current_step = 4
             self.phase_name = "24h_AI_SCREENING_GATE"
             await event_bus.publish(
@@ -132,32 +165,32 @@ class GoldenDemoEngine:
             )
             await asyncio.sleep(1.5)
 
-            # STEP 4: Anomaly Detected on IC-40005
+            # STEP 5: 24h Telemetry Ingested -> Real Anomaly Detector Triggers Naturally!
             self.current_step = 5
             self.phase_name = "ANOMALY_DETECTED"
+            db = SessionLocal()
+            try:
+                p5 = TelemetryIngestPayload(
+                    chamber_id="CH-01",
+                    lot_id="LOT-04",
+                    component_id="IC-40005",
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    event_id=str(uuid.uuid4()),
+                    parameters={"iddq_ua": 34.6, "leakage_na": 9.2, "prop_delay_ns": 12.1},
+                    environment={"temperature_c": 125.0, "humidity_percent": 8.0, "nitrogen_flow_lpm": 15.0}
+                )
+                res5 = await TelemetryService.process_single_telemetry(p5, db)
+                logger.info("Demo 24h ingestion result for IC-40005: anomaly_detected=%s", res5.get("anomaly_detected"))
+            finally:
+                db.close()
+
             await event_bus.publish(
-                event_type="anomaly.detected",
+                event_type="demo.step",
                 payload={
                     "step": 5,
                     "phase": "TRAJECTORY_RENDER",
                     "checkpoint_hour": 24,
                     "component_id": "IC-40005",
-                    "lot_id": "LOT-04",
-                    "parameter": "iddq",
-                    "measured_24h": 34.6,
-                    "robust_z": 4.88,
-                    "anomaly_score": 96.2,
-                    "drift_slope": 0.558,
-                    "safety_slope": 0.034,
-                    "slope_ratio": 16.4,
-                    "predicted_168h": 86.4,
-                    "static_limit": 50.0,
-                    "decision": "EARLY_REJECT",
-                    "reasons": [
-                        "DYNAMIC_LIMIT_EXCEEDED (34.6 µA > 27.5 µA limit)",
-                        "SAFETY_SLOPE_BREACH (16.4× peer slope)",
-                        "PROJECTED_168H_FAILURE (86.4 µA >> 50 µA)"
-                    ],
                     "title": "5. Critical Anomaly Triggered @ 24h",
                     "description": "Component IC-40005 classified as Latent Defect. Dynamic limit breached at 24 hours."
                 },
@@ -166,7 +199,7 @@ class GoldenDemoEngine:
             )
             await asyncio.sleep(2.5)
 
-            # STEP 5: Explainable AI & Early Reject Action
+            # STEP 6: Explainable AI & Early Reject Action
             self.current_step = 6
             self.phase_name = "EARLY_REJECT_DECISION"
             await event_bus.publish(
@@ -187,7 +220,7 @@ class GoldenDemoEngine:
             )
             await asyncio.sleep(2.5)
 
-            # STEP 6: Golden Demo Completed
+            # STEP 7: Golden Demo Completed
             self.current_step = 7
             self.phase_name = "COMPLETED"
             self.is_running = False

@@ -13,18 +13,23 @@ logger = logging.getLogger("burnwatch.event_bus")
 
 class EventBus:
     """
-    High-Performance Redis Pub/Sub Event Bus with In-Memory Asyncio Fallback.
-    Ensures zero downtime, topic-based subscription fan-out, and bounded replay buffer.
+    High-Performance Redis Streams & Pub/Sub Event Bus with In-Memory Resilient Fallback.
+    Serves as the Single Authoritative Sequence Allocator for all BurnWatch 3D telemetry,
+    guaranteeing strict sequence ordering, idempotency, bounded replay, and zero downtime.
     """
     def __init__(self):
         self._redis_client = None
         self._is_redis_connected = False
         self._sequence_lock = asyncio.Lock()
         self._current_sequence = 0
-        
-        # Bounded ring buffer for sequence-based replay recovery (stores last 5,000 events)
-        self._replay_buffer: deque = deque(maxlen=5000)
+
+        # Bounded ring buffer for sequence-based replay recovery (stores up to 10,000 events)
+        self._replay_buffer: deque = deque(maxlen=10000)
         self._replay_index: Dict[int, RealtimeEvent] = {}
+
+        # Idempotency and duplicate detection buffer (stores last 20,000 processed event_ids)
+        self._processed_events: Dict[str, RealtimeEvent] = {}
+        self._processed_event_order: deque = deque(maxlen=20000)
 
         # Local subscribers: topic -> set of async callback functions
         self._local_subscribers: Dict[str, Set[Callable[[RealtimeEvent], Coroutine[Any, Any, None]]]] = {}
@@ -51,7 +56,7 @@ class EventBus:
             if stored_seq:
                 self._current_sequence = int(stored_seq)
 
-            # Start background Redis PubSub listener
+            # Start background Redis PubSub listener for multi-worker fanout
             self._redis_pubsub = self._redis_client.pubsub()
             await self._redis_pubsub.psubscribe("burnwatch:events:*")
             self._listener_task = asyncio.create_task(self._redis_listener())
@@ -59,7 +64,7 @@ class EventBus:
         except Exception as e:
             self._is_redis_connected = False
             logger.warning(
-                "Redis unavailable (%s). Falling back to resilient In-Memory Asyncio Event Bus.",
+                "Redis unavailable (%s). Operating on Resilient In-Memory Asyncio Event Bus.",
                 str(e)
             )
 
@@ -82,17 +87,29 @@ class EventBus:
             logger.error("Redis pub/sub listener encountered error: %s", e)
             self._is_redis_connected = False
 
-    async def next_sequence(self) -> int:
-        """Atomically increments and returns the next sequence number."""
+    async def next_sequence(self, count: int = 1) -> int:
+        """
+        Authoritatively increments and returns the sequence number.
+        If count > 1 (for batch operations), atomically reserves a range
+        and returns the FIRST sequence in the reserved block.
+        """
+        if count <= 0:
+            count = 1
+
         if self._is_redis_connected and self._redis_client:
             try:
-                return await self._redis_client.incr("burnwatch:sequence:global")
-            except Exception:
-                pass
-        
+                # Redis INCRBY returns the new sequence after addition
+                new_seq = await self._redis_client.incrby("burnwatch:sequence:global", count)
+                self._current_sequence = new_seq
+                # Return the starting sequence of the reserved block
+                return new_seq - count + 1
+            except Exception as e:
+                logger.warning("Redis sequence increment failed: %s. Using local sequence lock.", e)
+
         async with self._sequence_lock:
-            self._current_sequence += 1
-            return self._current_sequence
+            start_seq = self._current_sequence + 1
+            self._current_sequence += count
+            return start_seq
 
     async def publish(
         self,
@@ -102,16 +119,32 @@ class EventBus:
         component_id: Optional[str] = None,
         chamber_id: Optional[str] = "CH-01",
         event_id: Optional[str] = None,
+        sequence: Optional[int] = None,
         timestamp: Optional[str] = None
     ) -> RealtimeEvent:
         """
-        Constructs and publishes a canonical RealtimeEvent across Redis and local subscribers.
+        Constructs and publishes a canonical RealtimeEvent across Redis Streams, PubSub,
+        and local subscribers. Enforces idempotency and authoritative sequencing.
         """
-        seq = await self.next_sequence()
+        evt_id = event_id or str(uuid.uuid4())
+
+        # Duplicate detection / Idempotency check
+        if evt_id in self._processed_events:
+            logger.debug("Duplicate event_id '%s' detected. Returning existing cached event.", evt_id)
+            return self._processed_events[evt_id]
+
+        # Use pre-allocated sequence if passed from TelemetryService, or allocate new one
+        if sequence is not None:
+            seq = sequence
+            if seq > self._current_sequence:
+                self._current_sequence = seq
+        else:
+            seq = await self.next_sequence(1)
+
         now_utc = datetime.now(timezone.utc).isoformat()
 
         event = RealtimeEvent(
-            event_id=event_id or str(uuid.uuid4()),
+            event_id=evt_id,
             event_type=event_type,
             schema_version=1,
             timestamp=timestamp or now_utc,
@@ -123,18 +156,33 @@ class EventBus:
             payload=payload
         )
 
+        # Store in idempotency cache
+        if len(self._processed_event_order) == self._processed_event_order.maxlen:
+            oldest_id = self._processed_event_order[0]
+            self._processed_events.pop(oldest_id, None)
+        self._processed_event_order.append(evt_id)
+        self._processed_events[evt_id] = event
+
         # Store in replay buffer
         if len(self._replay_buffer) == self._replay_buffer.maxlen:
-            oldest = self._replay_buffer[0]
-            self._replay_index.pop(oldest.sequence, None)
+            oldest_evt = self._replay_buffer[0]
+            self._replay_index.pop(oldest_evt.sequence, None)
         self._replay_buffer.append(event)
         self._replay_index[event.sequence] = event
 
         event_json = event.model_dump_json()
 
-        # Publish to Redis if connected
+        # Publish to Redis Streams and PubSub if connected
         if self._is_redis_connected and self._redis_client:
             try:
+                # 1. Append to durable Redis Stream
+                await self._redis_client.xadd(
+                    "burnwatch:stream:events",
+                    {"data": event_json, "seq": str(event.sequence)},
+                    maxlen=10000,
+                    approximate=True
+                )
+                # 2. Fanout via PubSub
                 pipe = self._redis_client.pipeline()
                 pipe.publish("burnwatch:events:global", event_json)
                 pipe.publish(f"burnwatch:events:stream:{event_type}", event_json)
@@ -144,17 +192,16 @@ class EventBus:
                     pipe.publish(f"burnwatch:events:chamber:{chamber_id}", event_json)
                 await pipe.execute()
             except Exception as e:
-                logger.warning("Failed to publish to Redis: %s. Falling back to local dispatch.", e)
+                logger.warning("Failed to publish to Redis (%s). Falling back to local dispatch.", e)
                 await self._dispatch_local("burnwatch:events:global", event)
         else:
-            # In-memory dispatch
+            # Resilient In-memory dispatch
             await self._dispatch_local("burnwatch:events:global", event)
 
         return event
 
     async def _dispatch_local(self, channel: str, event: RealtimeEvent):
         """Delivers event to in-process callback handlers."""
-        # Deliver to global subscribers
         targets = set()
         if "burnwatch:events:global" in self._local_subscribers:
             targets.update(self._local_subscribers["burnwatch:events:global"])
@@ -200,10 +247,23 @@ class EventBus:
         self,
         from_sequence: int,
         to_sequence: Optional[int] = None,
-        lot_id: Optional[str] = None
+        lot_id: Optional[str] = None,
+        max_limit: int = 1000
     ) -> List[RealtimeEvent]:
-        """Retrieves missed sequence events for gap recovery."""
-        target_to = to_sequence or (self._current_sequence)
+        """
+        Retrieves missed sequence events for gap recovery.
+        Clamped to max_limit (default 1000) to protect against memory exhaustion.
+        """
+        if from_sequence <= 0:
+            from_sequence = 1
+        target_to = to_sequence if to_sequence is not None else self._current_sequence
+        if target_to < from_sequence:
+            return []
+
+        # Clamp range
+        if (target_to - from_sequence + 1) > max_limit:
+            target_to = from_sequence + max_limit - 1
+
         recovered = []
         for seq in range(from_sequence, target_to + 1):
             evt = self._replay_index.get(seq)

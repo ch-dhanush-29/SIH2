@@ -2,7 +2,38 @@ import { ChipData, EvaluationMetrics, LotStatistics, ParameterType } from '../ty
 import { evaluateLotOutliers } from '../algorithms/dynamicOutlier';
 import { calculateEvaluationMetrics } from '../algorithms/driftPredictor';
 
-const BACKEND_BASE_URL = 'http://localhost:8000';
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined' && (window as any).__BURNWATCH_API_URL__) {
+    return (window as any).__BURNWATCH_API_URL__;
+  }
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const isDev = window.location.port === '3000' || window.location.port === '5173';
+    if (isDev) {
+      return `http://${window.location.hostname}:8000`;
+    }
+    return window.location.origin;
+  }
+  return 'http://localhost:8000';
+};
+
+export const getWsBaseUrl = (): string => {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const isSsl = window.location.protocol === 'https:';
+    const host = window.location.hostname;
+    const isDev = window.location.port === '3000' || window.location.port === '5173';
+    const port = isDev ? ':8000' : (window.location.port ? `:${window.location.port}` : '');
+    return `${isSsl ? 'wss:' : 'ws:'}//${host}${port}/api/v1/ws/live`;
+  }
+  return 'ws://localhost:8000/api/v1/ws/live';
+};
+
+export const BACKEND_BASE_URL = getApiBaseUrl();
 
 export interface ScreeningApiRequest {
   lotId: string;

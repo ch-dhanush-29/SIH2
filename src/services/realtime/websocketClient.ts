@@ -1,5 +1,6 @@
 import { ReconnectManager } from './reconnectManager';
 import { EventRouter, RealtimeEvent } from './eventRouter';
+import { getWsBaseUrl, getApiBaseUrl } from '../apiClient';
 
 export type ConnectionState = 'CONNECTING' | 'CONNECTED' | 'DEGRADED' | 'RECONNECTING' | 'OFFLINE';
 
@@ -38,12 +39,7 @@ export class WebSocketClient {
   private onLatencyChangeCallback?: (latencyMs: number) => void;
 
   constructor(options?: WebSocketClientOptions) {
-    const isSsl = typeof window !== 'undefined' && window.location.protocol === 'https:';
-    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    const port = '8000';
-    const defaultWsUrl = `${isSsl ? 'wss:' : 'ws:'}//${host}:${port}/api/v1/ws/live`;
-
-    this.url = options?.url || defaultWsUrl;
+    this.url = options?.url || getWsBaseUrl();
     this.token = options?.token || null;
     this.onStateChangeCallback = options?.onStateChange;
     this.onLatencyChangeCallback = options?.onLatencyChange;
@@ -76,10 +72,8 @@ export class WebSocketClient {
     this.isExplicitlyClosed = false;
     this.setState(this.reconnectManager.attemptCount > 0 ? 'RECONNECTING' : 'CONNECTING');
 
-    const fullUrl = this.token ? `${this.url}?token=${encodeURIComponent(this.token)}` : this.url;
-
     try {
-      this.ws = new WebSocket(fullUrl);
+      this.ws = new WebSocket(this.url);
       this.ws.onopen = this.handleOpen.bind(this);
       this.ws.onmessage = this.handleMessage.bind(this);
       this.ws.onerror = this.handleError.bind(this);
@@ -123,6 +117,11 @@ export class WebSocketClient {
     this.setState('CONNECTED');
     this.reconnectManager.reset();
     this.startHeartbeat();
+
+    // Authenticate securely post-handshake if token is provided
+    if (this.token && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ action: 'auth', token: this.token }));
+    }
 
     // Send active subscriptions
     this.subscribe();
@@ -203,7 +202,7 @@ export class WebSocketClient {
   private async handleSequenceGap(fromSeq: number, toSeq: number): Promise<void> {
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v1/events/replay?from_sequence=${fromSeq}&to_sequence=${toSeq}`
+        `${getApiBaseUrl()}/api/v1/events/replay?from_sequence=${fromSeq}&to_sequence=${toSeq}`
       );
       if (res.ok) {
         const events: RealtimeEvent[] = await res.json();

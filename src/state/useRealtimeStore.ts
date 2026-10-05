@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { WebSocketClient, ConnectionState } from '../services/realtime/websocketClient';
 import { RealtimeEvent } from '../services/realtime/eventRouter';
 import { useBurnInStore } from './useBurnInStore';
+import { getApiBaseUrl } from '../services/apiClient';
 
 interface RealtimeState {
   connectionStatus: ConnectionState;
@@ -18,6 +19,7 @@ interface RealtimeState {
   client: WebSocketClient | null;
 
   initRealtime: () => void;
+  syncSnapshot: () => Promise<void>;
   startGoldenDemo: () => Promise<void>;
   stopGoldenDemo: () => Promise<void>;
   startSimulator: () => Promise<void>;
@@ -149,11 +151,51 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
     client.connect();
     set({ client });
+
+    // Fetch initial authoritative digital-twin snapshot
+    get().syncSnapshot();
+  },
+
+  syncSnapshot: async () => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/v1/realtime/snapshot?lot_id=LOT-04&chamber_id=CH-01`);
+      if (res.ok) {
+        const snapshot = await res.json();
+        set({
+          lastSequence: snapshot.sequence,
+          lastEventTime: snapshot.timestamp,
+        });
+
+        const client = get().client;
+        if (client && snapshot.sequence) {
+          client.router.setLastSequence(snapshot.sequence);
+        }
+
+        // Synchronize chamber environmental status
+        if (snapshot.chamber) {
+          const burnStore = useBurnInStore.getState();
+          const curTelem = burnStore.telemetry;
+          useBurnInStore.setState({
+            telemetry: {
+              ...curTelem,
+              chamberTempC: snapshot.chamber.current_temperature_c ?? curTelem.chamberTempC,
+              nitrogenFlowLpm: snapshot.chamber.nitrogen_flow_lpm ?? curTelem.nitrogenFlowLpm,
+              humidityPercent: snapshot.chamber.humidity_percent ?? curTelem.humidityPercent,
+            },
+          });
+        }
+        console.info(`[RealtimeStore] Authoritative snapshot synchronized at sequence #${snapshot.sequence}`);
+      }
+    } catch (e) {
+      console.warn('[RealtimeStore] Snapshot synchronization failed (backend offline or unreachable):', e);
+    }
   },
 
   startGoldenDemo: async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/demo/start', { method: 'POST' });
+      const baseUrl = getApiBaseUrl();
+      await fetch(`${baseUrl}/api/v1/demo/start`, { method: 'POST' });
     } catch (e) {
       console.error('Failed to trigger backend demo:', e);
     }
@@ -161,7 +203,8 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
   stopGoldenDemo: async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/demo/stop', { method: 'POST' });
+      const baseUrl = getApiBaseUrl();
+      await fetch(`${baseUrl}/api/v1/demo/stop`, { method: 'POST' });
       set({ isGoldenDemoActive: false });
     } catch (e) {
       console.error('Failed to stop backend demo:', e);
@@ -170,7 +213,8 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
   startSimulator: async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/simulator/start', { method: 'POST' });
+      const baseUrl = getApiBaseUrl();
+      await fetch(`${baseUrl}/api/v1/simulator/start`, { method: 'POST' });
       set({ isSimulatorActive: true });
     } catch (e) {
       console.error('Failed to start simulator:', e);
@@ -179,7 +223,8 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
   stopSimulator: async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/simulator/stop', { method: 'POST' });
+      const baseUrl = getApiBaseUrl();
+      await fetch(`${baseUrl}/api/v1/simulator/stop`, { method: 'POST' });
       set({ isSimulatorActive: false });
     } catch (e) {
       console.error('Failed to stop simulator:', e);
