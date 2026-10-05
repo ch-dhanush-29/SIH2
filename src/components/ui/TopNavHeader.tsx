@@ -207,25 +207,26 @@ export const TopNavHeader: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--surface-elevated)]/96 backdrop-blur-2xl border-b border-[var(--border)] shadow-[var(--shadow-panel)] flex flex-col font-sans select-none pointer-events-auto">
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
       {/* LAYER 1: COMMAND & MISSION CONTROL HEADER (Height: min-h-[50px])       */}
       {/* ========================================================================= */}
-      <div className="min-h-[50px] px-4 py-1.5 flex items-center justify-between border-b border-[var(--border)] text-xs">
+      <div className="min-h-[50px] px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 border-b border-[var(--border)] text-xs w-full overflow-x-auto no-scrollbar">
         {/* Left: Product Identity & Mission Reference */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('burnwatch-reopen-intro'))}
             title="Click to replay 3D Cinematic Intro"
-            className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none"
+            className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm group-hover:scale-105 transition-transform">
-              <Flame className="w-4.5 h-4.5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-[7px] bg-[var(--accent-soft)] border border-[var(--border-accent)] text-[var(--accent)] shadow-sm group-hover:scale-105 transition-transform">
+              <Flame className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-display font-bold text-[14px] tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
+                <span className="font-display font-bold text-[13px] sm:text-[14px] tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
                   BURNWATCH<span className="text-[var(--accent)] font-mono ml-0.5 text-xs">3D</span>
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-[4px] bg-cyan-950/80 text-cyan-300 dark:bg-cyan-950/70 border border-cyan-500/30 group-hover:border-cyan-400 transition-colors">
+                <span className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded-[4px] bg-cyan-950/80 text-cyan-300 dark:bg-cyan-950/70 border border-cyan-500/30 group-hover:border-cyan-400 transition-colors">
                   ISRO • SIH26170
                 </span>
               </div>
@@ -235,13 +236,13 @@ export const TopNavHeader: React.FC = () => {
           <div className="h-4 w-[1px] bg-[var(--border)] hidden md:block" />
 
           {/* Active Flight Lot Selector */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] bg-[var(--surface)] border border-[var(--border)] text-[11px] font-sans hover:border-[var(--border-accent)] transition-colors">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-[7px] bg-[var(--surface)] border border-[var(--border)] text-[11px] font-sans hover:border-[var(--border-accent)] transition-colors shrink-0">
             <Layers className="w-3 h-3 text-[var(--accent)] shrink-0" />
             <span className="text-[10px] text-[var(--text-muted)] uppercase font-mono font-medium">LOT:</span>
             <select
               value={selectedLotConfig.lotId}
               onChange={(e) => selectLot(e.target.value)}
-              className="bg-transparent text-[var(--text-primary)] font-medium outline-none cursor-pointer text-xs pr-1"
+              className="bg-transparent text-[var(--text-primary)] font-medium outline-none cursor-pointer text-xs pr-1 max-w-[110px] sm:max-w-[160px] md:max-w-[190px] truncate"
             >
               {presetLots.map((l) => (
                 <option key={l.lotId} value={l.lotId} className="bg-slate-900 text-slate-100">
@@ -253,11 +254,11 @@ export const TopNavHeader: React.FC = () => {
         </div>
 
         {/* Center: System Status & Live Mission Telemetry */}
-        <div className="hidden lg:flex items-center gap-4 shrink-0">
+        <div className="flex items-center gap-2 xl:gap-3 shrink-0">
           {/* Real-Time Live Distributed Gateway Indicator */}
           <button
             onClick={() => setIsDiagnosticsOpen(true)}
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border cursor-pointer transition-all hover:scale-105"
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border cursor-pointer transition-all hover:scale-105 shrink-0"
             style={{
               backgroundColor: connectionStatus === 'CONNECTED' ? 'rgba(19,136,8,0.15)' : 'rgba(255,153,51,0.15)',
               borderColor: connectionStatus === 'CONNECTED' ? 'rgba(19,136,8,0.5)' : 'rgba(255,153,51,0.5)',
@@ -278,59 +279,58 @@ export const TopNavHeader: React.FC = () => {
           </button>
 
           {/* Nominal Status Indicator */}
-          <div className="flex items-center gap-2 text-[11px] font-medium">
-            <span className="text-[var(--text-muted)] text-[10px] uppercase font-mono">STATUS</span>
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold">
+          <div className="hidden xl:flex items-center gap-1 text-[11px] font-medium shrink-0">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold" title="Zero Escaped False Negatives">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_var(--success)]" />
-              NOMINAL (0 ESCAPED FN)
+              NOMINAL
+              <span className="hidden 2xl:inline text-[9px] opacity-80">(0 FN)</span>
             </span>
           </div>
 
           {/* Chamber Ambient Telemetry */}
-          <div className="flex items-baseline gap-1 font-sans">
-            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase mr-1">CHAMBER</span>
-            <span className="font-display font-bold text-sm text-[var(--warning)] tracking-tight">
+          <div className="flex items-baseline gap-1 font-sans shrink-0">
+            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase mr-0.5">CHAMBER</span>
+            <span className="font-display font-bold text-xs sm:text-sm text-[var(--warning)] tracking-tight">
               {telemetry.chamberTempC.toFixed(1)}°C
             </span>
-            <span className="text-[10px] font-mono text-[var(--text-muted)]">/ 125.0°C</span>
           </div>
 
           {/* Mission Checkpoint Time */}
-          <div className="flex items-baseline gap-1.5 font-mono text-xs text-[var(--text-secondary)]">
-            <span className="text-[10px] text-[var(--text-muted)] uppercase">CHECKPOINT</span>
-            <span className="font-semibold text-[var(--accent)]">T+{checkpoint.toString().padStart(3, '0')}:00:00</span>
+          <div className="hidden xl:flex items-baseline gap-1 font-mono text-xs text-[var(--text-secondary)] shrink-0">
+            <span className="text-[10px] text-[var(--text-muted)] uppercase">T+</span>
+            <span className="font-semibold text-[var(--accent)]">{checkpoint}h</span>
           </div>
         </div>
 
         {/* Right: Primary Command Controls & Utility Group */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Primary Action: Golden Demo */}
           <button
             onClick={startGoldenDemo}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[11px] font-display font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] font-display font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
             title="Execute ISRO Star Demo: Part CHIP-LOT04-042 Early Reject at 24h"
           >
             <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-            <span>GOLDEN DEMO</span>
+            <span>DEMO</span>
           </button>
 
           {/* Hero Story Toggle */}
           <button
             onClick={() => (isHeroNarrativeActive ? stopHeroNarrative() : startHeroNarrative(true))}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] font-medium transition-all border ${
+            className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[7px] text-[11px] font-medium transition-all border shrink-0 ${
               isHeroNarrativeActive
                 ? 'bg-rose-500/20 text-rose-500 border-rose-500/60 font-semibold'
                 : 'bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)] hover:border-[var(--border-accent)]'
             }`}
             title="Toggle Step-by-Step Aerospace Screening Story [Key: G]"
           >
-            <span>{isHeroNarrativeActive ? 'STOP STORY' : 'HERO STORY'}</span>
+            <span className="hidden sm:inline">{isHeroNarrativeActive ? 'STOP' : 'STORY'}</span>
           </button>
 
           {/* AI Copilot Toggle */}
           <button
             onClick={() => setIsAiCopilotOpen(!isAiCopilotOpen)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] transition-all border ${
+            className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[7px] text-[11px] transition-all border shrink-0 ${
               isAiCopilotOpen
                 ? 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--border-accent)] font-semibold shadow-sm'
                 : 'bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)]'
@@ -338,28 +338,28 @@ export const TopNavHeader: React.FC = () => {
             title="Toggle AI Reliability Engineer Panel"
           >
             <Bot className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">AI COPILOT</span>
+            <span className="hidden xl:inline">AI COPILOT</span>
           </button>
 
           {/* Audit Log Modal Trigger */}
           <button
             onClick={() => setIsAuditOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors"
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[7px] text-[11px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors shrink-0"
             title="Open Immutable Screening Audit Log"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">AUDIT</span>
+            <span className="hidden 2xl:inline">AUDIT</span>
           </button>
 
           {/* Workspace Windows Layout Manager Dropdown */}
-          <div className="relative" ref={windowsMenuRef}>
+          <div className="relative shrink-0" ref={windowsMenuRef}>
             <button
               onClick={() => setIsWindowsMenuOpen(!isWindowsMenuOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors font-sans"
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[7px] text-[11px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors font-sans"
               title="Manage Floating HUD Windows & Workspace Layout"
             >
               <LayoutGrid className="w-3.5 h-3.5 text-[var(--accent)]" />
-              <span className="hidden xl:inline">WINDOWS</span>
+              <span className="hidden 2xl:inline">WINDOWS</span>
               <ChevronDown className="w-2.5 h-2.5 text-[var(--text-muted)]" />
             </button>
 
