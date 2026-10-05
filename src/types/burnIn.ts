@@ -161,6 +161,8 @@ export interface ChamberTelemetry {
   heaterDutyCyclePct: number;
   chamberPressureKPa: number;
   nitrogenFlowLpm: number;
+  humidityPercent?: number;
+  heaterCoilActive?: boolean;
   burnInHoursElapsed: number;
   isStreaming: boolean;
 }

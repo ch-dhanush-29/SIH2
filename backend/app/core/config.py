@@ -1,36 +1,73 @@
 import os
-from typing import List
-from pydantic import BaseModel
+import secrets
+from typing import List, Union
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
 
-class Settings(BaseModel):
+class Settings(BaseSettings):
     PROJECT_NAME: str = "BurnWatch 3D - ISRO Component Screening Platform"
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "isro-sih26170-burnwatch-supersecret-jwt-key-2026")
+    ENVIRONMENT: str = Field(default="development", description="development | production | test")
+
+    # Security: In production, SECRET_KEY must be provided via environment variable.
+    # In development, generate an ephemeral cryptographically secure 256-bit key if not provided.
+    SECRET_KEY: str = Field(
+        default_factory=lambda: os.getenv("SECRET_KEY") or secrets.token_urlsafe(32)
+    )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
-    
-    # Database config: SQLite out of the box, or PostgreSQL via env var
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./burnwatch.db")
-    
-    # Environmental Stress Screening defaults
+
+    # Database configuration: Default SQLite for dev/test, PostgreSQL for production
+    DATABASE_URL: str = Field(
+        default=os.getenv("DATABASE_URL", "sqlite:///./burnwatch.db")
+    )
+
+    # Redis Event Bus: Redis URL with graceful in-memory pubsub fallback if absent
+    REDIS_URL: str = Field(
+        default=os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    )
+    USE_REDIS_FALLBACK: bool = True  # If true, falls back to in-memory event bus when Redis is unreachable
+
+    # Real-Time Telemetry & Rate Limiting
+    TELEMETRY_BATCH_SIZE: int = 500
+    TELEMETRY_RATE_LIMIT_PER_MINUTE: int = 6000
+    MAX_PAYLOAD_SIZE_BYTES: int = 5 * 1024 * 1024  # 5 MB
+    CLOCK_SKEW_TOLERANCE_SECONDS: float = 10.0
+
+    # Environmental Stress Screening defaults (MIL-STD-883H Class-S)
     CHAMBER_TARGET_TEMP_C: float = 125.0
     BURN_IN_TOTAL_HOURS: int = 168
     EARLY_CHECKPOINT_HOURS: int = 24
-    
-    # Static Datasheet Limits (Default Microsemi/ISRO Radiation-Hardened FPGA/ASIC Specs)
+
+    # Static Datasheet Limits (Radiation-Hardened Microsemi/ISRO FPGA/ASIC Specs)
     STATIC_LIMITS: dict = {
         "iddq": 50.0,       # µA (Quiescent Supply Current)
         "leakage": 100.0,   # nA (Input/Output Pad Leakage)
         "propDelay": 12.0   # ns (Critical Path Propagation Delay)
     }
-    
-    # CORS
+
+    # Production CORS: Configurable list of allowed origins. No wildcard '*' allowed in production!
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "*"
     ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",") if i.strip()]
+        elif isinstance(v, (list, str)):
+            return v
+        return []
+
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 settings = Settings()

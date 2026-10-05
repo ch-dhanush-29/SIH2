@@ -1,0 +1,77 @@
+name: BurnWatch 3D CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-test:
+    name: Backend Tests & Migration Validation
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Alembic Database Migrations
+        run: |
+          alembic upgrade head
+
+      - name: Seed Database
+        run: |
+          python -m backend.app.services.seed_db
+
+      - name: Run Pytest Test Suite
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY || 'test-ci-cryptographically-secure-key-32b' }}
+          REDIS_URL: redis://localhost:6379/0
+          ENVIRONMENT: test
+        run: |
+          python -m pytest
+
+  frontend-test:
+    name: Frontend Build & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node Modules
+        run: npm ci
+
+      - name: Run Vitest Suite
+        run: npx vitest run
+
+      - name: Run Production Build
+        run: npm run build

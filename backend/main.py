@@ -1,27 +1,44 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import logging
+
 from backend.app.core.config import settings
 from backend.app.api.v1 import api_v1_router
 from backend.app.services.seed_db import init_and_seed_db
-from backend.app.api.v1.screening import router as legacy_screen_router
+from backend.app.services.event_bus import event_bus
+from backend.app.services.websocket_manager import ws_manager
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("burnwatch.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: ensure tables exist and seed database
-    print("BurnWatch 3D: Initializing database and ensuring tables exist...")
+    # Startup: Initialize DB, Event Bus, and WebSocket Gateway
+    logger.info("Initializing BurnWatch 3D Database & Schema...")
     init_and_seed_db()
+
+    logger.info("Initializing Real-Time Event Bus & WebSocket Manager...")
+    await event_bus.initialize()
+    await ws_manager.initialize()
+
     yield
-    print("BurnWatch 3D: Shutting down...")
+
+    # Shutdown: Cleanly close Event Bus and WebSocket sessions
+    logger.info("BurnWatch 3D: Shutting down Event Bus and WebSockets...")
+    await event_bus.close()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Production-grade AI-Driven Anomaly Detection and Time-Series Drift Screening Backend for ISRO High-Reliability Electronics.",
+    description="Production-grade Real-Time Digital-Twin Platform for AI-Driven Anomaly Detection in Component Burn-In & Screening (SIH26170 - ISRO).",
     version="2.0.0",
     lifespan=lifespan
 )
 
-# Enable CORS for Vite frontend
+# Enable CORS (Strict origins configured from settings)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -33,7 +50,7 @@ app.add_middleware(
 # Mount API V1
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
-# Legacy compatibility shortcuts for existing frontend apiClient
+# Legacy compatibility route for existing frontend apiClient
 @app.get("/api/health")
 def legacy_health():
     return {

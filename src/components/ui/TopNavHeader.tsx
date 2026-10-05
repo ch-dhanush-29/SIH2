@@ -39,6 +39,8 @@ import {
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { useWindowManagerStore } from '../../state/useWindowManagerStore';
+import { useRealtimeStore } from '../../state/useRealtimeStore';
+import { SystemDiagnosticsModal } from './SystemDiagnosticsModal';
 
 interface PhaseMeta {
   phase: DemoStoryPhase;
@@ -149,8 +151,12 @@ export const TopNavHeader: React.FC = () => {
   const [isWindowsMenuOpen, setIsWindowsMenuOpen] = useState(false);
   const [isExpandedMath, setIsExpandedMath] = useState(false);
   const [isProvenanceModalOpen, setIsProvenanceModalOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const toolsMenuRef = useRef<HTMLDivElement>(null);
   const windowsMenuRef = useRef<HTMLDivElement>(null);
+
+  const connectionStatus = useRealtimeStore((state) => state.connectionStatus);
+  const latencyMs = useRealtimeStore((state) => state.latencyMs);
 
   const managedWindows = useWindowManagerStore((state) => state.windows);
   const resetAllWindowPositions = useWindowManagerStore((state) => state.resetAllPositions);
@@ -248,6 +254,29 @@ export const TopNavHeader: React.FC = () => {
 
         {/* Center: System Status & Live Mission Telemetry */}
         <div className="hidden lg:flex items-center gap-4 shrink-0">
+          {/* Real-Time Live Distributed Gateway Indicator */}
+          <button
+            onClick={() => setIsDiagnosticsOpen(true)}
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] border cursor-pointer transition-all hover:scale-105"
+            style={{
+              backgroundColor: connectionStatus === 'CONNECTED' ? 'rgba(19,136,8,0.15)' : 'rgba(255,153,51,0.15)',
+              borderColor: connectionStatus === 'CONNECTED' ? 'rgba(19,136,8,0.5)' : 'rgba(255,153,51,0.5)',
+              color: connectionStatus === 'CONNECTED' ? '#138808' : '#ff9933',
+            }}
+            title="Open Real-Time Diagnostics & Performance Monitor"
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'CONNECTED' ? 'bg-emerald-500 animate-ping' : 'bg-amber-500'
+              }`}
+            />
+            <span className="font-mono text-[10px] font-bold">
+              {connectionStatus === 'CONNECTED'
+                ? `LIVE • ${latencyMs > 0 ? latencyMs + 'ms' : '<1ms'}`
+                : connectionStatus}
+            </span>
+          </button>
+
           {/* Nominal Status Indicator */}
           <div className="flex items-center gap-2 text-[11px] font-medium">
             <span className="text-[var(--text-muted)] text-[10px] uppercase font-mono">STATUS</span>
@@ -783,6 +812,12 @@ export const TopNavHeader: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Real-Time System Diagnostics Modal */}
+      <SystemDiagnosticsModal
+        isOpen={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+      />
     </header>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useBurnInStore } from './state/useBurnInStore';
+import { useRealtimeStore } from './state/useRealtimeStore';
 import { CHECKPOINTS, CheckpointHour } from './types/burnIn';
 import { BurnInCanvas } from './components/viewport3d/BurnInCanvas';
 import { TopNavHeader } from './components/ui/TopNavHeader';
@@ -77,6 +78,7 @@ export const App: React.FC = () => {
   // Initialize store and generate default flight lot on startup
   useEffect(() => {
     initialize();
+    useRealtimeStore.getState().initRealtime();
   }, [initialize]);
 
   // Real-time thermal streaming loop

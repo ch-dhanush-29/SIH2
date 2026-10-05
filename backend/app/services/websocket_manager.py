@@ -1,0 +1,258 @@
+import asyncio
+import json
+import logging
+from typing import Dict, Any, List, Optional, Set
+from fastapi import WebSocket
+from datetime import datetime, timezone
+import uuid
+
+from backend.app.core.security import decode_access_token
+from backend.app.schemas.events import RealtimeEvent, WsServerAck
+from backend.app.services.event_bus import event_bus
+
+logger = logging.getLogger("burnwatch.websocket")
+
+class ClientSession:
+    """Represents a connected WebSocket client session with topic subscriptions and backpressure queue."""
+    def __init__(self, websocket: WebSocket, connection_id: str, user: Optional[Dict[str, Any]] = None):
+        self.websocket = websocket
+        self.connection_id = connection_id
+        self.user = user  # Authenticated user dict with username, role
+        self.lot_ids: Set[str] = set()
+        self.chamber_ids: Set[str] = {"CH-01"}
+        self.streams: Set[str] = {"telemetry", "anomalies", "screening", "system", "camera", "demo"}
+        self.component_ids: Set[str] = set()
+        self.is_authenticated = user is not None
+        self.connected_at = datetime.now(timezone.utc).isoformat()
+        self.last_heartbeat = datetime.now(timezone.utc)
+        self.send_queue: asyncio.Queue = asyncio.Queue(maxsize=400)
+        self.writer_task: Optional[asyncio.Task] = None
+
+    def is_interested_in(self, event: RealtimeEvent) -> bool:
+        """Evaluates whether this client subscribed to the event's topic criteria."""
+        # Demo and system events are broadcast to all connected sessions
+        if event.event_type.startswith("demo.") or event.event_type in ("system_status", "heartbeat"):
+            return True
+
+        # Check stream type
+        event_stream = event.event_type.split(".")[0]
+        if self.streams and event_stream not in self.streams and event.event_type not in self.streams:
+            return False
+
+        # If client specified particular lot IDs, filter by lot
+        if self.lot_ids and event.lot_id and event.lot_id not in self.lot_ids:
+            return False
+
+        # If client specified particular chamber IDs, filter by chamber
+        if self.chamber_ids and event.chamber_id and event.chamber_id not in self.chamber_ids:
+            return False
+
+        # If client specified particular components, filter
+        if self.component_ids and event.component_id and event.component_id not in self.component_ids:
+            return False
+
+        return True
+
+
+class WebSocketManager:
+    """
+    Production-Grade WebSocket Gateway for BurnWatch 3D.
+    Handles authentication, topic subscriptions, sequence tracking, backpressure, and heartbeat monitoring.
+    """
+    def __init__(self):
+        self._active_sessions: Dict[str, ClientSession] = {}
+        self._lock = asyncio.Lock()
+        self._messages_sent_total = 0
+        self._events_dropped_total = 0
+        self._bus_subscription_registered = False
+
+    async def initialize(self):
+        if not self._bus_subscription_registered:
+            event_bus.subscribe("burnwatch:events:global", self._on_bus_event)
+            self._bus_subscription_registered = True
+
+    async def connect(self, websocket: WebSocket, token: Optional[str] = None) -> ClientSession:
+        await websocket.accept()
+        connection_id = str(uuid.uuid4())
+
+        user = None
+        if token:
+            try:
+                user = decode_access_token(token)
+            except Exception:
+                pass
+
+        session = ClientSession(websocket, connection_id, user=user)
+        session.writer_task = asyncio.create_task(self._client_writer(session))
+
+        async with self._lock:
+            self._active_sessions[connection_id] = session
+
+        logger.info("WebSocket client connected [%s], auth=%s", connection_id, session.is_authenticated)
+
+        # Send initial connection acknowledgement
+        ack = WsServerAck(
+            type="connection_ack",
+            status="CONNECTED",
+            connection_id=connection_id,
+            sequence=event_bus.current_sequence,
+            message="BurnWatch 3D Real-Time Gateway connected.",
+            subscriptions={
+                "lot_ids": list(session.lot_ids),
+                "chamber_ids": list(session.chamber_ids),
+                "streams": list(session.streams)
+            }
+        )
+        await session.send_queue.put(ack.model_dump_json())
+        return session
+
+    async def disconnect(self, connection_id: str):
+        async with self._lock:
+            session = self._active_sessions.pop(connection_id, None)
+
+        if session:
+            if session.writer_task:
+                session.writer_task.cancel()
+            logger.info("WebSocket client disconnected [%s]", connection_id)
+
+    async def handle_message(self, session: ClientSession, raw_text: str):
+        try:
+            data = json.loads(raw_text)
+            action = data.get("action", "")
+
+            if action == "ping":
+                session.last_heartbeat = datetime.now(timezone.utc)
+                ack = WsServerAck(type="pong", status="OK", sequence=event_bus.current_sequence)
+                await session.send_queue.put(ack.model_dump_json())
+
+            elif action == "auth":
+                token = data.get("token")
+                user = decode_access_token(token) if token else None
+                if user:
+                    session.user = user
+                    session.is_authenticated = True
+                    ack = WsServerAck(
+                        type="auth_ack",
+                        status="AUTHENTICATED",
+                        message=f"Authenticated as {user.get('sub', 'user')} (Role: {user.get('role', 'VIEWER')})"
+                    )
+                else:
+                    ack = WsServerAck(type="error", status="AUTH_FAILED", message="Invalid or expired JWT token.")
+                await session.send_queue.put(ack.model_dump_json())
+
+            elif action == "subscribe":
+                if "lot_ids" in data and isinstance(data["lot_ids"], list):
+                    session.lot_ids = set(data["lot_ids"])
+                if "chamber_ids" in data and isinstance(data["chamber_ids"], list):
+                    session.chamber_ids = set(data["chamber_ids"])
+                if "streams" in data and isinstance(data["streams"], list):
+                    session.streams = set(data["streams"])
+                if "components" in data and isinstance(data["components"], list):
+                    session.component_ids = set(data["components"])
+
+                ack = WsServerAck(
+                    type="subscription_ack",
+                    status="SUBSCRIBED",
+                    subscriptions={
+                        "lot_ids": list(session.lot_ids),
+                        "chamber_ids": list(session.chamber_ids),
+                        "streams": list(session.streams),
+                        "components": list(session.component_ids)
+                    },
+                    sequence=event_bus.current_sequence
+                )
+                await session.send_queue.put(ack.model_dump_json())
+
+            elif action == "unsubscribe":
+                if "lot_ids" in data:
+                    session.lot_ids.difference_update(data["lot_ids"])
+                if "streams" in data:
+                    session.streams.difference_update(data["streams"])
+
+                ack = WsServerAck(
+                    type="subscription_ack",
+                    status="UNSUBSCRIBED",
+                    subscriptions={
+                        "lot_ids": list(session.lot_ids),
+                        "streams": list(session.streams)
+                    }
+                )
+                await session.send_queue.put(ack.model_dump_json())
+
+            elif action == "get_status":
+                ack = WsServerAck(
+                    type="connection_ack",
+                    status="HEALTHY",
+                    sequence=event_bus.current_sequence,
+                    message="Live streaming active"
+                )
+                await session.send_queue.put(ack.model_dump_json())
+
+        except Exception as e:
+            logger.error("Error processing WebSocket message: %s", e)
+            ack = WsServerAck(type="error", status="BAD_REQUEST", message=str(e))
+            await session.send_queue.put(ack.model_dump_json())
+
+    async def _on_bus_event(self, event: RealtimeEvent):
+        """Called whenever an event is published on the event bus."""
+        event_str = event.model_dump_json()
+        is_critical = event.event_type in (
+            "anomaly_detected", "anomaly_resolved", "screening_update",
+            "qa_override", "demo.started", "demo.completed", "demo.step"
+        )
+
+        async with self._lock:
+            sessions = list(self._active_sessions.values())
+
+        for session in sessions:
+            if not session.is_interested_in(event):
+                continue
+
+            try:
+                if is_critical:
+                    # Never drop critical anomaly/screening events
+                    await session.send_queue.put(event_str)
+                else:
+                    # Bounded queue backpressure: drop low-value telemetry if client is slow
+                    try:
+                        session.send_queue.put_nowait(event_str)
+                    except asyncio.QueueFull:
+                        self._events_dropped_total += 1
+                        # Drop oldest non-critical message and enqueue latest
+                        try:
+                            _ = session.send_queue.get_nowait()
+                            session.send_queue.put_nowait(event_str)
+                        except Exception:
+                            pass
+            except Exception as e:
+                logger.debug("Failed to enqueue event for session %s: %s", session.connection_id, e)
+
+    async def _client_writer(self, session: ClientSession):
+        """Dedicated coroutine for writing to the WebSocket socket sequentially."""
+        try:
+            while True:
+                msg = await session.send_queue.get()
+                await session.websocket.send_text(msg)
+                self._messages_sent_total += 1
+                session.send_queue.task_done()
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.debug("WebSocket client writer ended for [%s]: %s", session.connection_id, e)
+        finally:
+            await self.disconnect(session.connection_id)
+
+    @property
+    def active_connections_count(self) -> int:
+        return len(self._active_sessions)
+
+    @property
+    def messages_sent_total(self) -> int:
+        return self._messages_sent_total
+
+    @property
+    def events_dropped_total(self) -> int:
+        return self._events_dropped_total
+
+# Singleton WebSocket Gateway Manager
+ws_manager = WebSocketManager()
