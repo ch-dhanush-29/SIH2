@@ -36,7 +36,9 @@ class ConfidenceCalculator:
 
         # 2. Sample Sufficiency Factor
         n = baseline.sample_count
-        if not baseline.is_sufficient or n < 10:
+        if baseline.baseline_source == "SIMULATION_PHYSICS":
+            s_factor = 0.95
+        elif not baseline.is_sufficient or n < 10:
             s_factor = 0.40
             uncertainty_factors.append("INSUFFICIENT_PEER_POPULATION (<10 samples)")
         elif n < 30:
@@ -71,7 +73,7 @@ class ConfidenceCalculator:
 
         raw_confidence = q_factor * s_factor * f_factor * c_factor
         clamped_confidence = round(float(min(0.99, max(0.10, raw_confidence))), 3)
-        is_reliable = clamped_confidence >= 0.70 and quality_status == "VALID" and baseline.is_sufficient
+        is_reliable = clamped_confidence >= 0.70 and quality_status == "VALID" and (baseline.is_sufficient or baseline.baseline_source == "SIMULATION_PHYSICS")
 
         return ConfidenceResult(
             confidence=clamped_confidence,

@@ -56,3 +56,31 @@ class AnomalyEvent(Base):
         Index("idx_anom_ts", "timestamp"),
         Index("idx_anom_decision", "decision"),
     )
+
+
+class RealtimeEventModel(Base):
+    """
+    Canonical Persistent Event Log for BurnWatch 3D (Phase 10).
+    Guarantees that LIVE, REPLAY, and SNAPSHOT/RESYNC use the exact same canonical envelope.
+    """
+    __tablename__ = "realtime_events"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    event_id = Column(String(64), unique=True, index=True, nullable=False)
+    trace_id = Column(String(64), index=True, nullable=True)
+    sequence = Column(Integer, unique=True, index=True, nullable=False)
+    event_type = Column(String(50), index=True, nullable=False)
+    schema_version = Column(Integer, default=2)
+    timestamp = Column(DateTime, index=True, nullable=False)
+    server_timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    lot_id = Column(String(50), index=True, nullable=True)
+    component_id = Column(String(60), index=True, nullable=True)
+    chamber_id = Column(String(50), default="CH-01", index=True, nullable=True)
+    payload_json = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+    __table_args__ = (
+        Index("idx_rte_lot_seq", "lot_id", "sequence"),
+        Index("idx_rte_type_seq", "event_type", "sequence"),
+        Index("idx_rte_ts", "timestamp"),
+    )

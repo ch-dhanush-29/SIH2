@@ -47,7 +47,13 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
   initRealtime: () => {
     if (get().client) return;
 
+    const token =
+      (typeof window !== 'undefined' &&
+        (localStorage.getItem('burnwatch_token') || localStorage.getItem('token'))) ||
+      'burnwatch_demo_token_sih2026';
+
     const client = new WebSocketClient({
+      token,
       onStateChange: (status) => set({ connectionStatus: status }),
       onLatencyChange: (latency) => set({ latencyMs: latency }),
     });

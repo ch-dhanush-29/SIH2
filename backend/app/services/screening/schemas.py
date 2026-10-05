@@ -18,6 +18,7 @@ class BaselineStats(BaseModel):
     safety_slope: float
     sample_count: int
     is_sufficient: bool = True
+    baseline_source: Literal["LOT_HISTORY", "PEER_HISTORY", "DATASHEET", "SIMULATION_PHYSICS"] = "PEER_HISTORY"
 
 class AnomalyScoreResult(BaseModel):
     static_breach: bool
@@ -56,8 +57,14 @@ class ScreeningEvaluationResult(BaseModel):
     measured_value: float
     quality_status: str
     anomaly_score: float
+    robust_z_score: float = 0.0
+    iqr_score: float = 0.0
+    iforest_score: float = 0.0
+    ensemble_score: float = 0.0
+    peer_deviation: Optional[float] = None
+    model_component_status: str = "ACTIVE"
     risk_level: str
-    decision: Literal["PASS", "REVIEW", "EARLY_REJECT", "REJECT", "INSUFFICIENT_DATA"]
+    decision: Literal["PASS", "REVIEW", "EARLY_REJECT", "REJECT", "INSUFFICIENT_DATA", "REVIEW_REQUIRED"]
     confidence: float
     reasons: List[str]
     forecast: Optional[ForecastResult] = None

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, Text, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Float, Boolean, Text, DateTime, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from backend.app.core.database import Base
@@ -43,6 +43,7 @@ class ScreeningResult(Base):
     # Explainability (Glass-box)
     plain_english_justification = Column(Text, nullable=True)
     shap_values_json = Column(Text, nullable=True)
+    model_component_status = Column(String(30), default="ACTIVE")
     
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
@@ -51,6 +52,7 @@ class ScreeningResult(Base):
     __table_args__ = (
         Index("idx_scr_lot_chkpt", "lot_id", "checkpoint"),
         Index("idx_scr_comp_verdict", "component_id", "final_verdict"),
+        UniqueConstraint("screening_run_id", "component_id", "checkpoint", name="uq_screening_run_comp_chkpt"),
     )
 
 

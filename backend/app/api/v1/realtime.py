@@ -46,7 +46,7 @@ async def websocket_live_endpoint(
 
 
 @router.get("/realtime/snapshot")
-def get_realtime_snapshot(
+async def get_realtime_snapshot(
     lot_id: str = Query("LOT-04", description="Lot identifier for initial snapshot state"),
     chamber_id: str = Query("CH-01", description="Chamber identifier for initial thermal state"),
     db: Session = Depends(get_db)
@@ -68,10 +68,12 @@ def get_realtime_snapshot(
         .all()
     )
 
+    current_seq = await event_bus.get_current_sequence()
+
     return {
         "status": "SNAPSHOT_LOADED",
-        "server_sequence": event_bus.current_sequence,
-        "sequence": event_bus.current_sequence,
+        "server_sequence": current_seq,
+        "sequence": current_seq,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "chamber": {
             "chamber_id": ch.chamber_id if ch else chamber_id,
@@ -130,83 +132,49 @@ def get_realtime_snapshot(
 
 @router.get("/realtime/replay")
 @router.get("/events/replay")
-def replay_events(
+async def replay_events(
     from_sequence: int = Query(..., description="Starting sequence number for missed-event gap recovery"),
     to_sequence: Optional[int] = Query(None, description="Ending sequence number"),
     lot_id: Optional[str] = Query(None, description="Filter recovered events by lot ID"),
     limit: int = Query(1000, le=2000),
-    db: Session = Depends(get_db)
 ):
     """
-    Durable Replay Endpoint (Phase 3).
-    Reads from Redis Streams ring buffer or PostgreSQL database.
+    Durable Replay Endpoint (Phase 3 & 11).
+    Reads from Redis Streams buffer or PostgreSQL canonical realtime_events log.
     If requested sequence is older than retention: returns REPLAY_UNAVAILABLE and prompts FULL_SNAPSHOT_REQUIRED.
     """
-    status, recovered = event_bus.get_replay_events(
+    status, recovered = await event_bus.replay(
         from_sequence=from_sequence,
         to_sequence=to_sequence,
         lot_id=lot_id,
         max_limit=limit
     )
 
-    if status == "REPLAY_UNAVAILABLE":
-        # Check database fallback
-        db_records = (
-            db.query(TelemetryEvent)
-            .filter(TelemetryEvent.sequence >= from_sequence)
-        )
-        if to_sequence:
-            db_records = db_records.filter(TelemetryEvent.sequence <= to_sequence)
-        if lot_id:
-            db_records = db_records.filter(TelemetryEvent.lot_id == lot_id)
+    if status in ("REPLAY_UNAVAILABLE", "FULL_SNAPSHOT_REQUIRED"):
+        current_seq = await event_bus.get_current_sequence()
+        return {
+            "status": "REPLAY_UNAVAILABLE",
+            "message": "FULL_SNAPSHOT_REQUIRED",
+            "from_sequence": from_sequence,
+            "current_sequence": current_seq,
+            "events": []
+        }
 
-        db_events = db_records.order_by(TelemetryEvent.sequence.asc()).limit(limit).all()
-
-        if not db_events:
-            return {
-                "status": "REPLAY_UNAVAILABLE",
-                "message": "FULL_SNAPSHOT_REQUIRED",
-                "from_sequence": from_sequence,
-                "current_sequence": event_bus.current_sequence,
-                "events": []
-            }
-
-        recovered = [
-            RealtimeEvent(
-                event_id=r.event_id,
-                trace_id=r.trace_id or str(uuid.uuid4()),
-                event_type=r.event_type,
-                schema_version=2,
-                timestamp=r.timestamp.isoformat(),
-                server_timestamp=r.server_timestamp.isoformat() if r.server_timestamp else r.timestamp.isoformat(),
-                chamber_id=r.chamber_id,
-                lot_id=r.lot_id,
-                component_id=r.component_id,
-                sequence=r.sequence,
-                payload={
-                    "parameters": json.loads(r.parameters_json),
-                    "environment": json.loads(r.environment_json) if r.environment_json else {},
-                    "quality_status": r.quality_status
-                }
-            )
-            for r in db_events
-        ]
-
-    # Return list directly for compatibility with List[RealtimeEvent] clients, or JSON envelope
     return [e.model_dump() for e in recovered]
 
 
 @router.get("/events/status")
-def get_realtime_status():
+async def get_realtime_status():
     """
     System diagnostics on real-time event bus, WebSocket gateway, sequence numbers, and drop metrics.
     """
+    current_seq = await event_bus.get_current_sequence()
     return {
         "status": "HEALTHY",
-        "current_sequence": event_bus.current_sequence,
+        "current_sequence": current_seq,
         "is_redis_connected": event_bus.is_redis_connected,
         "active_websocket_connections": ws_manager.active_connections_count,
         "messages_sent_total": ws_manager.messages_sent_total,
         "events_dropped_total": ws_manager.events_dropped_total,
-        "replay_buffer_size": len(event_bus._replay_buffer)
+        "replay_buffer_size": event_bus.replay_buffer_size
     }

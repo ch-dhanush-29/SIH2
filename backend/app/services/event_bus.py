@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 import uuid
 
 from backend.app.core.config import settings
+from backend.app.core.database import SessionLocal
+from backend.app.models.telemetry import RealtimeEventModel
 from backend.app.schemas.events import RealtimeEvent
 
 logger = logging.getLogger("burnwatch.event_bus")
@@ -87,27 +89,51 @@ class EventBus:
             logger.error("Redis pub/sub listener encountered error: %s", e)
             self._is_redis_connected = False
 
-    async def next_sequence(self, count: int = 1) -> int:
+    async def reserve_sequence_range(self, count: int) -> Tuple[int, int]:
         """
-        Authoritatively increments and returns the sequence number.
-        If count > 1 (for batch operations), atomically reserves a range
-        and returns the FIRST sequence in the reserved block.
+        Atomically reserves a contiguous range of sequence numbers [start_seq, end_seq].
+        Guarantees strict monotonicity, multi-worker safety, and zero sequence collisions.
         """
         if count <= 0:
             count = 1
 
         if self._is_redis_connected and self._redis_client:
             try:
-                new_seq = await self._redis_client.incrby("burnwatch:sequence:global", count)
-                self._current_sequence = new_seq
-                return new_seq - count + 1
+                end_seq = await self._redis_client.incrby("burnwatch:sequence:global", count)
+                start_seq = end_seq - count + 1
+                self._current_sequence = end_seq
+                return start_seq, end_seq
             except Exception as e:
-                logger.warning("Redis sequence increment failed: %s. Using local sequence lock.", e)
+                logger.warning("Redis sequence reservation failed: %s. Using local sequence lock.", e)
 
         async with self._sequence_lock:
             start_seq = self._current_sequence + 1
-            self._current_sequence += count
-            return start_seq
+            end_seq = self._current_sequence + count
+            self._current_sequence = end_seq
+            return start_seq, end_seq
+
+    async def next_sequence(self, count: int = 1) -> int:
+        """
+        Authoritatively increments and returns the sequence number.
+        For count > 1, reserves a contiguous block and returns the start sequence.
+        """
+        start_seq, _ = await self.reserve_sequence_range(count)
+        return start_seq
+
+    async def get_current_sequence(self) -> int:
+        """
+        Authoritatively reads the global sequence.
+        When Redis is connected, reads from Redis to avoid multi-worker stale state.
+        """
+        if self._is_redis_connected and self._redis_client:
+            try:
+                stored = await self._redis_client.get("burnwatch:sequence:global")
+                if stored is not None:
+                    self._current_sequence = int(stored)
+                    return self._current_sequence
+            except Exception as e:
+                logger.warning("Failed to read authoritative sequence from Redis: %s", e)
+        return self._current_sequence
 
     async def publish(
         self,
@@ -209,7 +235,47 @@ class EventBus:
             # Resilient In-memory dispatch
             await self._dispatch_local("burnwatch:events:global", event)
 
+        # 3. Canonical Event Persistence to Database (Phase 10)
+        asyncio.create_task(self._persist_canonical_event(event))
+
         return event
+
+    async def _persist_canonical_event(self, event: RealtimeEvent):
+        """Asynchronously writes the canonical event to PostgreSQL/SQLite realtime_events table."""
+        def _sync_persist():
+            db = SessionLocal()
+            try:
+                existing = db.query(RealtimeEventModel.id).filter(
+                    (RealtimeEventModel.sequence == event.sequence) | (RealtimeEventModel.event_id == event.event_id)
+                ).first()
+                if not existing:
+                    ts = datetime.fromisoformat(event.timestamp.replace("Z", "+00:00"))
+                    sts = datetime.fromisoformat(event.server_timestamp.replace("Z", "+00:00"))
+                    record = RealtimeEventModel(
+                        event_id=event.event_id,
+                        trace_id=event.trace_id,
+                        sequence=event.sequence,
+                        event_type=event.event_type,
+                        schema_version=event.schema_version,
+                        timestamp=ts,
+                        server_timestamp=sts,
+                        lot_id=event.lot_id,
+                        component_id=event.component_id,
+                        chamber_id=event.chamber_id or "CH-01",
+                        payload_json=json.dumps(event.payload)
+                    )
+                    db.add(record)
+                    db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.debug("Canonical persistence error: %s", e)
+            finally:
+                db.close()
+
+        try:
+            await asyncio.to_thread(_sync_persist)
+        except Exception as ex:
+            logger.debug("Async persistence dispatch error: %s", ex)
 
     async def _dispatch_local(self, channel: str, event: RealtimeEvent):
         """Delivers event to in-process callback handlers."""
@@ -294,6 +360,96 @@ class EventBus:
                     recovered.append(evt)
 
         return "OK", recovered
+
+    async def replay(
+        self,
+        from_sequence: int,
+        to_sequence: Optional[int] = None,
+        lot_id: Optional[str] = None,
+        max_limit: int = 1000
+    ) -> Tuple[str, List[RealtimeEvent]]:
+        """
+        Authoritative durable replay engine (Item 11).
+        Flow:
+          1. Check in-memory ring buffer (fast path)
+          2. Fallback to PostgreSQL canonical event log (realtime_events)
+          3. If missing from both retention horizons, return ("FULL_SNAPSHOT_REQUIRED", [])
+        """
+        if from_sequence <= 0:
+            from_sequence = 1
+
+        curr_seq = await self.get_current_sequence()
+        target_to = to_sequence if to_sequence is not None else curr_seq
+        if target_to < from_sequence:
+            return "OK", []
+
+        if (target_to - from_sequence + 1) > max_limit:
+            target_to = from_sequence + max_limit - 1
+
+        # 1. Check in-memory ring buffer first
+        recovered: List[RealtimeEvent] = []
+        oldest_mem_seq = self._replay_buffer[0].sequence if self._replay_buffer else None
+
+        if oldest_mem_seq is not None and from_sequence >= oldest_mem_seq:
+            for seq in range(from_sequence, target_to + 1):
+                evt = self._replay_index.get(seq)
+                if evt:
+                    if not lot_id or evt.lot_id == lot_id or evt.lot_id is None:
+                        recovered.append(evt)
+            return "OK", recovered
+
+        # 2. Fallback to PostgreSQL/SQLite canonical event log (realtime_events)
+        def _fetch_db_events():
+            db = SessionLocal()
+            try:
+                oldest_in_db = db.query(RealtimeEventModel.sequence).order_by(RealtimeEventModel.sequence.asc()).first()
+                if oldest_in_db and from_sequence < oldest_in_db[0]:
+                    logger.warning("Replay request seq=%d is older than database retention=%d", from_sequence, oldest_in_db[0])
+                    return "FULL_SNAPSHOT_REQUIRED", []
+
+                query = (
+                    db.query(RealtimeEventModel)
+                    .filter(
+                        RealtimeEventModel.sequence >= from_sequence,
+                        RealtimeEventModel.sequence <= target_to
+                    )
+                )
+                if lot_id:
+                    query = query.filter((RealtimeEventModel.lot_id == lot_id) | (RealtimeEventModel.lot_id.is_(None)))
+                rows = query.order_by(RealtimeEventModel.sequence.asc()).all()
+
+                if not rows:
+                    if oldest_in_db is None and self._replay_buffer:
+                        return "FULL_SNAPSHOT_REQUIRED", []
+                    return "OK", []
+
+                events = []
+                for r in rows:
+                    try:
+                        p_dict = json.loads(r.payload_json) if isinstance(r.payload_json, str) else r.payload_json
+                    except Exception:
+                        p_dict = {}
+                    events.append(
+                        RealtimeEvent(
+                            event_id=r.event_id,
+                            trace_id=r.trace_id or str(uuid.uuid4()),
+                            event_type=r.event_type,
+                            schema_version=r.schema_version or 2,
+                            timestamp=r.timestamp.isoformat(),
+                            server_timestamp=r.server_timestamp.isoformat() if r.server_timestamp else r.timestamp.isoformat(),
+                            lot_id=r.lot_id,
+                            component_id=r.component_id,
+                            chamber_id=r.chamber_id or "CH-01",
+                            sequence=r.sequence,
+                            payload=p_dict
+                        )
+                    )
+                return "OK", events
+            finally:
+                db.close()
+
+        status, db_events = await asyncio.to_thread(_fetch_db_events)
+        return status, db_events
 
     @property
     def is_redis_connected(self) -> bool:

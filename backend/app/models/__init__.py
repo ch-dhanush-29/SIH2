@@ -5,7 +5,7 @@ from backend.app.models.component import Component
 from backend.app.models.chamber import Chamber
 from backend.app.models.sensor import Sensor
 from backend.app.models.measurement import Measurement
-from backend.app.models.telemetry import TelemetryEvent, AnomalyEvent
+from backend.app.models.telemetry import TelemetryEvent, AnomalyEvent, RealtimeEventModel
 from backend.app.models.screening_run import ScreeningRun, AIInference
 from backend.app.models.screening import ScreeningResult, QADecision
 from backend.app.models.audit import AuditLog, ModelVersion

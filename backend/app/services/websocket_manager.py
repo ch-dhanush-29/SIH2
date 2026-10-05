@@ -6,11 +6,45 @@ from fastapi import WebSocket
 from datetime import datetime, timezone
 import uuid
 
+from backend.app.core.config import settings
 from backend.app.core.security import decode_access_token
 from backend.app.schemas.events import RealtimeEvent, WsServerAck
 from backend.app.services.event_bus import event_bus
 
 logger = logging.getLogger("burnwatch.websocket")
+
+def authorize_lot(user: Optional[Dict[str, Any]], lot_id: str) -> bool:
+    """Validates whether the user's role has access to the requested lot."""
+    if not user:
+        return False
+    role = user.get("role", "VIEWER")
+    if role in ("ADMIN", "QA_INSPECTOR", "ENGINEER"):
+        return True
+    # VIEWER role has access only to permitted lots (default LOT-04 or explicitly assigned)
+    allowed_lots = user.get("allowed_lots") or ["LOT-04", "CHIP-LOT04-042"]
+    return lot_id in allowed_lots
+
+def authorize_chamber(user: Optional[Dict[str, Any]], chamber_id: str) -> bool:
+    """Validates whether the user's role has access to the requested chamber."""
+    if not user:
+        return False
+    role = user.get("role", "VIEWER")
+    if role in ("ADMIN", "QA_INSPECTOR", "ENGINEER"):
+        return True
+    allowed_chambers = user.get("allowed_chambers") or ["CH-01"]
+    return chamber_id in allowed_chambers
+
+def authorize_component(user: Optional[Dict[str, Any]], component_id: str) -> bool:
+    """Validates whether the user's role has access to the requested component."""
+    if not user:
+        return False
+    role = user.get("role", "VIEWER")
+    if role in ("ADMIN", "QA_INSPECTOR", "ENGINEER"):
+        return True
+    allowed_components = user.get("allowed_components")
+    if allowed_components is not None:
+        return component_id in allowed_components
+    return True
 
 class ClientSession:
     """Represents a connected WebSocket client session with topic subscriptions and backpressure queue."""
@@ -78,10 +112,13 @@ class WebSocketManager:
 
         user = None
         if token:
-            try:
-                user = decode_access_token(token)
-            except Exception:
-                pass
+            if token in (settings.DEMO_TOKEN, "demo_token"):
+                user = {"sub": "demo_operator", "role": "ENGINEER", "is_demo": True}
+            else:
+                try:
+                    user = decode_access_token(token)
+                except Exception:
+                    pass
 
         session = ClientSession(websocket, connection_id, user=user)
         if session.is_authenticated:
@@ -91,6 +128,10 @@ class WebSocketManager:
                 session.streams = {"telemetry", "anomalies", "component", "screening", "system", "camera", "demo"}
             elif role == "ENGINEER":
                 session.streams = {"telemetry", "anomalies", "component", "system", "demo"}
+            else:
+                session.streams = {"telemetry", "system", "demo"}
+        else:
+            session.streams = {"system", "demo"}
 
         session.writer_task = asyncio.create_task(self._client_writer(session))
 
@@ -136,7 +177,12 @@ class WebSocketManager:
 
             elif action == "auth":
                 token = data.get("token")
-                user = decode_access_token(token) if token else None
+                user = None
+                if token in (settings.DEMO_TOKEN, "demo_token"):
+                    user = {"sub": "demo_operator", "role": "ENGINEER", "is_demo": True}
+                elif token:
+                    user = decode_access_token(token)
+
                 if user:
                     session.user = user
                     session.is_authenticated = True
@@ -159,12 +205,32 @@ class WebSocketManager:
                 await session.send_queue.put(ack.model_dump_json())
 
             elif action == "subscribe":
+                requested_streams = set(data.get("streams", [])) if "streams" in data else session.streams
+
+                # Policy enforcement: Reject/close unauthenticated telemetry or privileged subscriptions with code 1008
+                privileged_streams = {"telemetry", "anomalies", "component", "screening", "camera"}
+                if not session.is_authenticated:
+                    if requested_streams.intersection(privileged_streams):
+                        logger.warning(
+                            "POLICY VIOLATION: Unauthenticated WebSocket [%s] attempted to subscribe to privileged streams %s. Terminating connection (code 1008).",
+                            session.connection_id, list(requested_streams.intersection(privileged_streams))
+                        )
+                        err_ack = WsServerAck(
+                            type="error",
+                            status="POLICY_VIOLATION",
+                            message="Authentication required for telemetry subscriptions. Connection closed (code 1008)."
+                        )
+                        await session.send_queue.put(err_ack.model_dump_json())
+                        await asyncio.sleep(0.05)
+                        await session.websocket.close(code=1008, reason="Policy Violation: Authentication required")
+                        await self.disconnect(session.connection_id)
+                        return
+
                 user_role = session.user.get("role", "VIEWER") if session.user else "ANONYMOUS"
 
                 # Enforce RBAC on streams
-                requested_streams = set(data.get("streams", [])) if "streams" in data else session.streams
                 if not session.is_authenticated:
-                    allowed_streams = {"telemetry", "system", "demo"}
+                    allowed_streams = {"system", "demo"}
                 elif user_role == "VIEWER":
                     allowed_streams = {"telemetry", "system", "demo"}
                 elif user_role == "ENGINEER":
@@ -172,14 +238,42 @@ class WebSocketManager:
                 else:  # QA_INSPECTOR or ADMIN
                     allowed_streams = {"telemetry", "anomalies", "component", "screening", "system", "camera", "demo"}
 
-                session.streams = requested_streams.intersection(allowed_streams) if requested_streams else allowed_streams
+                denied_streams = requested_streams.difference(allowed_streams)
+                if denied_streams:
+                    ack = WsServerAck(
+                        type="error",
+                        status="FORBIDDEN",
+                        message=f"Role '{user_role}' is not authorized to subscribe to stream(s): {list(denied_streams)}"
+                    )
+                    await session.send_queue.put(ack.model_dump_json())
+                    return
 
+                # Resource-level RBAC: Lot, Chamber, Component
                 if "lot_ids" in data and isinstance(data["lot_ids"], list):
+                    for lid in data["lot_ids"]:
+                        if not authorize_lot(session.user, lid):
+                            ack = WsServerAck(type="error", status="FORBIDDEN", message=f"Access denied to lot: {lid}")
+                            await session.send_queue.put(ack.model_dump_json())
+                            return
                     session.lot_ids = set(data["lot_ids"])
+
                 if "chamber_ids" in data and isinstance(data["chamber_ids"], list):
+                    for cid in data["chamber_ids"]:
+                        if not authorize_chamber(session.user, cid):
+                            ack = WsServerAck(type="error", status="FORBIDDEN", message=f"Access denied to chamber: {cid}")
+                            await session.send_queue.put(ack.model_dump_json())
+                            return
                     session.chamber_ids = set(data["chamber_ids"])
+
                 if "components" in data and isinstance(data["components"], list):
+                    for comp_id in data["components"]:
+                        if not authorize_component(session.user, comp_id):
+                            ack = WsServerAck(type="error", status="FORBIDDEN", message=f"Access denied to component: {comp_id}")
+                            await session.send_queue.put(ack.model_dump_json())
+                            return
                     session.component_ids = set(data["components"])
+
+                session.streams = requested_streams.intersection(allowed_streams) if requested_streams else allowed_streams
 
                 ack = WsServerAck(
                     type="subscription_ack",

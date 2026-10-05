@@ -22,6 +22,13 @@ class ScreeningRun(Base):
     decision_summary_json = Column(Text, nullable=True)
     start_time = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     end_time = Column(DateTime, nullable=True)
+    
+    # Worker lease & reliability fields (Item 12)
+    worker_id = Column(String(50), nullable=True, index=True)
+    attempt_count = Column(Integer, default=0)
+    heartbeat_at = Column(DateTime, nullable=True)
+    lease_until = Column(DateTime, nullable=True, index=True)
+    
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     lot = relationship("Lot")

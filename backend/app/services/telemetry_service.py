@@ -141,7 +141,54 @@ class TelemetryService:
                     ch.nitrogen_flow_lpm = payload.environment["nitrogen_flow_lpm"]
                 ch.updated_at = now_utc
 
-        # 3. Component Real-Time AI Screening via Unified ScreeningEngine
+        # Check AI execution mode (Item 13: sync vs async)
+        screening_mode = getattr(settings, "SCREENING_MODE", "sync").lower()
+        if screening_mode == "async" and background_eval:
+            # Async Mode: Telemetry -> Validation -> Persist -> Publish -> 202 Accepted
+            published_event = await event_bus.publish(
+                event_type="telemetry",
+                payload={
+                    "chamber_id": payload.chamber_id,
+                    "lot_id": payload.lot_id,
+                    "component_id": payload.component_id,
+                    "parameters": payload.parameters,
+                    "environment": payload.environment or {},
+                    "quality_status": quality_status,
+                    "decision": "PENDING_ASYNC_EVAL"
+                },
+                lot_id=payload.lot_id,
+                component_id=payload.component_id,
+                chamber_id=payload.chamber_id,
+                event_id=evt_id,
+                trace_id=trace_id,
+                timestamp=evt_timestamp
+            )
+            telem_record = TelemetryEvent(
+                event_id=evt_id,
+                trace_id=trace_id,
+                sequence=published_event.sequence,
+                chamber_id=payload.chamber_id,
+                lot_id=payload.lot_id,
+                component_id=payload.component_id,
+                event_type="telemetry",
+                parameters_json=json.dumps(payload.parameters),
+                environment_json=json.dumps(payload.environment or {}),
+                quality_status=quality_status,
+                timestamp=datetime.fromisoformat(evt_timestamp.replace("Z", "+00:00")) if "T" in evt_timestamp else now_utc,
+                server_timestamp=now_utc,
+            )
+            db.add(telem_record)
+            db.commit()
+
+            return {
+                "status": "ACCEPTED_ASYNC",
+                "event_id": evt_id,
+                "sequence": published_event.sequence,
+                "quality_status": quality_status,
+                "decision": "PENDING_ASYNC_EVAL"
+            }
+
+        # 3. Component Real-Time AI Screening via Unified ScreeningEngine (Synchronous Mode)
         eval_res: Optional[ScreeningEvaluationResult] = None
         anomaly_detected = False
 

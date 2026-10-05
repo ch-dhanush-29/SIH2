@@ -18,19 +18,24 @@ class DynamicBaselineEngine:
         values: List[float],
         parameter: str = "iddq",
         static_limit: float = 50.0,
-        sensitivity: float = 0.75
+        sensitivity: float = 0.75,
+        source: Optional[str] = None
     ) -> BaselineStats:
         # Filter NaNs, Infs, and invalid values
         valid_vals = [v for v in values if v is not None and not math.isnan(v) and not math.isinf(v)]
         n = len(valid_vals)
 
         if n < 5:
-            # Insufficient data: cannot calculate reliable statistical distribution
+            # Insufficient peer data (<5 samples):
+            # In simulation mode: use SIMULATION_PHYSICS
+            # In production: use DATASHEET baseline
+            resolved_source = "SIMULATION_PHYSICS" if source == "SIMULATION_PHYSICS" else "DATASHEET"
+            default_median = 21.2 if parameter == "iddq" else (50.0 if parameter == "leakage" else 6.5)
             return BaselineStats(
                 parameter=parameter,
-                median=float(np.median(valid_vals)) if n > 0 else 0.0,
+                median=float(np.median(valid_vals)) if n > 0 else default_median,
                 mad=0.0,
-                mean=float(np.mean(valid_vals)) if n > 0 else 0.0,
+                mean=float(np.mean(valid_vals)) if n > 0 else default_median,
                 std=0.0,
                 q1=0.0,
                 q3=0.0,
@@ -40,7 +45,8 @@ class DynamicBaselineEngine:
                 static_limit=static_limit,
                 safety_slope=0.034,
                 sample_count=n,
-                is_sufficient=False
+                is_sufficient=False,
+                baseline_source=resolved_source
             )
 
         arr = np.array(valid_vals, dtype=float)
@@ -78,5 +84,6 @@ class DynamicBaselineEngine:
             static_limit=static_limit,
             safety_slope=0.034,
             sample_count=n,
-            is_sufficient=True
+            is_sufficient=True,
+            baseline_source=source if source in ("LOT_HISTORY", "PEER_HISTORY", "DATASHEET", "SIMULATION_PHYSICS") else "PEER_HISTORY"
         )

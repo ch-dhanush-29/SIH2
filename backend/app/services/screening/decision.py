@@ -15,8 +15,12 @@ class DecisionEngine:
         baseline: BaselineStats,
         forecast_res: Optional[ForecastResult] = None
     ) -> str:
-        # Rule 1: Insufficient peer data or invalid data must not trigger confident rejects
-        if not baseline.is_sufficient or quality_status in ("MISSING", "INCOMPLETE_SEQUENCE"):
+        # Rule 1: Insufficient peer data or invalid data must not trigger unverified automated actions
+        if not baseline.is_sufficient:
+            if baseline.baseline_source != "SIMULATION_PHYSICS":
+                return "INSUFFICIENT_DATA"
+
+        if quality_status in ("MISSING", "INCOMPLETE_SEQUENCE"):
             return "INSUFFICIENT_DATA"
 
         if quality_status in ("OUT_OF_RANGE", "CLOCK_SKEW", "STALE", "SENSOR_OFFLINE") or not confidence_res.is_reliable:

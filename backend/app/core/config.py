@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+    DEMO_TOKEN: str = Field(
+        default=os.getenv("DEMO_TOKEN", "burnwatch_demo_token_sih2026"),
+        description="Shared token for Golden Demo and offline verification mode"
+    )
 
     @field_validator("SECRET_KEY")
     @classmethod
@@ -33,6 +37,23 @@ class Settings(BaseSettings):
     # Database configuration: Default SQLite for dev/test, PostgreSQL for production
     DATABASE_URL: str = Field(
         default=os.getenv("DATABASE_URL", "sqlite:///./burnwatch.db")
+    )
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        if env == "production":
+            if "sqlite" in v.lower():
+                raise ValueError("CRITICAL SECURITY ERROR: SQLite is prohibited in production! PostgreSQL 16+ is required.")
+            if "secure_production_password" in v.lower():
+                raise ValueError("CRITICAL SECURITY ERROR: Default placeholder 'secure_production_password' detected in DATABASE_URL! Provide real external secrets.")
+        return v
+
+    # AI Execution Mode: sync (demo/low-frequency) or async (worker queue for high-scale production)
+    SCREENING_MODE: str = Field(
+        default=os.getenv("SCREENING_MODE", "sync"),
+        description="sync | async"
     )
 
     # Redis Event Bus: Redis URL with graceful in-memory pubsub fallback if absent
